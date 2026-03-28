@@ -1,0 +1,224 @@
+# Polymarket Tables
+
+Tables containing Polymarket prediction market data including order books, trades, and market information.
+
+*Last updated: 2026-03-28 23:51 UTC*
+
+import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
+
+## Tables (2)
+
+| Table | Rows | Size |
+|-------|------|------|
+| [polymarket_order_filled_v3](#polymarket-order-filled-v3) | 946,094,582 | 149.74 GB |
+| [raw_market_meta](#raw-market-meta) | 1,418,931 | 1.19 GB |
+
+---
+
+### polymarket_order_filled_v3
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 946,094,582 |
+| **Size** | 149.74 GB |
+| **Partition Key** | `toYYYYMMDD(block_timestamp)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `event_id` | `String` | Unique event identifier |
+| `order_hash` | `String` | Hash of the order |
+| `wallet` | `String` | Wallet address that placed the order |
+| `asset` | `String` | Outcome token (condition ID + outcome index) |
+| `amount_token` | `UInt256` | Token amount filled |
+| `amount_usdc` | `UInt256` | USDC amount filled |
+| `is_maker` | `Bool` | Whether this was the maker side |
+| `side` | `FixedString(1)` | Order side (B=buy, S=sell) |
+| `fee` | `UInt256` | Fee amount in USDC |
+| `block_number` | `UInt64` | Polygon block number |
+| `log_index` | `UInt32` | Log index within the transaction |
+| `transaction_index` | `UInt32` | Transaction index in block |
+| `contract_address` | `String` | CTF Exchange contract address |
+| `block_hash` | `String` | Block hash |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block |
+| `gas_used` | `UInt64` | Gas used by transaction |
+| `gas_limit` | `UInt64` | Gas limit set for transaction |
+| `base_fee_per_gas` | `UInt256` | Base fee per gas (EIP-1559) |
+| `transaction_hash` | `String` | Transaction hash |
+| `transaction_from` | `String` | Transaction sender |
+| `transaction_to` | `String` | Transaction recipient |
+| `transaction_value` | `UInt256` | ETH value transferred |
+| `transaction_gas` | `UInt64` | Gas provided for transaction |
+| `transaction_nonce` | `UInt64` | Transaction nonce |
+| `max_fee_per_gas` | `UInt256` | Maximum fee per gas (EIP-1559) |
+| `max_priority_fee_per_gas` | `UInt256` | Maximum priority fee (EIP-1559) |
+| `inserted_at` | `DateTime` | Record insertion timestamp |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="polymarket">
+SELECT * FROM polymarket_order_filled_v3 LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### raw_market_meta
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 1,418,931 |
+| **Size** | 1.19 GB |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `market_id` | `String` | Unique market identifier |
+| `question` | `Nullable(String)` | Market question text |
+| `condition_id` | `String` | Gnosis conditional token condition ID |
+| `slug` | `Nullable(String)` | URL-friendly market slug |
+| `twitter_card_image` | `Nullable(String)` | Twitter card image URL |
+| `resolution_source` | `Nullable(String)` | Source for market resolution |
+| `market_end_dttm` | `Nullable(DateTime64(3))` | Market end datetime |
+| `market_start_dttm` | `Nullable(DateTime64(3))` | Market start datetime |
+| `category` | `Nullable(String)` | Market category |
+| `amm_type` | `Nullable(String)` | AMM type used |
+| `sponsor_name` | `Nullable(String)` | Market sponsor name |
+| `sponsor_image` | `Nullable(String)` | Sponsor image URL |
+| `x_axis_value` | `Nullable(String)` | X-axis label for charts |
+| `y_axis_value` | `Nullable(String)` | Y-axis label for charts |
+| `denomination_token` | `Nullable(String)` | Token used for denomination |
+| `fee` | `Nullable(Float64)` | Market fee percentage |
+| `lower_bound` | `Nullable(String)` | Lower bound for scalar markets |
+| `upper_bound` | `Nullable(String)` | Upper bound for scalar markets |
+| `description` | `Nullable(String)` | Market description |
+| `outcome` | `Nullable(String)` | Outcome name |
+| `outcome_price` | `Nullable(Float64)` | Current outcome price (0-1) |
+| `clob_token_id` | `String` | CLOB token identifier |
+| `volume` | `Nullable(Float64)` | Total trading volume |
+| `volume_num` | `Nullable(Float64)` | Numeric trading volume |
+| `is_active` | `Nullable(Bool)` | Whether market is active |
+| `market_type` | `Nullable(String)` | Type of market |
+| `format_type` | `Nullable(String)` | Display format type |
+| `lower_bound_dttm` | `Nullable(String)` | Lower bound datetime for time-based markets |
+| `upper_bound_dttm` | `Nullable(String)` | Upper bound datetime for time-based markets |
+| `is_closed` | `Nullable(Bool)` | Whether market is closed |
+| `market_maker_address` | `Nullable(String)` | Market maker address |
+| `created_by` | `Nullable(Int64)` | User ID who created the market |
+| `updated_by` | `Nullable(Int64)` | User ID who last updated the market |
+| `created_dttm` | `Nullable(DateTime64(3))` | Market creation datetime |
+| `updated_dttm` | `Nullable(DateTime64(3))` | Market last update datetime |
+| `closed_dttm` | `Nullable(DateTime64(3))` | Market close datetime |
+| `is_wide_format` | `Nullable(Bool)` | Whether market uses wide display format |
+| `is_new` | `Nullable(Bool)` | Whether market is flagged as new |
+| `mailchimp_tag` | `Nullable(String)` | Mailchimp tag for notifications |
+| `is_featured` | `Nullable(Bool)` | Whether market is featured |
+| `is_archived` | `Nullable(Bool)` | Whether market is archived |
+| `resolved_by` | `Nullable(String)` | Resolution source or resolver |
+| `is_restricted` | `Nullable(Bool)` | Whether market has access restrictions |
+| `market_group` | `Nullable(Int64)` | Market group identifier |
+| `group_item_title` | `Nullable(String)` | Title within market group |
+| `group_item_threshold` | `Nullable(String)` | Threshold for group item |
+| `question_id` | `Nullable(String)` | Question identifier |
+| `uma_end_dttm` | `Nullable(String)` | UMA oracle end datetime |
+| `is_enable_order_book` | `Nullable(Bool)` | Whether order book is enabled |
+| `order_price_min_tick_size` | `Nullable(Float64)` | Minimum price tick size |
+| `order_min_size` | `Nullable(Float64)` | Minimum order size |
+| `uma_resolution_status` | `Nullable(String)` | UMA resolution status |
+| `curation_order` | `Nullable(Int64)` | Curation display order |
+| `liquidity_num` | `Nullable(Float64)` | Numeric liquidity value |
+| `end_date_iso_dt_str` | `Nullable(String)` | ISO format end date string |
+| `start_date_iso_dt_str` | `Nullable(String)` | ISO format start date string |
+| `uma_end_date_iso_dt_str` | `Nullable(String)` | UMA end date ISO string |
+| `is_having_reviewed_dates` | `Nullable(Bool)` | Whether dates have been reviewed |
+| `is_ready_for_cron` | `Nullable(Bool)` | Whether ready for cron processing |
+| `is_comments_enabled` | `Nullable(Bool)` | Whether comments are enabled |
+| `volume_24hr` | `Nullable(Float64)` | 24-hour trading volume |
+| `volume_1wk` | `Nullable(Float64)` | 7-day trading volume |
+| `volume_1mo` | `Nullable(Float64)` | 30-day trading volume |
+| `volume_1yr` | `Nullable(Float64)` | 1-year trading volume |
+| `game_start_time` | `Nullable(String)` | Game/event start time |
+| `seconds_delay` | `Nullable(Int64)` | Delay in seconds |
+| `disqus_thread` | `Nullable(String)` | Disqus comment thread ID |
+| `short_outcome` | `Nullable(String)` | Short outcome label |
+| `team_a_id` | `Nullable(String)` | Team A identifier (sports) |
+| `team_b_id` | `Nullable(String)` | Team B identifier (sports) |
+| `uma_bond` | `Nullable(String)` | UMA oracle bond amount |
+| `uma_reward` | `Nullable(String)` | UMA oracle reward amount |
+| `is_fpmm_live` | `Nullable(Bool)` | Whether FPMM is live |
+| `volume_24hr_amm` | `Nullable(Float64)` | 24-hour AMM volume |
+| `volume_1wk_amm` | `Nullable(Float64)` | 7-day AMM volume |
+| `volume_1mo_amm` | `Nullable(Float64)` | 30-day AMM volume |
+| `volume_1yr_amm` | `Nullable(Float64)` | 1-year AMM volume |
+| `volume_24hr_clob` | `Nullable(Float64)` | 24-hour CLOB volume |
+| `volume_1wk_clob` | `Nullable(Float64)` | 7-day CLOB volume |
+| `volume_1mo_clob` | `Nullable(Float64)` | 30-day CLOB volume |
+| `volume_1yr_clob` | `Nullable(Float64)` | 1-year CLOB volume |
+| `volume_amm` | `Nullable(Float64)` | Total AMM volume |
+| `volume_clob` | `Nullable(Float64)` | Total CLOB volume |
+| `liquidity` | `Nullable(Float64)` | Total liquidity |
+| `liquidity_amm` | `Nullable(Float64)` | AMM liquidity |
+| `liquidity_clob` | `Nullable(Float64)` | CLOB liquidity |
+| `maker_base_fee` | `Nullable(Int64)` | Maker base fee |
+| `taker_base_fee` | `Nullable(Int64)` | Taker base fee |
+| `custom_liveness` | `Nullable(Int64)` | Custom liveness period |
+| `is_accepting_orders` | `Nullable(Bool)` | Whether accepting orders |
+| `is_notifications_enabled` | `Nullable(Bool)` | Whether notifications enabled |
+| `score` | `Nullable(Int64)` | Market score/ranking |
+| `image_optimized` | `Nullable(String)` | Optimized image URL |
+| `icon_optimized` | `Nullable(String)` | Optimized icon URL |
+| `event` | `Nullable(String)` | Associated event |
+| `tag` | `Nullable(String)` | Market tag |
+| `category_meta` | `Nullable(String)` | Category metadata |
+| `creator` | `Nullable(String)` | Creator information |
+| `is_ready` | `Nullable(Bool)` | Whether market is ready |
+| `is_funded` | `Nullable(Bool)` | Whether market is funded |
+| `past_slugs` | `Nullable(String)` | Previous URL slugs |
+| `ready_timestamp` | `Nullable(DateTime64(3))` | Ready status timestamp |
+| `funded_timestamp` | `Nullable(DateTime64(3))` | Funded status timestamp |
+| `accepting_orders_timestamp` | `Nullable(DateTime64(3))` | Orders acceptance timestamp |
+| `competitive` | `Nullable(Float64)` | Competitiveness score |
+| `rewards_min_size` | `Nullable(Float64)` | Minimum size for rewards |
+| `rewards_max_spread` | `Nullable(Float64)` | Maximum spread for rewards |
+| `spread` | `Nullable(Float64)` | Current bid-ask spread |
+| `is_automatically_resolved` | `Nullable(Bool)` | Whether auto-resolved |
+| `one_day_price_change` | `Nullable(Float64)` | 24-hour price change |
+| `one_hour_price_change` | `Nullable(Float64)` | 1-hour price change |
+| `one_week_price_change` | `Nullable(Float64)` | 7-day price change |
+| `one_month_price_change` | `Nullable(Float64)` | 30-day price change |
+| `one_year_price_change` | `Nullable(Float64)` | 1-year price change |
+| `last_trade_price` | `Nullable(Float64)` | Last trade price |
+| `best_bid` | `Nullable(Float64)` | Best bid price |
+| `best_ask` | `Nullable(Float64)` | Best ask price |
+| `is_automatically_active` | `Nullable(Bool)` | Whether auto-activated |
+| `is_clear_book_on_start` | `Nullable(Bool)` | Whether to clear order book on start |
+| `chart_color` | `Nullable(String)` | Chart display color |
+| `series_color` | `Nullable(String)` | Series display color |
+| `is_showing_gmp_series` | `Nullable(Bool)` | Whether showing GMP series |
+| `is_showing_gmp_outcome` | `Nullable(Bool)` | Whether showing GMP outcome |
+| `is_manual_activation` | `Nullable(Bool)` | Whether manual activation required |
+| `is_neg_risk_other` | `Nullable(Bool)` | Negative risk flag |
+| `game_id` | `Nullable(String)` | Game identifier |
+| `group_item_range` | `Nullable(String)` | Range for group item |
+| `sports_market_type` | `Nullable(String)` | Sports market type |
+| `line` | `Nullable(Float64)` | Betting line |
+| `uma_resolution_statuses` | `Nullable(String)` | UMA resolution statuses |
+| `is_pending_deployment` | `Nullable(Bool)` | Whether pending deployment |
+| `is_deploying` | `Nullable(Bool)` | Whether currently deploying |
+| `deploying_timestamp` | `Nullable(DateTime64(3))` | Deployment timestamp |
+| `scheduled_deployment_timestamp` | `Nullable(DateTime64(3))` | Scheduled deployment time |
+| `is_rfq_enabled` | `Nullable(Bool)` | Whether RFQ enabled |
+| `event_start_time` | `Nullable(DateTime64(3))` | Event start datetime |
+| `image` | `Nullable(String)` | Market image URL |
+| `icon` | `Nullable(String)` | Market icon URL |
+| `raw_json` | `String` | Raw JSON response from API |
+| `inserted_at` | `DateTime` | Record insertion timestamp |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="polymarket">
+SELECT * FROM raw_market_meta LIMIT 10
+</ClickHouseSqlExample>
+
+---

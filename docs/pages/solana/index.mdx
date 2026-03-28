@@ -1,0 +1,149 @@
+import { CTASection } from '../../components/CTABlocks'
+
+# Solana Indexer
+
+Real-time indexed data from every major Solana DEX. Query 6+ billion swaps directly via ClickHouse.
+
+:::info Request Access
+[Get a free 2-week trial](https://forms.gle/b5Fuuns7jcA3nHKv5) — full database access, no restrictions.
+:::
+
+---
+
+## What's Indexed
+
+| Protocol | Table | Rows | Coverage |
+|----------|-------|------|----------|
+| Raydium V4 + CPMM | `raydium_all_swaps` | 6.6B | All AMM swaps |
+| Pump.fun | `pumpfun_all_swaps` | 2.0B | Bonding curve trades |
+| PumpSwap | `pumpswap_all_swaps` | 4.6B | AMM swaps post-migration |
+| Meteora DLMM | `meteora_swaps` | 291M | Concentrated liquidity |
+| Meteora Dynamic | `meteora_dynamic_bonding_swaps` | 108M | Bonding curves |
+
+Plus: token creation events, AMM migrations, Jito tips, and block data.
+
+**Data from January 2024. Updated in real-time (~15s delay).**
+
+---
+
+## Key Features
+
+### Nanosecond Timestamps
+
+We capture the exact moment each transaction reaches our infrastructure in Amsterdam—not just block time. Essential for:
+
+- MEV research and latency analysis
+- Cross-venue execution comparison (vs Binance, HyperLiquid)
+- Propagation pattern studies
+
+### Full Transaction Context
+
+Every swap includes:
+- Pool reserves before and after
+- Gas fees and priority fees
+- Parent program (for CPI detection)
+- Signing wallet and fee payer
+
+### Raw + Processed
+
+Get both granular transaction data and pre-computed aggregates. Or build your own with Python ETL.
+
+---
+
+## Sample Queries
+
+### Recent High-Volume Swaps
+```sql
+SELECT
+    block_time,
+    base_coin,
+    quote_coin_amount / 1e9 as sol_volume,
+    signing_wallet
+FROM raydium_all_swaps
+WHERE block_time > now() - INTERVAL 1 HOUR
+ORDER BY quote_coin_amount DESC
+LIMIT 20
+```
+
+### Daily Volume by DEX
+```sql
+SELECT
+    toDate(block_time) as date,
+    'raydium' as dex,
+    count(*) as swaps,
+    sum(quote_coin_amount) / 1e9 as sol_volume
+FROM raydium_all_swaps
+WHERE block_time > today() - 7
+GROUP BY date
+
+UNION ALL
+
+SELECT
+    toDate(block_time),
+    'pumpfun',
+    count(*),
+    sum(quote_coin_amount) / 1e9
+FROM pumpfun_all_swaps
+WHERE block_time > today() - 7
+GROUP BY toDate(block_time)
+
+ORDER BY date, dex
+```
+
+### Token Launch Tracking
+```sql
+SELECT
+    block_time,
+    name,
+    symbol,
+    mint,
+    creator,
+    bundled_buys_count as bundle_size
+FROM pumpfun_token_creation
+WHERE block_time > now() - INTERVAL 24 HOUR
+ORDER BY block_time DESC
+LIMIT 50
+```
+
+→ [More examples](/solana/examples)
+
+---
+
+## Access Methods
+
+### DBeaver (Recommended for Exploration)
+Free GUI client. [Setup guide](/solana/getting-started)
+
+### Python
+```python
+import clickhouse_connect
+
+client = clickhouse_connect.get_client(
+    host='157.90.130.44', port=8123,
+    username='your_user', password='your_pass'
+)
+
+df = client.query_df("""
+    SELECT * FROM raydium_all_swaps
+    WHERE block_time > now() - INTERVAL 1 HOUR
+    LIMIT 1000
+""")
+```
+
+### HTTP API
+```bash
+curl 'http://157.90.130.44:8123/?query=SELECT+count(*)+FROM+raydium_all_swaps' \
+  -u 'user:password'
+```
+
+---
+
+
+## Next Steps
+
+1. [Get credentials](https://forms.gle/b5Fuuns7jcA3nHKv5)
+2. [Set up DBeaver](/solana/getting-started)
+3. [Browse table schemas](/solana/tables)
+4. [Try example queries](/solana/examples)
+
+<CTASection price="Custom" product="Solana Indexer" />

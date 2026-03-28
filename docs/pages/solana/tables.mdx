@@ -1,0 +1,1081 @@
+# Solana Tables
+
+Tables containing Solana blockchain data including DEX swaps, token trades, and transaction information.
+
+*Last updated: 2026-03-28 23:51 UTC*
+
+import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
+
+## Tables (18)
+
+| Table | Rows | Size |
+|-------|------|------|
+| [jito_tips](#jito-tips) | 136,553,591 | 10.68 GB |
+| [max_caps](#max-caps) | 8,936,114 | 421.0 MB |
+| [meteora_dynamic_bonding_swaps](#meteora-dynamic-bonding-swaps) | 112,559,596 | 32.48 GB |
+| [meteora_swaps](#meteora-swaps) | 68,248,218 | 11.89 GB |
+| [pfamm_migrations](#pfamm-migrations) | 76,520 | 13.8 MB |
+| [pumpfun_all_swaps](#pumpfun-all-swaps) | 2,091,201,171 | 253.41 GB |
+| [pumpfun_amm_admin_set_coin_creator](#pumpfun-amm-admin-set-coin-creator) | 49 | 10.1 KB |
+| [pumpfun_creator_fee_distributions](#pumpfun-creator-fee-distributions) | 712,441 | 117.9 MB |
+| [pumpfun_token_creation](#pumpfun-token-creation) | 11,920,809 | 2.83 GB |
+| [pumpswap_all_swaps](#pumpswap-all-swaps) | 5,174,694,648 | 1432.44 GB |
+| [raydium_all_swaps](#raydium-all-swaps) | 6,666,956,761 | 876.21 GB |
+| [raydium_cpmm_swaps](#raydium-cpmm-swaps) | 40,512,583 | 9.18 GB |
+| [raydium_launchpad_cpmm_migrations](#raydium-launchpad-cpmm-migrations) | 3,788 | 3.5 MB |
+| [raydium_launchpad_migrations](#raydium-launchpad-migrations) | 398 | 1.1 MB |
+| [raydium_launchpad_swaps](#raydium-launchpad-swaps) | 86,626,783 | 14.20 GB |
+| [raydium_launchpad_token_creation](#raydium-launchpad-token-creation) | 65,568 | 19.9 MB |
+| [solana_blocks](#solana-blocks) | 153,571,216 | 7.56 GB |
+| [tx_timestamps](#tx-timestamps) | 2,243,756,383 | 199.83 GB |
+
+---
+
+### jito_tips
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 136,553,591 |
+| **Size** | 10.68 GB |
+| **First Record** | 2026-03-14 |
+| **Last Record** | 2026-03-28 |
+| **Partition Key** | `block_date_utc` |
+| **TTL** | `block_date_utc + toIntervalDay(14)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt64` | Solana slot number (block height) |
+| `tx_idx` | `UInt32` | Transaction index within the block |
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `signer` | `String` | Wallet address that signed the transaction |
+| `sender` | `String` | Wallet that sent the tip |
+| `tip_account` | `String` | Jito tip account that received the tip |
+| `amount` | `UInt64` | Tip amount in lamports |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/36vq12QMoM83aMeeP4YwwnqMYQ7rFs1AuPykjJrBgLARzKPz5HJAddWv1Rnh5rm2HSyxvFrZZFxGbwMYd7RhzD7K)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:29` |
+| `block_date_utc` | `2026-03-28` |
+| `slot` | `409,532,710` |
+| `tx_idx` | `1,184` |
+| `signature` | `36vq12QMoM83aMeeP4YwwnqMYQ7rFs1AuPykjJrBgLARzKP...` |
+| `signer` | `Aet81p95mmuKjmMZPqDPmnupgU6RmQT3MmM4JojBEcst` |
+| `sender` | `Aet81p95mmuKjmMZPqDPmnupgU6RmQT3MmM4JojBEcst` |
+| `tip_account` | `DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM jito_tips LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### max_caps
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 8,936,114 |
+| **Size** | 421.0 MB |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `token_mint` | `String` | Token mint address |
+| `max_mcap_sol` | `SimpleAggregateFunction(max, Float32)` | Maximum market cap reached (in SOL) |
+| `max_mcap_usdc` | `SimpleAggregateFunction(max, Float32)` | Maximum market cap reached (in USDC) |
+| `max_slot` | `SimpleAggregateFunction(max, UInt32)` | Slot when maximum market cap was reached |
+
+**Latest Record Sample:**
+
+| Column | Value |
+|--------|-------|
+| `token_mint` | `1138V342nCcQoa5f5AG2wFo8nSkXCMTEPNNnsCi2ou5` |
+| `max_mcap_sol` | `58.9725` |
+| `max_mcap_usdc` | `9616.72` |
+| `max_slot` | `0` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM max_caps LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### meteora_dynamic_bonding_swaps
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 112,559,596 |
+| **Size** | 32.48 GB |
+| **First Record** | 2025-08-18 |
+| **Last Record** | 2026-03-28 |
+| **Partition Key** | `block_date_utc` |
+| **TTL** | `block_date_utc + toIntervalYear(1)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt32` | Solana slot number (block height) |
+| `tx_idx` | `UInt16` | Transaction index within the block |
+| `swap_idx` | `UInt16` | Swap index within the transaction |
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `fee_payer` | `String` | Wallet that paid the transaction fee |
+| `provided_gas_fee` | `UInt64` | Gas fee provided for the transaction (lamports) |
+| `provided_gas_limit` | `UInt64` | Compute unit limit requested |
+| `fee` | `UInt64` | Transaction fee paid (lamports) |
+| `consumed_gas` | `UInt64` | Compute units actually consumed |
+| `pool_id` | `String` | Pool account address |
+| `signer` | `String` | Wallet address that signed the transaction |
+| `direction` | `LowCardinality(String)` | Trade direction (buy/sell) |
+| `base_coin` | `String` | Base token mint address |
+| `quote_coin` | `String` | Quote token mint address (usually SOL or USDC) |
+| `base_coin_amount` | `UInt64` | Base token amount (raw units, needs decimal adjustment) |
+| `quote_coin_amount` | `UInt64` | Quote token amount (raw units) |
+| `base_coin_slippage` | `Int64` | Slippage on base token (negative = less than expected) |
+| `quote_coin_slippage` | `Int64` | Slippage on quote token (negative = less than expected) |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) |
+| `top_level_transfers_json` | `String` | JSON array of top-level SOL/token transfers in the transaction |
+| `orig_base_coin_amount` | `UInt64` | Original base amount before slippage |
+| `orig_quote_coin_amount` | `UInt64` | Original quote amount before slippage |
+| `config` | `String` | Pool configuration account |
+| `trade_direction` | `UInt64` | Numeric trade direction indicator |
+| `has_referral` | `UInt8` | Whether trade included a referral (1=yes, 0=no) |
+| `swap_amount0` | `String` | First swap amount in the route |
+| `swap_amount1` | `String` | Second swap amount in the route |
+| `swap_mode` | `UInt64` | Swap mode (exact in/out) |
+| `input_amount` | `String` | Input amount for the swap |
+| `output_amount` | `String` | Output amount from the swap |
+| `base_mint` | `String` | Base token mint address |
+| `quote_mint` | `String` | Quote token mint address |
+| `referral` | `String` | Referral account address (if any) |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/3LHEQYTEiyqq3fv7NZ1m2MmQ2AJSVtrUbC6ud1hgGwYF4CmBDSjCQMfGw4vzDuNVUnu1oqVAs2y2aUk1QAUTKvRQ)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:05` |
+| `block_date_utc` | `2026-03-28` |
+| `slot` | `409,532,650` |
+| `tx_idx` | `939` |
+| `swap_idx` | `5` |
+| `signature` | `3LHEQYTEiyqq3fv7NZ1m2MmQ2AJSVtrUbC6ud1hgGwYF4Cm...` |
+| `fee_payer` | `vHLSwukun3eBdMwRKmNaSfvMmfexSuAtuGEGbY8EMoX` |
+| `provided_gas_fee` | `0` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM meteora_dynamic_bonding_swaps LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### meteora_swaps
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 68,248,218 |
+| **Size** | 11.89 GB |
+| **First Record** | 2025-12-28 |
+| **Last Record** | 2026-03-28 |
+| **Partition Key** | `block_date` |
+| **TTL** | `block_date + toIntervalDay(90)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt64` | Solana slot number (block height) |
+| `tx_idx` | `UInt32` | Transaction index within the block |
+| `signing_wallet` | `String` | Wallet address that signed the transaction |
+| `base_coin` | `String` | Base token mint address |
+| `quote_coin` | `String` | Quote token mint address (usually SOL or USDC) |
+| `base_coin_amount` | `UInt64` | Base token amount (raw units, needs decimal adjustment) |
+| `quote_coin_amount` | `UInt64` | Quote token amount (raw units) |
+| `start_bin_id` | `Int32` | Starting bin ID in the DLMM pool |
+| `end_bin_id` | `Int32` | Ending bin ID after the swap |
+| `fee` | `UInt64` | Transaction fee paid (lamports) |
+| `protocol_fee` | `UInt64` | Protocol fee amount |
+| `fee_bps_low` | `UInt64` | Lower bound of fee in basis points |
+| `fee_bps_high` | `UInt64` | Upper bound of fee in basis points |
+| `host_fee` | `UInt64` | Host/frontend fee amount |
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `provided_gas_fee` | `UInt64` | Gas fee provided for the transaction (lamports) |
+| `provided_gas_limit` | `UInt64` | Compute unit limit requested |
+| `fee_paid` | `UInt64` | Total fee paid |
+| `consumed_gas` | `UInt64` | Compute units actually consumed |
+| `lb_pair` | `String` | Liquidity bin pair (pool) address |
+| `from_wallet` | `String` | Source wallet for the swap |
+| `swap_for_y` | `UInt8` | Whether swapping for Y token (1=yes, 0=no) |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2025-12-28)* |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/2g1es1Rj4U3eRsLeUQHe7agmMPkFM1LNVkRSwCUdVwCSxr21N3kQbBFbPkzQqLiAbrz2iWjrg79N5PCS2cpSx3c3)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:29` |
+| `block_date` | `2026-03-28` |
+| `slot` | `409,532,710` |
+| `tx_idx` | `930` |
+| `signing_wallet` | `A47BfntGyEr6ZYWYCwVqZjNhtAm5rCuMwqZEAx41vajF` |
+| `base_coin` | `6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN` |
+| `quote_coin` | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` |
+| `base_coin_amount` | `25,991,913` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM meteora_swaps LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### pfamm_migrations
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 76,520 |
+| **Size** | 13.8 MB |
+| **First Record** | 2025-03-29 |
+| **Last Record** | 2026-03-28 |
+| **Partition Key** | `block_date_utc` |
+| **TTL** | `block_date_utc + toIntervalYear(1)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt32` | Solana slot number (block height) |
+| `tx_idx` | `UInt16` | Transaction index within the block |
+| `user` | `String` | User wallet address |
+| `mint` | `String` | Token mint address |
+| `mint_amount` | `UInt64` | Token amount migrated |
+| `sol_amount` | `UInt64` | SOL amount in the migration |
+| `pool_migration_fee` | `UInt64` | Fee paid for pool migration |
+| `bonding_curve` | `String` | Bonding curve account address |
+| `timestamp` | `UInt32` | Unix timestamp of migration |
+| `pool` | `String` | Pool account address |
+| `signature` | `String` | Transaction signature (base58 encoded) *(populated since 2026-01-21)* |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2026-01-22)* |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/3jzxyHVExhsXKGe9qxjzpvJAMVXS1Q5YjcUHBQVSih3wCQjLzozNeJwSbqM2MchPCLxY1sSKukSi9fuuRqLsAdRZ)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:46:43` |
+| `block_date_utc` | `2026-03-28` |
+| `slot` | `409,532,130` |
+| `tx_idx` | `620` |
+| `user` | `9C4nRvhhVquCKATjDCx5FKvNS9PNgNqgyWy9AcoDjYv5` |
+| `mint` | `J14afzyv9JCL2msSH4ngYhGi9sqP46MdYtnDgMEBpump` |
+| `mint_amount` | `206,900,000,000,000` |
+| `sol_amount` | `240,731,775` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM pfamm_migrations LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### pumpfun_all_swaps
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 2,091,201,171 |
+| **Size** | 253.41 GB |
+| **First Record** | 2024-06-11 |
+| **Last Record** | 2026-03-28 |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `slot` | `UInt32` | Solana slot number (block height) |
+| `tx_idx` | `UInt16` | Transaction index within the block |
+| `signing_wallet` | `FixedString(48)` | Wallet address that signed the transaction |
+| `direction` | `String` | Trade direction (buy/sell) |
+| `base_coin` | `FixedString(48)` | Base token mint address |
+| `base_coin_amount` | `UInt64` | Base token amount (raw units, needs decimal adjustment) |
+| `quote_coin_amount` | `UInt64` | Quote token amount (raw units) |
+| `virtual_token_balance_after` | `UInt64` | Virtual token reserves after trade (bonding curve state) |
+| `virtual_sol_balance_after` | `UInt64` | Virtual SOL reserves after trade (bonding curve state) |
+| `signature` | `FixedString(128)` | Transaction signature (base58 encoded) |
+| `provided_gas_fee` | `UInt64` | Gas fee provided for the transaction (lamports) |
+| `provided_gas_limit` | `UInt64` | Compute unit limit requested |
+| `fee` | `UInt64` | Transaction fee paid (lamports) |
+| `consumed_gas` | `UInt64` | Compute units actually consumed |
+| `top_level_transfers_json` | `String` | JSON array of top-level SOL/token transfers in the transaction |
+| `is_exact_quote` | `UInt8` | Whether quote amount was exact (1=yes, 0=no) *(populated since 2025-12-03)* |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2024-11-23)* |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/b'5J9GUsGb9DHAKsUqVqsA58qoYCYzmnKHDVh6bHN6ad7D2b3uDQGJpziFEaY6mDnHyQrL9dmyZm48pgr6FKMETrw1\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:29` |
+| `slot` | `409,532,710` |
+| `tx_idx` | `1,202` |
+| `signing_wallet` | `b'12ZpJ775odAcWRZZBFJsJWsgsL2zFFcARR6ULB44RPfm\x00` |
+| `direction` | `buy` |
+| `base_coin` | `b'G45BPQhqc5Afr5DdRk5VFVCcni1W9337PAJytsE1pump\x00` |
+| `base_coin_amount` | `612,735,588,801` |
+| `quote_coin_amount` | `97,777,777` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM pumpfun_all_swaps LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### pumpfun_amm_admin_set_coin_creator
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 49 |
+| **Size** | 10.1 KB |
+| **First Record** | 2026-03-15 |
+| **Last Record** | 2026-03-28 |
+| **Partition Key** | `toYYYYMM(block_time)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt64` | Solana slot number (block height) |
+| `tx_idx` | `UInt32` | Transaction index within the block |
+| `swap_idx` | `Int32` | Swap index within the transaction |
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `fee_payer` | `String` | Wallet that paid the transaction fee |
+| `provided_gas_fee` | `UInt64` | Gas fee provided for the transaction (lamports) |
+| `provided_gas_limit` | `UInt64` | Compute unit limit requested |
+| `fee` | `UInt64` | Transaction fee paid (lamports) |
+| `consumed_gas` | `UInt64` | Compute units actually consumed |
+| `pool` | `String` | Pool account being modified |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) |
+| `top_level_transfers_json` | `String` | JSON array of top-level SOL/token transfers in the transaction |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/3Z11V6YHe5tnJXu5th8rMqAQZBMvZUCk9TZ6tQrt3abY8xcvQ7k1rrL1di2CkXCmA5gNRV86iAC1sy9KpM54JvyL)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 12:21:03` |
+| `block_date_utc` | `2026-03-28` |
+| `slot` | `409,491,298` |
+| `tx_idx` | `990` |
+| `swap_idx` | `17` |
+| `signature` | `3Z11V6YHe5tnJXu5th8rMqAQZBMvZUCk9TZ6tQrt3abY8xc...` |
+| `fee_payer` | `F2fRg5Etr3tW58rcNezPJcT9iZ5AedmE1SWPFTAZR9tk` |
+| `provided_gas_fee` | `54,161` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM pumpfun_amm_admin_set_coin_creator LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### pumpfun_creator_fee_distributions
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 712,441 |
+| **Size** | 117.9 MB |
+| **First Record** | 2026-02-15 |
+| **Last Record** | 2026-03-28 |
+| **Partition Key** | `toYYYYMMDD(block_time)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt64` | Solana slot number (block height) |
+| `tx_idx` | `UInt32` | Transaction index within the block |
+| `ix_idx` | `UInt32` | Instruction index within the transaction |
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `fee_payer` | `String` | Wallet that paid the transaction fee |
+| `provided_gas_fee` | `UInt64` | Gas fee provided for the transaction (lamports) |
+| `provided_gas_limit` | `UInt64` | Compute unit limit requested |
+| `fee` | `UInt64` | Transaction fee paid (lamports) |
+| `consumed_gas` | `UInt64` | Compute units actually consumed |
+| `mint` | `String` | Token mint address |
+| `receiver` | `String` | Creator wallet receiving the fee distribution |
+| `amount` | `UInt64` | Fee amount distributed (lamports) |
+| `fee_distribution_method` | `String` | Method used for fee distribution *(populated since 2026-02-15)* |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/3XX5SsAH8dRCYY5UMbfq1ZhQvHeA1rpk1bGc1ehdn2EP1qBobqeBpTbQmUsCSvFuFRPYD3HE5XMf99tJ1TMCobnn)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:22` |
+| `block_date_utc` | `2026-03-28` |
+| `slot` | `409,532,691` |
+| `tx_idx` | `757` |
+| `ix_idx` | `2` |
+| `signature` | `3XX5SsAH8dRCYY5UMbfq1ZhQvHeA1rpk1bGc1ehdn2EP1qB...` |
+| `fee_payer` | `9L6Gs3iWhExuQQkRfZAtfvMMdMJaAP5kxBYm2hbifcjw` |
+| `provided_gas_fee` | `100,000` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM pumpfun_creator_fee_distributions LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### pumpfun_token_creation
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 11,920,809 |
+| **Size** | 2.83 GB |
+| **First Record** | 2024-11-23 |
+| **Last Record** | 2026-03-28 |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `slot` | `UInt32` | Solana slot number (block height) |
+| `tx_idx` | `UInt16` | Transaction index within the block |
+| `creator` | `FixedString(48)` | Wallet that created the token |
+| `name` | `FixedString(20)` | Token name |
+| `symbol` | `FixedString(16)` | Token ticker symbol |
+| `url` | `FixedString(256)` | Metadata URI (usually IPFS) |
+| `mint` | `FixedString(48)` | Token mint address |
+| `bundle_size` | `UInt8` | Number of transactions in the bundle |
+| `gas_used` | `UInt64` | Total gas used for token creation |
+| `amount_of_instructions` | `Int32` | Number of instructions in the transaction |
+| `amount_of_lookup_reads` | `Int32` | Number of address lookup table reads |
+| `amount_of_lookup_writes` | `Int32` | Number of address lookup table writes |
+| `bundle_structure` | `String` | Structure of bundled transactions |
+| `bundled_buys` | `UInt64` | Total SOL amount in bundled buys |
+| `bundled_buys_count` | `UInt64` | Number of bundled buy transactions |
+| `dev_balance` | `UInt64` | Developer's token balance after creation |
+| `creation_ix_index` | `Int32` | Index of creation instruction |
+| `curve_address` | `FixedString(48)` | Bonding curve account address |
+| `pf_program_index` | `UInt8` | Pump.fun program index in transaction |
+| `direct_pf_invocation` | `UInt8` | Whether pump.fun was called directly (1=yes, 0=no) |
+| `version` | `DateTime64(3)` | Record version timestamp *(populated since 2024-11-23)* |
+| `mayhem_mode` | `UInt8` | Whether mayhem mode was enabled *(populated since 2025-11-23)* |
+| `token_program` | `String` | Token program used (SPL Token or Token-2022) *(populated since 2024-11-23)* |
+| `signature` | `String` | Transaction signature (base58 encoded) *(populated since 2024-11-23)* |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2026-01-22)* |
+| `is_cashback_enabled` | `UInt8` | Whether cashback was enabled for creation *(populated since 2026-02-18)* |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/4DXstZqdqQWCrBKfsExfzA1YgX7N6VypLqQpcyGxF6uQ96HWV8Nz4toUYgnmQf3ksdkqGkcs8yG3xCmmThFkSQZz)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:22` |
+| `slot` | `409,532,690` |
+| `tx_idx` | `1,046` |
+| `creator` | `b'D5shRqViANmXh16KjUDyyxHJgvq9EhAhxdEzqQx578j4\x00` |
+| `name` | `b'alex\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00` |
+| `symbol` | `b'alex\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00` |
+| `url` | `b'https://metadata.j7tracker.com/metadata/cfa914b3` |
+| `mint` | `b'DA4UM42mEMoNAeMJsYWpfoNtuE8B4UDHMivViDZppump\x00` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM pumpfun_token_creation LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### pumpswap_all_swaps
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 5,174,694,648 |
+| **Size** | 1432.44 GB |
+| **First Record** | 2025-03-28 |
+| **Last Record** | 2026-03-28 |
+| **Partition Key** | `block_date_utc` |
+| **TTL** | `block_date_utc + toIntervalYear(1)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt32` | Solana slot number (block height) |
+| `tx_idx` | `UInt16` | Transaction index within the block |
+| `signing_wallet` | `String` | Wallet address that signed the transaction |
+| `fee_payer` | `String` | Wallet that paid the transaction fee |
+| `direction` | `LowCardinality(String)` | Trade direction (buy/sell) |
+| `base_token` | `String` | Base token mint address |
+| `quote_token` | `String` | Quote token mint address |
+| `base_token_amount` | `UInt64` | Base token amount (raw units) |
+| `quote_token_amount` | `UInt64` | Quote token amount (raw units) |
+| `quote_token_amount_limit` | `UInt64` | Maximum quote token amount limit |
+| `quote_token_amount_without_lp_fee` | `UInt64` | Quote amount before LP fee deduction |
+| `user_base_token_account` | `String` | User's base token account |
+| `user_quote_token_account` | `String` | User's quote token account |
+| `user_base_token_reserves` | `UInt64` | User's base token balance |
+| `user_quote_token_reserves` | `UInt64` | User's quote token balance |
+| `pool_base_token_reserves_before` | `UInt64` | Pool base token reserves before swap |
+| `pool_quote_token_reserves_before` | `UInt64` | Pool quote token reserves before swap |
+| `pool_base_token_reserves_after` | `UInt64` | Pool base token reserves after swap |
+| `pool_quote_token_reserves_after` | `UInt64` | Pool quote token reserves after swap |
+| `lp_fee_basis_points` | `UInt16` | LP fee in basis points |
+| `lp_fee` | `UInt64` | LP fee amount |
+| `protocol_fee_basis_points` | `UInt16` | Protocol fee in basis points |
+| `protocol_fee` | `UInt64` | Protocol fee amount |
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `provided_gas_fee` | `UInt64` | Gas fee provided for the transaction (lamports) |
+| `provided_gas_limit` | `UInt64` | Compute unit limit requested |
+| `fee` | `UInt64` | Transaction fee paid (lamports) |
+| `consumed_gas` | `UInt64` | Compute units actually consumed |
+| `pool` | `String` | Pool account address *(populated since 2025-03-28)* |
+| `is_exact_quote` | `UInt8` | Whether quote amount was exact (1=yes, 0=no) *(populated since 2025-12-03)* |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2025-12-13)* |
+| `top_level_transfers_json` | `String` | JSON array of top-level SOL/token transfers in the transaction *(populated since 2026-02-18)* |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/P2P6epyyLkdoh2sooX5GEqrVshGSgYa7wBNVNmy1vq3ZM8zdDCFoAE4Wpvg1QY4sAtcMFh2Q19rqY9hLzgfQtpU)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:29` |
+| `block_date_utc` | `2026-03-28` |
+| `slot` | `409,532,710` |
+| `tx_idx` | `1,209` |
+| `signing_wallet` | `FhHJnHr7KtYZERrvHJdiSykfS4KTBTx15yh99rXAJm76` |
+| `fee_payer` | `FhHJnHr7KtYZERrvHJdiSykfS4KTBTx15yh99rXAJm76` |
+| `direction` | `S` |
+| `base_token` | `So11111111111111111111111111111111111111112` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM pumpswap_all_swaps LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### raydium_all_swaps
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 6,666,956,761 |
+| **Size** | 876.21 GB |
+| **First Record** | 2024-05-09 |
+| **Last Record** | 2026-03-28 |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `slot` | `UInt32` | Solana slot number (block height) |
+| `tx_idx` | `UInt16` | Transaction index within the block |
+| `signing_wallet` | `FixedString(48)` | Wallet address that signed the transaction |
+| `direction` | `String` | Trade direction (buy/sell) |
+| `base_coin` | `FixedString(48)` | Base token mint address |
+| `quote_coin` | `FixedString(48)` | Quote token mint address (usually SOL or USDC) |
+| `base_coin_amount` | `UInt64` | Base token amount (raw units, needs decimal adjustment) |
+| `quote_coin_amount` | `UInt64` | Quote token amount (raw units) |
+| `base_pool_balance_before` | `UInt64` | Pool base token balance before swap |
+| `quote_pool_balance_before` | `UInt64` | Pool quote token balance before swap |
+| `base_pool_balance_after` | `UInt64` | Pool base token balance after swap |
+| `quote_pool_balance_after` | `UInt64` | Pool quote token balance after swap |
+| `signature` | `FixedString(128)` | Transaction signature (base58 encoded) |
+| `serum_market_id` | `FixedString(48)` | OpenBook/Serum market ID (for hybrid pools) |
+| `raydium_market_id` | `FixedString(48)` | Raydium AMM market ID |
+| `provided_gas_fee` | `UInt64` | Gas fee provided for the transaction (lamports) |
+| `provided_gas_limit` | `UInt64` | Compute unit limit requested |
+| `fee` | `UInt64` | Transaction fee paid (lamports) |
+| `consumed_gas` | `UInt64` | Compute units actually consumed |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2024-11-23)* |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/b'mBbYHjoFhy8EoJHHd2vaE51pVVKJ37QXR6r9KNCPG83kcaQXNRq1n5V41KBbr2gbVcnZGNQboXjLwGowWXboD1C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:28` |
+| `slot` | `409,532,706` |
+| `tx_idx` | `41` |
+| `signing_wallet` | `b'4GQeEya6ZTwvXre4Br6ZfDyfe2WQMkcDz2QbkJZazVqS\x00` |
+| `direction` | `S` |
+| `base_coin` | `b'So11111111111111111111111111111111111111112\x00\` |
+| `quote_coin` | `b'8x5VqbHA8D7NkD52uNuS5nnt3PwA8pLD34ymskeSo2Wn\x00` |
+| `base_coin_amount` | `1,825,351,625` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM raydium_all_swaps LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### raydium_cpmm_swaps
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 40,512,583 |
+| **Size** | 9.18 GB |
+| **First Record** | 2025-12-28 |
+| **Last Record** | 2026-03-28 |
+| **Partition Key** | `block_date_utc` |
+| **TTL** | `block_date_utc + toIntervalDay(90)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt32` | Solana slot number (block height) |
+| `tx_idx` | `UInt16` | Transaction index within the block |
+| `swap_idx` | `UInt16` | Swap index within the transaction |
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `fee_payer` | `String` | Wallet that paid the transaction fee |
+| `provided_gas_fee` | `UInt64` | Gas fee provided for the transaction (lamports) |
+| `provided_gas_limit` | `UInt64` | Compute unit limit requested |
+| `fee` | `UInt64` | Transaction fee paid (lamports) |
+| `consumed_gas` | `UInt64` | Compute units actually consumed |
+| `pool_id` | `String` | Pool account address |
+| `signer` | `String` | Wallet address that signed the transaction |
+| `direction` | `LowCardinality(String)` | Trade direction (buy/sell) |
+| `base_coin` | `String` | Base token mint address |
+| `quote_coin` | `String` | Quote token mint address (usually SOL or USDC) |
+| `base_coin_amount` | `UInt64` | Base token amount (raw units, needs decimal adjustment) |
+| `quote_coin_amount` | `UInt64` | Quote token amount (raw units) |
+| `base_coin_slippage` | `Int64` | Slippage on base token |
+| `quote_coin_slippage` | `Int64` | Slippage on quote token |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) |
+| `top_level_transfers_json` | `String` | JSON array of top-level SOL/token transfers in the transaction |
+| `input_token_pool_size_before` | `UInt64` | Input token pool size before swap |
+| `output_token_pool_size_before` | `UInt64` | Output token pool size before swap |
+| `tokens_in` | `UInt64` | Tokens received by pool |
+| `tokens_out` | `UInt64` | Tokens sent from pool |
+| `fee_in_token_in` | `UInt64` | Fee denominated in input token |
+| `fee_in_token_out` | `UInt64` | Fee denominated in output token |
+| `swap_type` | `LowCardinality(String)` | Type of swap (BaseIn/BaseOut) |
+| `instruction_input1` | `UInt64` | First instruction input parameter |
+| `instruction_input2` | `UInt64` | Second instruction input parameter |
+| `input_token_mint` | `String` | Input token mint address |
+| `output_token_mint` | `String` | Output token mint address |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/3Ky1t6KQFcMUkBbc7jpXUBfmVZv9FmyUkH8Zp7meVWKxMnjRhhfb2SdnLUsLfKtqs1nmv1fAeCh5rS92zPscGptQ)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:29` |
+| `block_date_utc` | `2026-03-28` |
+| `slot` | `409,532,709` |
+| `tx_idx` | `51` |
+| `swap_idx` | `1` |
+| `signature` | `3Ky1t6KQFcMUkBbc7jpXUBfmVZv9FmyUkH8Zp7meVWKxMnj...` |
+| `fee_payer` | `FUNDduJTA7XcckKHKfAoEnnhuSud2JUCUZv6opWEjrBU` |
+| `provided_gas_fee` | `237,080` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM raydium_cpmm_swaps LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### raydium_launchpad_cpmm_migrations
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 3,788 |
+| **Size** | 3.5 MB |
+| **First Record** | 2025-04-26 |
+| **Last Record** | 2026-03-28 |
+| **Partition Key** | `block_date_utc` |
+| **TTL** | `block_date_utc + toIntervalYear(1)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt64` | Solana slot number (block height) |
+| `tx_idx` | `UInt32` | Transaction index within the block |
+| `payer` | `String` | Wallet that paid for the migration |
+| `base_mint` | `String` | Base token mint address |
+| `quote_mint` | `String` | Quote token mint address |
+| `platform_config` | `String` | Platform configuration account |
+| `cpswap_program` | `String` | CPMM swap program address |
+| `cpswap_pool` | `String` | New CPMM pool address |
+| `cpswap_authority` | `String` | CPMM pool authority |
+| `cpswap_lp_mint` | `String` | CPMM LP token mint |
+| `cpswap_base_vault` | `String` | CPMM base token vault |
+| `cpswap_quote_vault` | `String` | CPMM quote token vault |
+| `cpswap_config` | `String` | CPMM configuration account |
+| `cpswap_create_pool_fee` | `String` | Fee account for pool creation |
+| `cpswap_observation` | `String` | CPMM observation account (for TWAP) |
+| `lock_program` | `String` | LP lock program address |
+| `lock_authority` | `String` | LP lock authority |
+| `lock_lp_vault` | `String` | Vault holding locked LP tokens |
+| `authority` | `String` | Launchpad authority account |
+| `pool_state` | `String` | Launchpad pool state account |
+| `global_config` | `String` | Global configuration account |
+| `base_vault` | `String` | Launchpad base token vault |
+| `quote_vault` | `String` | Launchpad quote token vault |
+| `pool_lp_token` | `String` | Pool LP token account |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/2EZPbM7jDQpvZ1z4NFDPyByh7ostWycEdxJu5XTuiLsCqBYX2h92Chz3Rk4LDxL5Gv8e3T4XVhH1F5BqE8abV6zG)
+
+| Column | Value |
+|--------|-------|
+| `signature` | `2EZPbM7jDQpvZ1z4NFDPyByh7ostWycEdxJu5XTuiLsCqBY...` |
+| `block_time` | `2026-03-28 14:11:08` |
+| `block_date_utc` | `2026-03-28` |
+| `slot` | `409,508,224` |
+| `tx_idx` | `1,320` |
+| `payer` | `RAYpQbFNq9i3mu6cKpTKKRwwHFDeK5AuZz8xvxUrCgw` |
+| `base_mint` | `CmHzpRNxRihs5bYSEmJxeCUd66QWsUV9mLGhmeaYVkEb` |
+| `quote_mint` | `USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM raydium_launchpad_cpmm_migrations LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### raydium_launchpad_migrations
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 398 |
+| **Size** | 1.1 MB |
+| **First Record** | 2025-04-25 |
+| **Last Record** | 2026-03-25 |
+| **Partition Key** | `block_date_utc` |
+| **TTL** | `block_date_utc + toIntervalYear(1)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt64` | Solana slot number (block height) |
+| `tx_idx` | `UInt32` | Transaction index within the block |
+| `payer` | `String` | Wallet that paid for the migration |
+| `base_coin` | `String` | Base token mint address |
+| `quote_coin` | `String` | Quote token mint address (usually SOL or USDC) |
+| `openbook_program` | `String` | OpenBook program address |
+| `serum_market_id` | `String` | OpenBook market ID |
+| `request_queue` | `String` | OpenBook request queue |
+| `event_queue` | `String` | OpenBook event queue |
+| `bids` | `String` | OpenBook bids account |
+| `asks` | `String` | OpenBook asks account |
+| `market_vault_signer` | `String` | OpenBook vault signer |
+| `market_base_vault` | `String` | OpenBook base token vault |
+| `market_quote_vault` | `String` | OpenBook quote token vault |
+| `raydium_program` | `String` | Raydium AMM program address |
+| `raydium_market_id` | `String` | Raydium AMM market ID |
+| `amm_authority` | `String` | Raydium AMM authority |
+| `amm_open_orders` | `String` | Raydium open orders account |
+| `lp_mint` | `String` | LP token mint address |
+| `base_pool_balance_before` | `String` | Pool base token balance before migration |
+| `quote_pool_balance_before` | `String` | Pool quote token balance before migration |
+| `amm_target_orders` | `String` | Raydium target orders account |
+| `amm_config` | `String` | Raydium AMM configuration |
+| `amm_create_fee_dest` | `String` | Destination for AMM creation fee |
+| `authority` | `String` | Launchpad authority account |
+| `pool_state` | `String` | Launchpad pool state account |
+| `global_config` | `String` | Global configuration account |
+| `user_token_coin` | `String` | User's base token account |
+| `user_token_pc` | `String` | User's quote token account |
+| `user_lp_token_account` | `String` | User's LP token account |
+| `token_program` | `String` | Token program address |
+| `associated_token_program` | `String` | Associated token program address |
+| `system_program` | `String` | System program address |
+| `rent_program` | `String` | Rent sysvar address |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/593J6PGaeAneaf9i6QCYDGTWEAuAZ864s8RDLmFvHT4azmCMwgdpVQEhcYyzbRrQZzQNwQvjCH1SieBhTMz32S3o)
+
+| Column | Value |
+|--------|-------|
+| `signature` | `593J6PGaeAneaf9i6QCYDGTWEAuAZ864s8RDLmFvHT4azmC...` |
+| `block_time` | `2026-03-25 15:03:51` |
+| `block_date_utc` | `2026-03-25` |
+| `slot` | `408,852,792` |
+| `tx_idx` | `902` |
+| `payer` | `RAYzrepoBdjSFg7MZj2vy4XBSv2azKRXC72ztUMZMJB` |
+| `base_coin` | `2iYrJCcwxj4vmzW8kJSCRzfS1DycZZyNGUTvHNQE9dUd` |
+| `quote_coin` | `So11111111111111111111111111111111111111112` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM raydium_launchpad_migrations LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### raydium_launchpad_swaps
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 86,626,783 |
+| **Size** | 14.20 GB |
+| **First Record** | 2025-04-15 |
+| **Last Record** | 2026-03-28 |
+| **Partition Key** | `block_date_utc` |
+| **TTL** | `block_date_utc + toIntervalYear(1)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt64` | Solana slot number (block height) |
+| `tx_idx` | `UInt32` | Transaction index within the block |
+| `fee_payer` | `String` | Wallet that paid the transaction fee |
+| `direction` | `LowCardinality(String)` | Trade direction (buy/sell) |
+| `pool_status` | `UInt8` | Pool status code |
+| `pool_state` | `String` | Pool state account address |
+| `base_token` | `String` | Base token mint address |
+| `quote_token` | `String` | Quote token mint address |
+| `total_base_sell` | `UInt64` | Total base tokens available for sale |
+| `virtual_base` | `UInt64` | Virtual base token reserves |
+| `virtual_quote` | `UInt64` | Virtual quote token reserves |
+| `pool_base_token_reserves_before` | `UInt64` | Pool base token reserves before swap |
+| `pool_quote_token_reserves_before` | `UInt64` | Pool quote token reserves before swap |
+| `pool_base_token_reserves_after` | `UInt64` | Pool base token reserves after swap |
+| `pool_quote_token_reserves_after` | `UInt64` | Pool quote token reserves after swap |
+| `base_token_amount` | `UInt64` | Base token amount (raw units) |
+| `quote_token_amount` | `UInt64` | Quote token amount (raw units) |
+| `protocol_fee` | `UInt64` | Protocol fee amount |
+| `platform_fee` | `UInt64` | Platform fee amount |
+| `share_fee` | `UInt64` | Share/referral fee amount |
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `provided_gas_fee` | `UInt64` | Gas fee provided for the transaction (lamports) |
+| `provided_gas_limit` | `UInt64` | Compute unit limit requested |
+| `fee` | `UInt64` | Transaction fee paid (lamports) |
+| `consumed_gas` | `UInt64` | Compute units actually consumed |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/2tVfCYTDZA8MzV8GNSNx53eDg3d1JXJnFMdybtMV4xbm6bU4Dy2DuBcinPHAqbNkNVkLGQDvuuPVcbhpKQWxKT6c)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:28` |
+| `block_date_utc` | `2026-03-28` |
+| `slot` | `409,532,708` |
+| `tx_idx` | `1,091` |
+| `fee_payer` | `9tQA9SfoCDSmT8R2o1x1JU97CPABvKUahEhCXxwkMF2R` |
+| `direction` | `S` |
+| `pool_status` | `0` |
+| `pool_state` | `DjrESq5cB3H4oJ5q6a2XbakDuuwd2jeiFdxP53t9DHTA` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM raydium_launchpad_swaps LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### raydium_launchpad_token_creation
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 65,568 |
+| **Size** | 19.9 MB |
+| **First Record** | 2025-04-16 |
+| **Last Record** | 2025-10-15 |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `slot` | `UInt64` | Solana slot number (block height) |
+| `tx_idx` | `UInt32` | Transaction index within the block |
+| `creator` | `FixedString(48)` | Wallet that created the token |
+| `name` | `FixedString(20)` | Token name |
+| `symbol` | `FixedString(16)` | Token ticker symbol |
+| `url` | `FixedString(256)` | Metadata URI (usually IPFS) |
+| `mint` | `FixedString(48)` | Token mint address |
+| `bundle_size` | `UInt8` | Number of transactions in the bundle |
+| `gas_used` | `UInt64` | Total gas used for token creation |
+| `amount_of_instructions` | `Int32` | Number of instructions in the transaction |
+| `amount_of_lookup_reads` | `Int32` | Number of address lookup table reads |
+| `amount_of_lookup_writes` | `Int32` | Number of address lookup table writes |
+| `bundle_structure` | `String` | Structure of bundled transactions |
+| `bundled_buys` | `UInt64` | Total SOL amount in bundled buys |
+| `bundled_buys_count` | `UInt64` | Number of bundled buy transactions |
+| `dev_balance` | `UInt64` | Developer's token balance after creation |
+| `creation_ix_index` | `Int32` | Index of creation instruction |
+| `pool_state` | `FixedString(48)` | Pool state account address |
+| `base_vault` | `FixedString(48)` | Base token vault address |
+| `quote_vault` | `FixedString(48)` | Quote token vault address |
+| `raydium_program_index` | `UInt8` | Raydium program index in transaction |
+| `direct_raydium_invocation` | `Bool` | Whether Raydium was called directly |
+| `decimals` | `UInt8` | Token decimals |
+| `cpmm_type` | `UInt8` | CPMM pool type |
+| `supply` | `UInt64` | Total token supply |
+| `bonding_curve_sell_amount` | `UInt64` | Amount available for bonding curve sale |
+| `bonding_curve_raise_amount` | `UInt64` | Target raise amount for bonding curve |
+| `migrate_type` | `UInt8` | Migration type after bonding curve |
+| `version` | `DateTime64(3)` | Record version timestamp *(populated since 2025-04-16)* |
+
+**Latest Record Sample:**
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2025-10-15 17:36:42` |
+| `slot` | `373,641,138` |
+| `tx_idx` | `714` |
+| `creator` | `b'CrjJT78c3WpSz4kz4x3bawjd8UACGPowMjuz5tKV8NJh\x00` |
+| `name` | `b'Important Coin\x00\x00\x00\x00\x00\x00'` |
+| `symbol` | `b'IMPORTANT\x00\x00\x00\x00\x00\x00\x00'` |
+| `url` | `b'https://ipfs.io/ipfs/bafkreif4q7un34ghowsetmgmx6` |
+| `mint` | `b'6JGaQcHA1ZoJ1C3RVVmnbK3S66Xvh7zRLN7piVjsbonk\x00` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM raydium_launchpad_token_creation LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### solana_blocks
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 153,571,216 |
+| **Size** | 7.56 GB |
+| **First Record** | 2024-07-22 |
+| **Last Record** | 2026-03-28 |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `slot` | `UInt32` | Solana slot number (block height) |
+| `hash` | `FixedString(48)` | Block hash |
+| `validator` | `FixedString(48)` | Validator identity that produced the block |
+| `rewards` | `UInt64` | Total rewards in the block (lamports) *(populated since 2024-11-23)* |
+| `amount_of_transactions` | `UInt64` | Number of transactions in the block *(populated since 2024-11-23)* |
+
+**Latest Record Sample:**
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-03-28 16:50:29` |
+| `slot` | `409,532,710` |
+| `hash` | `b'watwzrEeFFXUy9QmryXSZvy9Z3YXkyYozjqNk5nB6c6\x00\` |
+| `validator` | `b'Awes4Tr6TX8JDzEhCZY2QVNimT6iD1zWHzf1vNyGvpLM\x00` |
+| `rewards` | `28,149,802` |
+| `amount_of_transactions` | `1,214` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM solana_blocks LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### tx_timestamps
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 2,243,756,383 |
+| **Size** | 199.83 GB |
+| **Partition Key** | `toYYYYMMDD(toDateTime(entry_timestamp))` |
+| **TTL** | `toDateTime(entry_timestamp) + toIntervalDay(14)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `slot` | `UInt64` | Solana slot number (block height) |
+| `tx_idx` | `UInt32` | Transaction index within the block |
+| `entry_timestamp` | `Float64` | Entry timestamp (high-precision Unix timestamp) |
+| `signature` | `String` | Transaction signature (base58 encoded) |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/4GcAnshrrhVVBKYxKvFMN1yZDHnF3z7h2PUC6hMuTrhibXbAwQarY5pdHATD22H12HCH5WJvQq7pWXTd1yR6YAjQ)
+
+| Column | Value |
+|--------|-------|
+| `slot` | `409,532,863` |
+| `tx_idx` | `1,180` |
+| `entry_timestamp` | `1.77474e+09` |
+| `signature` | `4GcAnshrrhVVBKYxKvFMN1yZDHnF3z7h2PUC6hMuTrhibXb...` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM tx_timestamps LIMIT 10
+</ClickHouseSqlExample>
+
+---

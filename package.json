@@ -1,0 +1,22 @@
+{
+  "name": "on-chain-divers",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vocs dev",
+    "build": "vocs build",
+    "preview": "vocs preview",
+    "generate": "python3 scripts/generate_table_docs.py"
+  },
+  "dependencies": {
+    "@tanstack/react-table": "^8.20.5",
+    "react": "latest",
+    "react-dom": "latest",
+    "vocs": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "typescript": "latest"
+  }
+}

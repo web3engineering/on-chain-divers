@@ -1,0 +1,136 @@
+# DexScrAIner — AI Trading Assistant
+
+An AI-powered assistant that answers questions about on-chain trading data using natural language.
+
+:::info Beta Access
+DexScrAIner is available to indexer subscribers. [Contact us](https://t.me/inventandchill) to try it.
+:::
+
+---
+
+## What It Does
+
+Ask questions in plain English. Get SQL queries and results.
+
+**You ask:**
+> "What are the top 10 tokens by volume on Pump.fun today?"
+
+**DexScrAIner:**
+1. Generates the SQL query
+2. Executes it against our database
+3. Returns formatted results
+4. Explains what it found
+
+---
+
+## Example Conversations
+
+### Token Research
+
+> **You:** "Show me tokens launched in the last hour with more than 100 SOL volume"
+
+```sql
+SELECT
+    c.name,
+    c.symbol,
+    c.mint,
+    count(*) as trades,
+    sum(s.quote_coin_amount) / 1e9 as sol_volume
+FROM pumpfun_token_creation c
+JOIN pumpfun_all_swaps s ON c.mint = s.base_coin
+WHERE c.block_time > now() - INTERVAL 1 HOUR
+GROUP BY c.name, c.symbol, c.mint
+HAVING sol_volume > 100
+ORDER BY sol_volume DESC
+```
+
+| Name | Symbol | Volume (SOL) |
+|------|--------|--------------|
+| ... | ... | ... |
+
+### Wallet Analysis
+
+> **You:** "Has this wallet traded any newly launched tokens?"
+> **[pastes wallet address]**
+
+DexScrAIner checks the wallet's activity against token launch times and identifies early trading patterns.
+
+### Market Trends
+
+> **You:** "Compare Raydium vs Pump.fun volume over the last week"
+
+Generates cross-DEX comparison with daily breakdowns.
+
+---
+
+## Capabilities
+
+### Data Sources
+
+DexScrAIner has access to:
+- All Solana DEX swap data
+- Token creation events
+- Pool migrations
+- Jito tips
+- Block metadata
+
+### Query Types
+
+- Aggregations (volume, counts, averages)
+- Time-series analysis
+- Wallet behavior patterns
+- Cross-table joins
+- Custom filters
+
+### Output Formats
+
+- Tables with formatted data
+- Summary statistics
+- Trend descriptions
+- The underlying SQL for verification
+
+---
+
+## How It Works
+
+1. **Natural Language Processing** — Your question is parsed to understand intent
+2. **Schema Awareness** — The AI knows all table structures and relationships
+3. **Query Generation** — SQL is generated with proper time filters and aggregations
+4. **Execution** — Query runs against our ClickHouse database
+5. **Interpretation** — Results are summarized in plain language
+
+---
+
+## Limitations
+
+- **No real-time predictions** — It analyzes historical data, not future prices
+- **Query complexity** — Very complex multi-step analyses may need refinement
+- **Data scope** — Limited to indexed tables (no arbitrary RPC calls)
+
+---
+
+## Use Cases
+
+### For Traders
+
+- Quick wallet research before following
+- Token volume and holder analysis
+- Identify trading patterns
+
+### For Researchers
+
+- Generate queries without knowing SQL
+- Explore data interactively
+- Validate hypotheses quickly
+
+### For Builders
+
+- Prototype analytics features
+- Test query logic before implementing
+- Understand data relationships
+
+---
+
+## Access
+
+DexScrAIner is available to subscribers of our Solana Indexer. Contact [@inventandchill](https://t.me/inventandchill) to get access.

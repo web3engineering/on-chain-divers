@@ -1,0 +1,145 @@
+# Getting Started
+
+Connect to the Solana indexer in under 5 minutes.
+
+---
+
+## 1. Get Credentials
+
+[Request access](https://forms.gle/b5Fuuns7jcA3nHKv5) or message [@inventandchill](https://t.me/inventandchill).
+
+You'll receive:
+- Host: `157.90.130.44`
+- Port: `8123`
+- Username and password
+
+---
+
+## 2. Choose Your Client
+
+### Option A: DBeaver (GUI)
+
+Best for exploration and ad-hoc queries.
+
+1. Download [DBeaver Community](https://dbeaver.io/download/) (free)
+2. Create new connection → Select **ClickHouse**
+3. Enter credentials:
+
+| Field | Value |
+|-------|-------|
+| Host | `157.90.130.44` |
+| Port | `8123` |
+| Username | *(your username)* |
+| Password | *(your password)* |
+
+4. Click **Test Connection** → **Finish**
+
+You'll see all tables in the left panel. Double-click to browse data.
+
+**Tip**: Right-click a table → Generate SQL → DDL to see the schema.
+
+### Option B: Python
+
+Best for analysis and automation.
+
+```bash
+pip install clickhouse-connect pandas
+```
+
+```python
+import clickhouse_connect
+
+client = clickhouse_connect.get_client(
+    host='157.90.130.44',
+    port=8123,
+    username='your_user',
+    password='your_pass'
+)
+
+# Query to DataFrame
+df = client.query_df("""
+    SELECT *
+    FROM raydium_all_swaps
+    ORDER BY block_time DESC
+    LIMIT 100
+""")
+
+print(df.head())
+```
+
+### Option C: HTTP API
+
+For scripts and integrations.
+
+```bash
+# Simple query
+curl 'http://157.90.130.44:8123/' \
+  -u 'user:password' \
+  -d 'SELECT count(*) FROM raydium_all_swaps'
+
+# JSON output
+curl 'http://157.90.130.44:8123/?default_format=JSON' \
+  -u 'user:password' \
+  -d 'SELECT * FROM raydium_all_swaps LIMIT 5'
+```
+
+---
+
+## 3. Run Your First Query
+
+```sql
+-- What's happening right now?
+SELECT
+    block_time,
+    'raydium' as source,
+    base_coin,
+    quote_coin_amount / 1e9 as sol_amount
+FROM raydium_all_swaps
+WHERE block_time > now() - INTERVAL 5 MINUTE
+ORDER BY block_time DESC
+LIMIT 10
+```
+
+---
+
+## Tips for Efficient Queries
+
+### Always Filter by Time
+Tables are partitioned by date. Time filters dramatically speed up queries.
+
+```sql
+-- Fast: uses partition pruning
+WHERE block_time > today() - 7
+
+-- Slow: scans everything
+WHERE signing_wallet = '...'
+```
+
+### Use LIMIT During Exploration
+```sql
+-- See what's in a table
+SELECT * FROM pumpfun_all_swaps LIMIT 100
+
+-- Check column types
+DESCRIBE pumpfun_all_swaps
+```
+
+### Aggregate Before Joining
+```sql
+-- Good: aggregate first
+WITH daily_volume AS (
+    SELECT toDate(block_time) as date, sum(amount) as vol
+    FROM swaps GROUP BY date
+)
+SELECT * FROM daily_volume WHERE vol > 1000000
+
+-- Bad: join then aggregate on huge tables
+```
+
+---
+
+## Next Steps
+
+- [Query examples](/solana/examples) — Common patterns for analysis
+- [Table reference](/solana/tables) — Full schema documentation
+- [Telegram support](https://t.me/inventandchill) — Questions? Ask us

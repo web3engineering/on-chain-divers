@@ -1,0 +1,164 @@
+import { CTASection } from '../../components/CTABlocks'
+
+# Polymarket Indexer
+
+Complete prediction market data including trades, order book events, and market metadata.
+
+:::info Access
+$200/month with 7-day free trial. [Contact us](https://t.me/inventandchill) to get started.
+:::
+
+---
+
+## What's Indexed
+
+| Table | Description | Size |
+|-------|-------------|------|
+| `orderbook_events` | All order book activity | 1.2B rows |
+| `markets` | Market metadata and conditions | 45K rows |
+| `tokens` | Token/outcome information | 90K rows |
+
+**Coverage**: All Polymarket activity. Updated in real-time.
+
+---
+
+## Key Features
+
+### Complete Order Book History
+
+Every order book event is captured:
+- Placements and cancellations
+- Fills and partial fills
+- Maker and taker attribution
+
+### Market Context
+
+Join with markets table to get:
+- Question text and descriptions
+- Resolution conditions
+- End dates and outcomes
+- Category and tags
+
+### Price Discovery Analysis
+
+Track how prices evolve around events:
+
+```sql
+SELECT
+    toStartOfMinute(timestamp) as minute,
+    outcome,
+    avg(price) as avg_price,
+    sum(size) as volume
+FROM orderbook_events
+WHERE market_id = 'your_market_id'
+  AND event_type = 'FILL'
+  AND timestamp > now() - INTERVAL 24 HOUR
+GROUP BY minute, outcome
+ORDER BY minute
+```
+
+---
+
+## Sample Queries
+
+### Recent Fills
+
+```sql
+SELECT
+    timestamp,
+    market_id,
+    outcome,
+    side,
+    price,
+    size,
+    maker,
+    taker
+FROM orderbook_events
+WHERE event_type = 'FILL'
+  AND timestamp > now() - INTERVAL 1 HOUR
+ORDER BY timestamp DESC
+LIMIT 100
+```
+
+### Volume by Market
+
+```sql
+SELECT
+    e.market_id,
+    m.question,
+    count(*) as fills,
+    sum(e.size * e.price) as volume
+FROM orderbook_events e
+LEFT JOIN markets m ON e.market_id = m.id
+WHERE e.event_type = 'FILL'
+  AND e.timestamp > now() - INTERVAL 24 HOUR
+GROUP BY e.market_id, m.question
+ORDER BY volume DESC
+LIMIT 20
+```
+
+### Active Traders
+
+```sql
+SELECT
+    taker as wallet,
+    count(*) as trades,
+    sum(size * price) as volume,
+    count(DISTINCT market_id) as markets_traded
+FROM orderbook_events
+WHERE event_type = 'FILL'
+  AND timestamp > now() - INTERVAL 7 DAY
+GROUP BY wallet
+ORDER BY volume DESC
+LIMIT 50
+```
+
+-> [More examples](/polymarket/examples)
+
+---
+
+## Connection Details
+
+| Field | Value |
+|-------|-------|
+| Host | `37.27.71.199` |
+| Port | `8123` |
+| Database | `polymarket` |
+
+### Python
+
+```python
+import clickhouse_connect
+
+client = clickhouse_connect.get_client(
+    host='37.27.71.199',
+    port=8123,
+    username='your_user',
+    password='your_pass',
+    database='polymarket'
+)
+
+df = client.query_df("""
+    SELECT * FROM orderbook_events
+    WHERE event_type = 'FILL'
+      AND timestamp > now() - INTERVAL 1 HOUR
+    LIMIT 1000
+""")
+```
+
+### DBeaver
+
+1. New Connection -> ClickHouse
+2. Host: `37.27.71.199`, Port: `8123`
+3. Database: `polymarket`
+4. Enter credentials and test connection
+
+---
+
+
+## Next Steps
+
+- [Table Reference](/polymarket/tables) — Full schema documentation
+- [Query Examples](/polymarket/examples) — Common analysis patterns
+
+<CTASection price="$200" product="Polymarket Indexer" />

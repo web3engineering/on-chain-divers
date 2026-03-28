@@ -1,0 +1,269 @@
+import { CTASection } from '../components/CTABlocks'
+
+# Solana Geyser Node
+
+Direct access to Solana's real-time data stream. Get transactions, account updates, and block data with minimal latency.
+
+:::info Pricing
+$200/month. [Contact us](https://t.me/inventandchill) to get started.
+:::
+
+---
+
+## What is Geyser?
+
+Geyser is Solana's plugin system for streaming real-time blockchain data. Instead of polling RPC endpoints, you receive push notifications for:
+
+- **Transactions** — Every transaction as it's confirmed
+- **Account Updates** — State changes for any account
+- **Slot Notifications** — Block confirmations and finality
+- **Block Metadata** — Rewards, timing, validator info
+
+---
+
+## Why Use Our Geyser Node?
+
+### Zero Infrastructure
+
+Running your own Geyser-enabled validator requires:
+- High-spec hardware (256GB+ RAM, NVMe storage)
+- Bandwidth for full transaction stream
+- 24/7 monitoring and maintenance
+
+We handle all of this. You just connect and consume.
+
+### Low Latency
+
+Our nodes are colocated with major validators. Typical latencies:
+- Transaction notifications: < 100ms from confirmation
+- Account updates: < 50ms from state change
+
+### Flexible Filtering
+
+Subscribe to exactly what you need:
+- Specific programs (Raydium, Pump.fun, etc.)
+- Specific accounts (your wallets, pools)
+- Transaction types (swaps, transfers, etc.)
+
+---
+
+## Use Cases
+
+### MEV and Arbitrage
+
+React to on-chain events in real-time:
+- Detect large swaps before they propagate
+- Monitor pool reserves for arbitrage opportunities
+- Track whale wallet activity
+
+### Trading Bots
+
+Build execution systems with:
+- Instant transaction confirmations
+- Real-time price feeds from AMM accounts
+- Position and balance monitoring
+
+### Analytics Pipelines
+
+Stream data directly to your infrastructure:
+- Feed ClickHouse or other databases
+- Power real-time dashboards
+- Build custom indexers
+
+---
+
+## Connection Details
+
+| Field | Value |
+|-------|-------|
+| Endpoint | Provided on signup |
+| Protocol | gRPC |
+| Authentication | mTLS certificates |
+
+### Python Example
+
+```python
+import grpc
+from geyser_pb2 import SubscribeRequest
+from geyser_pb2_grpc import GeyserStub
+
+# Connection setup
+channel = grpc.secure_channel(
+    'your-endpoint:443',
+    grpc.ssl_channel_credentials(
+        root_certificates=open('ca.pem', 'rb').read(),
+        private_key=open('client-key.pem', 'rb').read(),
+        certificate_chain=open('client-cert.pem', 'rb').read(),
+    )
+)
+
+stub = GeyserStub(channel)
+
+# Subscribe to Raydium transactions
+request = SubscribeRequest(
+    programs=['675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'],  # Raydium V4
+    commitment='confirmed'
+)
+
+for update in stub.Subscribe(request):
+    print(f"Transaction: {update.signature}")
+    # Process transaction...
+```
+
+### Node.js Example
+
+```typescript
+import { GeyserClient } from '@triton-one/yellowstone-grpc';
+
+const client = new GeyserClient('your-endpoint:443', {
+  cert: fs.readFileSync('client-cert.pem'),
+  key: fs.readFileSync('client-key.pem'),
+  ca: fs.readFileSync('ca.pem'),
+});
+
+const stream = await client.subscribe();
+
+// Subscribe to account updates
+stream.write({
+  accounts: {
+    raydium_pools: {
+      account: ['POOL_ADDRESS_1', 'POOL_ADDRESS_2'],
+    },
+  },
+});
+
+stream.on('data', (update) => {
+  console.log('Account update:', update);
+});
+```
+
+---
+
+## Subscription Options
+
+### By Program
+
+Monitor all transactions for specific programs:
+
+```json
+{
+  "programs": [
+    "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",
+    "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+  ]
+}
+```
+
+### By Account
+
+Watch specific accounts for updates:
+
+```json
+{
+  "accounts": {
+    "my_wallets": {
+      "account": ["WALLET_1", "WALLET_2"]
+    },
+    "pools": {
+      "account": ["POOL_1", "POOL_2"]
+    }
+  }
+}
+```
+
+### By Owner
+
+Get all accounts owned by a program:
+
+```json
+{
+  "accounts": {
+    "raydium_pools": {
+      "owner": ["675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8"]
+    }
+  }
+}
+```
+
+---
+
+## Data Formats
+
+### Transaction Updates
+
+```json
+{
+  "signature": "5K9...",
+  "slot": 234567890,
+  "transaction": {
+    "message": { ... },
+    "signatures": [ ... ]
+  },
+  "meta": {
+    "err": null,
+    "fee": 5000,
+    "preBalances": [ ... ],
+    "postBalances": [ ... ],
+    "innerInstructions": [ ... ],
+    "logMessages": [ ... ]
+  }
+}
+```
+
+### Account Updates
+
+```json
+{
+  "pubkey": "ACCOUNT_ADDRESS",
+  "slot": 234567890,
+  "lamports": 1000000000,
+  "owner": "PROGRAM_ID",
+  "executable": false,
+  "rentEpoch": 123,
+  "data": "base64_encoded_data"
+}
+```
+
+---
+
+## Comparison: Geyser vs RPC Polling
+
+| Aspect | Geyser | RPC Polling |
+|--------|--------|-------------|
+| Latency | < 100ms | 400ms+ (slot time) |
+| Completeness | All events | May miss during polls |
+| Bandwidth | Efficient (push) | Wasteful (repeated requests) |
+| Rate Limits | None | Varies by provider |
+| Complexity | Higher (streaming) | Lower (request/response) |
+
+---
+
+## Getting Started
+
+1. **Contact us** — [Telegram](https://t.me/inventandchill) or [Email](mailto:hello@web3engineering.co.uk)
+2. **Receive credentials** — mTLS certificates and endpoint
+3. **Connect** — Use our examples or your own gRPC client
+4. **Subscribe** — Filter to the data you need
+
+---
+
+
+## FAQ
+
+### Can I filter by transaction type?
+
+Yes. You can filter by program, account, or build custom filters on the instruction data.
+
+### What's the retention?
+
+Geyser is real-time only. For historical data, use our [Solana Indexer](/solana/).
+
+### Can I run multiple subscriptions?
+
+Yes. You can have multiple concurrent subscriptions with different filters.
+
+### What happens if I disconnect?
+
+You'll need to reconnect and may miss events during the disconnection. For guaranteed delivery, consider combining with our indexed data.
+
+<CTASection price="$200" product="Geyser Node" />

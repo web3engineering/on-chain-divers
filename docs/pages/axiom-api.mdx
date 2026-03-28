@@ -1,0 +1,109 @@
+import { CommunityCTA } from '../components/CTABlocks'
+
+# Axiom API Replacement
+
+Drop-in replacement for the discontinued Axiom API. Same endpoints, same response format.
+
+:::info Why This Exists
+Axiom's public API is no longer accessible. We've rebuilt the essential endpoints so your tools keep working.
+:::
+
+---
+
+## Available Endpoints
+
+### Token Fees
+
+Get fee information for a Solana token.
+
+**Endpoint:**
+```
+GET http://144.76.39.46:4210/fees?mint={TOKEN_MINT}
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `mint` | string | Token mint address |
+
+**Example Request:**
+
+```bash
+curl "http://144.76.39.46:4210/fees?mint=9FjLM5thSba1QCgBw3eBqRc7TdDeAe2mXft5bosKCbQj"
+```
+
+**Example Response:**
+
+```json
+{
+  "mint": "9FjLM5thSba1QCgBw3eBqRc7TdDeAe2mXft5bosKCbQj",
+  "buyFee": 0,
+  "sellFee": 0,
+  "transferFee": 0
+}
+```
+
+### Python Example
+
+```python
+import requests
+
+def get_token_fees(mint: str) -> dict:
+    response = requests.get(
+        "http://144.76.39.46:4210/fees",
+        params={"mint": mint}
+    )
+    response.raise_for_status()
+    return response.json()
+
+# Usage
+fees = get_token_fees("9FjLM5thSba1QCgBw3eBqRc7TdDeAe2mXft5bosKCbQj")
+print(f"Buy fee: {fees['buyFee']}%")
+print(f"Sell fee: {fees['sellFee']}%")
+```
+
+### JavaScript Example
+
+```javascript
+async function getTokenFees(mint) {
+  const response = await fetch(
+    `http://144.76.39.46:4210/fees?mint=${mint}`
+  );
+  return response.json();
+}
+
+// Usage
+const fees = await getTokenFees("9FjLM5thSba1QCgBw3eBqRc7TdDeAe2mXft5bosKCbQj");
+console.log(`Buy fee: ${fees.buyFee}%`);
+```
+
+---
+
+## Rate Limits
+
+| Tier | Limit |
+|------|-------|
+| Free | 100 requests/minute |
+| Subscriber | Unlimited |
+
+---
+
+## Roadmap
+
+More endpoints coming soon. [Contact us](https://t.me/inventandchill) if you need a specific Axiom endpoint rebuilt.
+
+---
+
+## Migration from Axiom
+
+Replace the Axiom base URL with ours:
+
+```diff
+- https://api.axiom.trade/v1/fees?mint=...
++ http://144.76.39.46:4210/fees?mint=...
+```
+
+Response format is identical—no code changes needed beyond the URL.
+
+<CommunityCTA />

@@ -1,0 +1,63 @@
+# HyperLiquid Tables
+
+Tables containing HyperLiquid perpetual exchange data including trades, orders, and funding rates.
+
+*Last updated: 2026-03-28 23:51 UTC*
+
+import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
+
+## Tables (1)
+
+| Table | Rows | Size |
+|-------|------|------|
+| [raw_node_fills_by_block](#raw-node-fills-by-block) | 1,707,449,972 | 118.81 GB |
+
+---
+
+### raw_node_fills_by_block
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 1,707,449,972 |
+| **Size** | 118.81 GB |
+| **Partition Key** | `utc_fill_dt` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `utc_fill_dttm` | `DateTime64(3, 'UTC')` | UTC datetime of the fill (millisecond precision) |
+| `utc_fill_dt` | `Date` | UTC date of the fill (for partitioning) |
+| `fill_id` | `Int64` | Unique fill identifier |
+| `fill_hash` | `String` | Hash of the fill |
+| `fill_type` | `String` | Type of fill (trade, liquidation, etc.) |
+| `utc_block_dttm` | `DateTime64(9, 'UTC')` | UTC datetime of the block (nanosecond precision) |
+| `block_id` | `Int64` | HyperLiquid block number |
+| `block_tx_idx` | `UInt16` | Transaction index within the block |
+| `wallet_address` | `String` | Wallet address of the trader |
+| `coin` | `String` | Trading pair symbol (e.g., BTC, ETH) |
+| `price` | `Float64` | Execution price |
+| `size` | `Float64` | Fill size (in contracts) |
+| `side` | `String` | Trade side (Buy/Sell) |
+| `start_position` | `Float64` | Position size before fill |
+| `closed_pnl` | `Float64` | Realized PnL from this fill |
+| `order_id` | `Int64` | Order identifier |
+| `order_crossed_spread_flg` | `Bool` | Whether order crossed the spread |
+| `fee` | `Float64` | Trading fee |
+| `fee_token` | `String` | Token used for fee payment |
+| `client_order_id` | `Nullable(String)` | Client-provided order ID |
+| `builder_fee` | `Nullable(Float64)` | Builder/API fee |
+| `builder` | `Nullable(String)` | Builder/API identifier |
+| `liquidation_user` | `Nullable(String)` | User being liquidated (if liquidation) |
+| `liquidation_mark_px` | `Nullable(Float64)` | Mark price at liquidation |
+| `liquidation_method` | `Nullable(String)` | Liquidation method used |
+| `twap_id` | `Nullable(Int64)` | TWAP order identifier |
+| `deployer_fee` | `Nullable(Float64)` | Deployer fee for spot tokens |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="hyperliquid">
+SELECT * FROM raw_node_fills_by_block LIMIT 10
+</ClickHouseSqlExample>
+
+---

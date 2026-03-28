@@ -1,0 +1,320 @@
+# HyperLiquid Query Examples
+
+Practical SQL patterns for perpetual trading analysis.
+
+---
+
+## Trader Analysis
+
+### Most Profitable Traders (30 Days)
+
+```sql
+SELECT
+    user,
+    count(*) as trades,
+    sum(closedPnl) / 1e6 as realized_pnl,
+    avg(closedPnl) / 1e6 as avg_pnl_per_trade,
+    countIf(closedPnl > 0) as wins,
+    countIf(closedPnl < 0) as losses
+FROM fills
+WHERE time > now() - INTERVAL 30 DAY
+  AND closedPnl != 0
+GROUP BY user
+HAVING trades > 50
+ORDER BY realized_pnl DESC
+LIMIT 100
+```
+
+### Trading Volume by Wallet
+
+```sql
+SELECT
+    user,
+    count(*) as trades,
+    sum(sz * px) as notional_volume,
+    count(DISTINCT coin) as markets_traded,
+    count(DISTINCT toDate(time)) as active_days
+FROM fills
+WHERE time > now() - INTERVAL 7 DAY
+GROUP BY user
+ORDER BY notional_volume DESC
+LIMIT 50
+```
+
+### Win Rate Analysis
+
+```sql
+SELECT
+    user,
+    count(*) as closing_trades,
+    countIf(closedPnl > 0) as profitable,
+    countIf(closedPnl < 0) as unprofitable,
+    round(countIf(closedPnl > 0) / count(*) * 100, 2) as win_rate_pct,
+    sum(closedPnl) / 1e6 as total_pnl
+FROM fills
+WHERE time > now() - INTERVAL 30 DAY
+  AND closedPnl != 0
+GROUP BY user
+HAVING closing_trades > 100
+ORDER BY win_rate_pct DESC
+LIMIT 50
+```
+
+---
+
+## Market Analysis
+
+### Volume by Market
+
+```sql
+SELECT
+    coin,
+    count(*) as trades,
+    sum(sz * px) as notional_volume,
+    uniq(user) as unique_traders,
+    avg(sz * px) as avg_trade_size
+FROM fills
+WHERE time > now() - INTERVAL 24 HOUR
+GROUP BY coin
+ORDER BY notional_volume DESC
+```
+
+### Hourly Volume Trend
+
+```sql
+SELECT
+    toStartOfHour(time) as hour,
+    coin,
+    count(*) as trades,
+    sum(sz * px) as volume
+FROM fills
+WHERE time > now() - INTERVAL 7 DAY
+  AND coin = 'BTC'
+GROUP BY hour, coin
+ORDER BY hour
+```
+
+### Long vs Short Bias
+
+```sql
+SELECT
+    toStartOfHour(time) as hour,
+    coin,
+    sumIf(sz, side = 'B') as buy_volume,
+    sumIf(sz, side = 'A') as sell_volume,
+    sumIf(sz, side = 'B') - sumIf(sz, side = 'A') as net_bias
+FROM fills
+WHERE time > now() - INTERVAL 24 HOUR
+  AND coin = 'ETH'
+GROUP BY hour, coin
+ORDER BY hour
+```
+
+---
+
+## Liquidation Analysis
+
+### Recent Liquidations
+
+```sql
+SELECT
+    time,
+    user,
+    coin,
+    side,
+    px as liquidation_price,
+    sz as size,
+    closedPnl / 1e6 as pnl
+FROM fills
+WHERE liquidation = 1
+  AND time > now() - INTERVAL 24 HOUR
+ORDER BY time DESC
+LIMIT 100
+```
+
+### Liquidation Volume by Market
+
+```sql
+SELECT
+    coin,
+    count(*) as liquidations,
+    sum(sz * px) as liquidated_notional,
+    sum(closedPnl) / 1e6 as total_pnl_lost
+FROM fills
+WHERE liquidation = 1
+  AND time > now() - INTERVAL 7 DAY
+GROUP BY coin
+ORDER BY liquidated_notional DESC
+```
+
+### Wallets with Multiple Liquidations
+
+```sql
+SELECT
+    user,
+    count(*) as liquidation_count,
+    sum(sz * px) as total_liquidated,
+    arrayDistinct(groupArray(coin)) as markets
+FROM fills
+WHERE liquidation = 1
+  AND time > now() - INTERVAL 30 DAY
+GROUP BY user
+HAVING liquidation_count > 3
+ORDER BY liquidation_count DESC
+LIMIT 50
+```
+
+---
+
+## Funding Analysis
+
+### Current Funding Rates
+
+```sql
+SELECT
+    coin,
+    argMax(fundingRate, time) as latest_funding,
+    argMax(fundingRate, time) * 24 * 365 as annualized
+FROM fundings
+WHERE time > now() - INTERVAL 1 HOUR
+GROUP BY coin
+ORDER BY abs(latest_funding) DESC
+```
+
+### Funding Rate History
+
+```sql
+SELECT
+    toStartOfHour(time) as hour,
+    coin,
+    avg(fundingRate) as avg_funding,
+    avg(fundingRate) * 24 * 365 as annualized
+FROM fundings
+WHERE time > now() - INTERVAL 7 DAY
+  AND coin IN ('BTC', 'ETH', 'SOL')
+GROUP BY hour, coin
+ORDER BY hour, coin
+```
+
+### Top Funding Earners
+
+```sql
+SELECT
+    user,
+    sum(usdc) as total_funding_pnl,
+    count(*) as funding_events,
+    avg(usdc) as avg_funding_payment
+FROM user_fundings
+WHERE time > now() - INTERVAL 30 DAY
+GROUP BY user
+ORDER BY total_funding_pnl DESC
+LIMIT 50
+```
+
+---
+
+## TWAP Analysis
+
+### Active TWAP Orders
+
+```sql
+SELECT
+    twapId,
+    user,
+    coin,
+    side,
+    min(time) as started,
+    max(time) as last_fill,
+    count(*) as fills,
+    sum(sz) as total_filled,
+    sum(sz * px) / sum(sz) as avg_price
+FROM twaps
+WHERE time > now() - INTERVAL 24 HOUR
+GROUP BY twapId, user, coin, side
+ORDER BY started DESC
+LIMIT 50
+```
+
+### TWAP Execution Quality
+
+```sql
+WITH twap_summary AS (
+    SELECT
+        twapId,
+        user,
+        coin,
+        sum(sz * px) / sum(sz) as twap_avg_price,
+        sum(sz) as total_size,
+        dateDiff('minute', min(time), max(time)) as duration_minutes
+    FROM twaps
+    WHERE time > now() - INTERVAL 7 DAY
+    GROUP BY twapId, user, coin
+    HAVING count(*) > 5
+)
+SELECT
+    coin,
+    count(*) as twap_orders,
+    avg(total_size) as avg_order_size,
+    avg(duration_minutes) as avg_duration_min
+FROM twap_summary
+GROUP BY coin
+ORDER BY twap_orders DESC
+```
+
+---
+
+## Cross-Analysis
+
+### Correlation: Large Fills and Liquidations
+
+```sql
+SELECT
+    toStartOfMinute(time) as minute,
+    coin,
+    sumIf(sz * px, liquidation = 0) as regular_volume,
+    sumIf(sz * px, liquidation = 1) as liquidation_volume,
+    countIf(liquidation = 1) as liquidation_count
+FROM fills
+WHERE time > now() - INTERVAL 1 HOUR
+  AND coin = 'BTC'
+GROUP BY minute, coin
+HAVING liquidation_count > 0
+ORDER BY minute
+```
+
+### Smart Wallet Tracker
+
+Track wallets with high win rates and significant volume:
+
+```sql
+WITH wallet_stats AS (
+    SELECT
+        user,
+        count(*) as trades,
+        sum(sz * px) as volume,
+        sum(closedPnl) / 1e6 as pnl,
+        countIf(closedPnl > 0) / countIf(closedPnl != 0) as win_rate
+    FROM fills
+    WHERE time > now() - INTERVAL 30 DAY
+    GROUP BY user
+    HAVING trades > 100 AND countIf(closedPnl != 0) > 50
+)
+SELECT *
+FROM wallet_stats
+WHERE win_rate > 0.55 AND pnl > 10000
+ORDER BY pnl DESC
+LIMIT 50
+```
+
+---
+
+## Performance Tips
+
+1. **Always filter by time** — Tables are partitioned by date
+2. **Use coin filter** — Narrows scan significantly
+3. **Aggregate first** — Reduce data before complex operations
+
+```sql
+-- Check query plan
+EXPLAIN SELECT count(*) FROM fills WHERE time > today()
+```
