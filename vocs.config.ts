@@ -4,7 +4,7 @@ export default defineConfig({
   title: 'W3E Docs',
   description: 'Professional blockchain data infrastructure for traders, researchers, and builders',
   topNav: [
-    { text: 'Website', link: 'https://web3engineering.co.uk/' },
+    { text: 'Blog', link: 'https://blog.onchaindivers.com' },
     { text: 'Request Trial', link: 'https://forms.gle/b5Fuuns7jcA3nHKv5' },
     { text: 'Telegram', link: 'https://t.me/inventandchill' },
   ],
@@ -51,8 +51,8 @@ export default defineConfig({
       collapsed: true,
       items: [
         { text: 'Overview', link: '/services/' },
-        { text: 'Global Fees Service', link: '/services/global-fees' },
         { text: 'AI Assistant', link: '/services/ai-assistant' },
+        { text: 'WSOL Exchange', link: '/services/wsol-exchange' },
       ],
     },
   ],
