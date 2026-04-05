@@ -76,6 +76,9 @@ POLYMARKET_TABLES_WHITELIST: Set[str] = {
 
 HYPERLIQUID_TABLES_WHITELIST: Set[str] = {
     "raw_node_fills_by_block",
+    "view_perpetual_wallet",
+    "view_wallet_position",
+    "agg_fulfilled_order",
 }
 
 # Tables whitelist per database (empty = all tables)

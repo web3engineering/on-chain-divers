@@ -2,15 +2,50 @@
 
 Tables containing HyperLiquid perpetual exchange data including trades, orders, and funding rates.
 
-*Last updated: 2026-03-28 23:51 UTC*
+*Last updated: 2026-04-05 12:45 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
-## Tables (1)
+## Tables (4)
 
 | Table | Rows | Size |
 |-------|------|------|
-| [raw_node_fills_by_block](#raw-node-fills-by-block) | 1,707,449,972 | 118.81 GB |
+| [agg_fulfilled_order](#agg-fulfilled-order) | 12,458,192 | 333.4 MB |
+| [raw_node_fills_by_block](#raw-node-fills-by-block) | 1,780,152,272 | 124.06 GB |
+| [view_perpetual_wallet](#view-perpetual-wallet) | 0 | 0 B |
+| [view_wallet_position](#view-wallet-position) | 0 | 0 B |
+
+---
+
+### agg_fulfilled_order
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 12,458,192 |
+| **Size** | 333.4 MB |
+| **Partition Key** | `toYYYYMM(utc_first_fill_dt)` |
+| **TTL** | `utc_first_fill_dt + toIntervalDay(90)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `utc_first_fill_dttm` | `SimpleAggregateFunction(min, DateTime64(3, 'UTC'))` | UTC datetime of the first fill for this order |
+| `utc_first_fill_dt` | `Date` | UTC date of the first fill (for partitioning) |
+| `order_id` | `Int64` | Unique order identifier |
+| `wallet_address` | `String` | Wallet address of the trader |
+| `coin` | `String` | Trading pair symbol (e.g., BTC, ETH) |
+| `side` | `String` | Trade side (Buy/Sell) |
+| `twap_id` | `Nullable(Int64)` | TWAP order identifier (if part of TWAP) |
+| `size` | `SimpleAggregateFunction(sum, Float64)` | Total filled size (in contracts) |
+| `volume` | `SimpleAggregateFunction(sum, Float64)` | Total filled volume in USD |
+| `closed_pnl` | `SimpleAggregateFunction(sum, Float64)` | Realized PnL from this order |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="hyperliquid">
+SELECT * FROM agg_fulfilled_order LIMIT 10
+</ClickHouseSqlExample>
 
 ---
 
@@ -18,8 +53,8 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 1,707,449,972 |
-| **Size** | 118.81 GB |
+| **Rows** | 1,780,152,272 |
+| **Size** | 124.06 GB |
 | **Partition Key** | `utc_fill_dt` |
 
 **Columns:**
@@ -58,6 +93,65 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 <ClickHouseSqlExample database="hyperliquid">
 SELECT * FROM raw_node_fills_by_block LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### view_perpetual_wallet
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 0 |
+| **Size** | 0 B |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `wallet_address` | `String` | Wallet address of the trader |
+| `total_pnl` | `Float64` | Total realized profit and loss across all positions |
+| `total_volume` | `Float64` | Total trading volume in USD |
+| `cnt_unique_orders` | `UInt64` | Count of unique orders placed |
+| `last_utc_order_dt` | `SimpleAggregateFunction(max, Date)` | UTC date of the most recent order |
+| `win_count` | `UInt64` | Number of profitable trades |
+| `total_count` | `UInt64` | Total number of completed trades |
+| `sum_order_roi` | `Float64` | Sum of return on investment across all orders |
+| `sum_profitable_pnl` | `Float64` | Sum of PnL from profitable trades |
+| `cnt_profitable_orders` | `UInt64` | Count of profitable orders |
+| `sum_unprofitable_pnl` | `Float64` | Sum of PnL from unprofitable trades (negative) |
+| `cnt_unprofitable_orders` | `UInt64` | Count of unprofitable orders |
+| `cnt_unique_coins` | `UInt64` | Number of unique trading pairs traded |
+| `cnt_trade_days` | `UInt64` | Number of distinct days with trading activity |
+| `roi_quantiles` | `Array(Float64)` | ROI distribution quantiles for the wallet |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="hyperliquid">
+SELECT * FROM view_perpetual_wallet LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### view_wallet_position
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 0 |
+| **Size** | 0 B |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `wallet_address` | `String` | Wallet address of the trader |
+| `coin` | `String` | Trading pair symbol (e.g., BTC, ETH) |
+| `last_position_size` | `Float64` | Current position size (positive=long, negative=short) |
+| `last_position_update_dttm` | `DateTime64(3, 'UTC')` | UTC datetime of the last position update |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="hyperliquid">
+SELECT * FROM view_wallet_position LIMIT 10
 </ClickHouseSqlExample>
 
 ---

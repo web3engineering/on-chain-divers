@@ -473,3 +473,38 @@ hyperliquid:
     liquidation_method: "Liquidation method used"
     twap_id: "TWAP order identifier"
     deployer_fee: "Deployer fee for spot tokens"
+
+  view_perpetual_wallet:
+    wallet_address: "Wallet address of the trader"
+    total_pnl: "Total realized profit and loss across all positions"
+    total_volume: "Total trading volume in USD"
+    cnt_unique_orders: "Count of unique orders placed"
+    last_utc_order_dt: "UTC date of the most recent order"
+    win_count: "Number of profitable trades"
+    total_count: "Total number of completed trades"
+    sum_order_roi: "Sum of return on investment across all orders"
+    sum_profitable_pnl: "Sum of PnL from profitable trades"
+    cnt_profitable_orders: "Count of profitable orders"
+    sum_unprofitable_pnl: "Sum of PnL from unprofitable trades (negative)"
+    cnt_unprofitable_orders: "Count of unprofitable orders"
+    cnt_unique_coins: "Number of unique trading pairs traded"
+    cnt_trade_days: "Number of distinct days with trading activity"
+    roi_quantiles: "ROI distribution quantiles for the wallet"
+
+  view_wallet_position:
+    wallet_address: "Wallet address of the trader"
+    coin: "Trading pair symbol (e.g., BTC, ETH)"
+    last_position_size: "Current position size (positive=long, negative=short)"
+    last_position_update_dttm: "UTC datetime of the last position update"
+
+  agg_fulfilled_order:
+    utc_first_fill_dttm: "UTC datetime of the first fill for this order"
+    utc_first_fill_dt: "UTC date of the first fill (for partitioning)"
+    order_id: "Unique order identifier"
+    wallet_address: "Wallet address of the trader"
+    coin: "Trading pair symbol (e.g., BTC, ETH)"
+    side: "Trade side (Buy/Sell)"
+    twap_id: "TWAP order identifier (if part of TWAP)"
+    size: "Total filled size (in contracts)"
+    volume: "Total filled volume in USD"
+    closed_pnl: "Realized PnL from this order"

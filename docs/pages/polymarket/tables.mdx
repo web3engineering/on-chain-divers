@@ -2,7 +2,7 @@
 
 Tables containing Polymarket prediction market data including order books, trades, and market information.
 
-*Last updated: 2026-03-28 23:51 UTC*
+*Last updated: 2026-04-05 12:45 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
@@ -10,8 +10,8 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Table | Rows | Size |
 |-------|------|------|
-| [polymarket_order_filled_v3](#polymarket-order-filled-v3) | 946,094,582 | 149.74 GB |
-| [raw_market_meta](#raw-market-meta) | 1,418,931 | 1.19 GB |
+| [polymarket_order_filled_v3](#polymarket-order-filled-v3) | 1,014,147,816 | 160.50 GB |
+| [raw_market_meta](#raw-market-meta) | 1,552,131 | 1.31 GB |
 
 ---
 
@@ -19,8 +19,8 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 946,094,582 |
-| **Size** | 149.74 GB |
+| **Rows** | 1,014,147,816 |
+| **Size** | 160.50 GB |
 | **Partition Key** | `toYYYYMMDD(block_timestamp)` |
 
 **Columns:**
@@ -67,8 +67,8 @@ SELECT * FROM polymarket_order_filled_v3 LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 1,418,931 |
-| **Size** | 1.19 GB |
+| **Rows** | 1,552,131 |
+| **Size** | 1.31 GB |
 
 **Columns:**
 
