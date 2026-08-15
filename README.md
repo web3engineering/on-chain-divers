@@ -10,9 +10,11 @@ This repository is a self-contained, executable guide to the
 - the aggregate fees API;
 - raw Polymarket and HyperLiquid order-book archive discovery, download and replay;
 - a synchronized Bitcoin five-minute Polymarket/HyperLiquid market reconstruction
-  with a publication-sized diagnostic plot; and
+  with a publication-sized diagnostic plot;
 - a four-panel microprice study relating one- and two-level imbalance to
-  Polymarket and HyperLiquid midpoint movement 300 milliseconds later.
+  Polymarket and HyperLiquid midpoint movement 300 milliseconds later;
+- a live ranking of Pump.fun creators with sustained eight-slot buy streaks; and
+- a Jensen–Shannon anomaly screen for early Pump.fun parent-program activity.
 
 The examples under [`examples/`](examples/) are the source programs. The docs
 explain the same programs, and `scripts/verify_examples.py` executes them during

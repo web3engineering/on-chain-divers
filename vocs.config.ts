@@ -52,8 +52,16 @@ export default defineConfig({
         { text: 'Table Reference', link: '/robinhood/tables' },
       ],
     },
-    { text: 'Bitcoin 5m Cross-Venue', link: '/bitcoin-5m-cross-venue' },
-    { text: 'Simple Microprice Research', link: '/microprice-research' },
+    {
+      text: 'Research',
+      collapsed: false,
+      items: [
+        { text: 'Reliable Pump.fun Creators', link: '/research/reliable-pumpfun-creators' },
+        { text: 'Weird Pump.fun Activity', link: '/research/weird-pumpfun-activity' },
+        { text: 'Bitcoin 5m Cross-Venue', link: '/bitcoin-5m-cross-venue' },
+        { text: 'Simple Microprice', link: '/microprice-research' },
+      ],
+    },
     { text: 'Fees API', link: '/fees-api' },
     {
       text: 'Solana Services',

@@ -1,0 +1,46 @@
+# Pump.fun tokens with unusual early activity
+
+This screen compares Pump.fun launches from the latest 24-hour data window.
+For each token it counts distinct buys by `parent_program` during slots
+`launch_slot + 1` through `launch_slot + 128`, keeps tokens with at least 48
+buys, normalizes each token to a distribution, and averages those distributions
+with equal weight per token. Launches without a complete 128-slot horizon are
+excluded.
+
+*Window end: 2026-08-15T22:58:41Z · Eligible tokens: 4,118*
+
+## Average parent-program distribution
+
+| Parent program | Average token share |
+| --- | ---: |
+| `FLASHX8DrLbgeR8FcfNV1F5krxYcYMUdBkrP1EPBtxB9` | 29.014% |
+| `&lt;direct&gt;` | 27.645% |
+| `MAyhSmzXzV1pTf7LsNkrNwkWKTo4ougAJ1PPg47MD4e` | 22.316% |
+| `GMgnVFR8Jb39LoXsEVzb3DvBy3ywCmdmJquHUy1Lrkqb` | 4.447% |
+| `6Vo3245eszAb5wuqEMw8mGdbfRUdKbHhDHP5LcaGuTAB` | 4.319% |
+| `term9YPb9mzAsABaqN71A4xdbxHmpBNZavpBiQKZzN3` | 3.656% |
+| `JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4` | 1.065% |
+| `FAdo9NCw1ssek6Z6yeWzWjhLVsr8uiCwcWNUnKgzTnHe` | 0.451% |
+| `DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH` | 0.336% |
+| `proVF4pMXVaYqmy4NjniPh4pqKNfMmsihgd4wdkCX3u` | 0.327% |
+| Other (159 programs) | 6.424% |
+
+## Five farthest token profiles
+
+Distance is base-2 Jensen–Shannon distance from the average profile. It is
+bounded from 0 (identical) to 1 (disjoint). Ties are ordered by mint so the
+selection is reproducible.
+
+| Rank | Token | Symbol / name | Buys | Distance | Dominant parent-program mix |
+| ---: | --- | --- | ---: | ---: | --- |
+| 1 | [`GN3y6U…Etpump`](https://gmgn.ai/sol/token/GN3y6UM1xj87L7NxHPaZpkHfmDGYQJs5qncNsQEtpump?chain=sol) | `SPNE` / S&amp;P 500 Ex-Elon | 200 | 0.9564 | `WH2Ukv3cZvot8Rc3LKVx5rdhfLvHJKpUuRYWhk9Xn2d`: token 10.50% vs average 0.04% |
+| 2 | [`DiecLw…h8pump`](https://gmgn.ai/sol/token/DiecLw7kWwMiAvnxfHdYtT1uqjkwE1GTtSL4hQh8pump?chain=sol) | `billions` / billions must downlo | 163 | 0.9455 | `WH2Ukv3cZvot8Rc3LKVx5rdhfLvHJKpUuRYWhk9Xn2d`: token 11.66% vs average 0.04% |
+| 3 | [`F1bcyG…y6pump`](https://gmgn.ai/sol/token/F1bcyGXyHECmVWopf7d599nVtdo8PEtQEz8mVPy6pump?chain=sol) | `ANUS` / The Quantum Anus | 369 | 0.9239 | `8nWquKoygoBfpgxMBoV1f6vNBTY91h9vn7ECxJQB9BFc`: token 10.57% vs average 0.03% |
+| 4 | [`9o65tF…fHpump`](https://gmgn.ai/sol/token/9o65tFQoNnLPkeoiuc5CweeVDrcjMzynehm8krfHpump?chain=sol) | `Rocketman` / Elon Musk Metacoin | 62 | 0.9212 | `8nWquKoygoBfpgxMBoV1f6vNBTY91h9vn7ECxJQB9BFc`: token 12.90% vs average 0.03% |
+| 5 | [`7i7d2H…nnpump`](https://gmgn.ai/sol/token/7i7d2Hk1k9kS7SG4cTZUkcyhGNFsYxSbcaxDQEnnpump?chain=sol) | `皮皮儿` / 打工狗 | 216 | 0.9155 | `cqrwKxLAb3fQEhCtZ3Kv71nQXBuVj6B3mzs1PR9v1bJ`: token 9.72% vs average 0.04% |
+
+[View the profile SQL on GitHub](https://github.com/web3engineering/on-chain-divers/blob/master/examples/research/pumpfun_parent_program_profiles.sql) and
+[the distance calculation](https://github.com/web3engineering/on-chain-divers/blob/master/examples/research/generate_pumpfun_research.py).
+
+Unusual means statistically different in this one feature window; it does not
+by itself imply manipulation, fraud, or future performance.

@@ -52,6 +52,13 @@ perpetual book in one reproducible analysis. Its companion
 measure how one- and two-level book imbalance relates to midpoint movement 300
 milliseconds later on both venues.
 
+The Solana research pages apply the same approach to Pump.fun launches. The
+[reliable-creator screen](/research/reliable-pumpfun-creators) looks for
+sustained buy streaks across consecutive slots, while the
+[unusual-activity screen](/research/weird-pumpfun-activity) finds tokens whose
+early parent-program distribution is farthest from the 24-hour population
+average.
+
 ## Why the examples stay current
 
 The static site has a strict build gate. Before the pages are compiled, Python:
@@ -60,10 +67,11 @@ The static site has a strict build gate. Before the pages are compiled, Python:
 2. requires a description for every published column;
 3. executes all ClickHouse examples with bounded time windows;
 4. checks PumpSwap reserve and fee identities;
-5. scans, copies and reconstructs deterministic raw order-book captures;
-6. downloads a Bitcoin five-minute market around UTC now minus 24 hours,
+5. regenerates the live Pump.fun creator and parent-program research tables;
+6. scans, copies and reconstructs deterministic raw order-book captures;
+7. downloads a Bitcoin five-minute market around UTC now minus 24 hours,
    assembles both raw books, and renders the synchronized analysis chart; and
-7. validates the configured fees service.
+8. validates the configured fees service.
 
 If any of those checks fails, no site image is produced.
 

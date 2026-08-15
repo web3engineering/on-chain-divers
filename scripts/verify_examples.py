@@ -53,6 +53,10 @@ microprice = module(
     "microprice_research",
     ROOT / "examples" / "cross_venue" / "microprice_research.py",
 )
+research = module(
+    "pumpfun_creator_and_anomaly_research",
+    ROOT / "examples" / "research" / "generate_pumpfun_research.py",
+)
 
 
 def env_value(key: str) -> str | None:
@@ -360,11 +364,32 @@ def verify_fees(strict_live: bool) -> None:
     print("verified live API: global fees response and invariants")
 
 
+def verify_research() -> None:
+    pages = ROOT / "docs" / "pages" / "research"
+    public = ROOT / "docs" / "public" / "research"
+    summary = research.run(ROOT / ".env", pages, public)
+    if (
+        len(summary["reliable_creators"]) != 5
+        or len(summary["anomalous_tokens"]) != 5
+        or summary["eligible_profile_tokens"] < 100
+        or len(summary["average_parent_program_distribution"]) < 2
+    ):
+        raise AssertionError("Pump.fun research output is incomplete")
+    reliable_page = (pages / "reliable-pumpfun-creators.mdx").read_text()
+    weird_page = (pages / "weird-pumpfun-activity.mdx").read_text()
+    if "github.com/web3engineering/on-chain-divers" not in reliable_page:
+        raise AssertionError("reliable-creator page is missing its GitHub source link")
+    if weird_page.count("https://gmgn.ai/sol/token/") != 5:
+        raise AssertionError("weird-activity page does not contain five GMGN links")
+    print("verified research: reliable Pump.fun creators and unusual activity")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--strict-live", action="store_true")
     args = parser.parse_args()
     verify_sql()
+    verify_research()
     verify_orderbooks(args.strict_live)
     verify_fees(args.strict_live)
     print("all examples verified")
