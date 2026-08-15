@@ -1,164 +1,36 @@
-import { CTASection } from '../../components/CTABlocks'
+# Polymarket indexer
 
-# Polymarket Indexer
+The Polymarket database combines decoded Polygon fill events with current event
+and market metadata.
 
-Complete prediction market data including trades, order book events, and market metadata.
+| Table | Purpose |
+| --- | --- |
+| `polymarket_order_filled_v3` | Maker/taker fill legs, token and USDC amounts, fees, transaction and block context |
+| `raw_event_meta` | Event titles, slugs, dates, categories and source metadata |
+| `raw_market_meta` | Market questions, outcomes, token identifiers, status and resolution metadata |
 
-:::info Access
-$200/month with 7-day free trial. [Contact us](https://t.me/inventandchill) to get started.
-:::
+Historical CLOB captures are separate from ClickHouse. The order-book example
+discovers archive files, downloads one with a size cap, decompresses the raw
+timestamp-plus-JSON format, anchors on a `book` snapshot, and applies subsequent
+`price_change` levels.
 
----
+OnchainDivers provides access to high-precision Polymarket order books, including
+full snapshots, price-level changes, and explicit best-bid/ask transitions for
+individual CLOB outcome tokens. Dedicated files for five-minute Bitcoin Up/Down
+markets preserve the rapid probability changes around resolution and can be
+joined directly to event and market metadata in ClickHouse.
 
-## What's Indexed
+The chart below is regenerated from those raw Polymarket records and the
+matching HyperLiquid BTC futures book during every strict documentation build.
+It shows how the Up and Down probabilities evolved alongside the underlying
+market, with no hard-coded event or CLOB token IDs.
 
-| Table | Description | Size |
-|-------|-------------|------|
-| `orderbook_events` | All order book activity | 1.2B rows |
-| `markets` | Market metadata and conditions | 45K rows |
-| `tokens` | Token/outcome information | 90K rows |
+![High-precision Polymarket and HyperLiquid Bitcoin order books](/examples/bitcoin-5m-updown.png)
 
-**Coverage**: All Polymarket activity. Updated in real-time.
+[See the complete reproducible cross-venue workflow](/bitcoin-5m-cross-venue).
 
----
+Credentials and archive locations are supplied through `.env`; no deployment
+address is included in this site.
 
-## Key Features
-
-### Complete Order Book History
-
-Every order book event is captured:
-- Placements and cancellations
-- Fills and partial fills
-- Maker and taker attribution
-
-### Market Context
-
-Join with markets table to get:
-- Question text and descriptions
-- Resolution conditions
-- End dates and outcomes
-- Category and tags
-
-### Price Discovery Analysis
-
-Track how prices evolve around events:
-
-```sql
-SELECT
-    toStartOfMinute(timestamp) as minute,
-    outcome,
-    avg(price) as avg_price,
-    sum(size) as volume
-FROM orderbook_events
-WHERE market_id = 'your_market_id'
-  AND event_type = 'FILL'
-  AND timestamp > now() - INTERVAL 24 HOUR
-GROUP BY minute, outcome
-ORDER BY minute
-```
-
----
-
-## Sample Queries
-
-### Recent Fills
-
-```sql
-SELECT
-    timestamp,
-    market_id,
-    outcome,
-    side,
-    price,
-    size,
-    maker,
-    taker
-FROM orderbook_events
-WHERE event_type = 'FILL'
-  AND timestamp > now() - INTERVAL 1 HOUR
-ORDER BY timestamp DESC
-LIMIT 100
-```
-
-### Volume by Market
-
-```sql
-SELECT
-    e.market_id,
-    m.question,
-    count(*) as fills,
-    sum(e.size * e.price) as volume
-FROM orderbook_events e
-LEFT JOIN markets m ON e.market_id = m.id
-WHERE e.event_type = 'FILL'
-  AND e.timestamp > now() - INTERVAL 24 HOUR
-GROUP BY e.market_id, m.question
-ORDER BY volume DESC
-LIMIT 20
-```
-
-### Active Traders
-
-```sql
-SELECT
-    taker as wallet,
-    count(*) as trades,
-    sum(size * price) as volume,
-    count(DISTINCT market_id) as markets_traded
-FROM orderbook_events
-WHERE event_type = 'FILL'
-  AND timestamp > now() - INTERVAL 7 DAY
-GROUP BY wallet
-ORDER BY volume DESC
-LIMIT 50
-```
-
--> [More examples](/polymarket/examples)
-
----
-
-## Connection Details
-
-| Field | Value |
-|-------|-------|
-| Host | `37.27.71.199` |
-| Port | `8123` |
-| Database | `polymarket` |
-
-### Python
-
-```python
-import clickhouse_connect
-
-client = clickhouse_connect.get_client(
-    host='37.27.71.199',
-    port=8123,
-    username='your_user',
-    password='your_pass',
-    database='polymarket'
-)
-
-df = client.query_df("""
-    SELECT * FROM orderbook_events
-    WHERE event_type = 'FILL'
-      AND timestamp > now() - INTERVAL 1 HOUR
-    LIMIT 1000
-""")
-```
-
-### DBeaver
-
-1. New Connection -> ClickHouse
-2. Host: `37.27.71.199`, Port: `8123`
-3. Database: `polymarket`
-4. Enter credentials and test connection
-
----
-
-
-## Next Steps
-
-- [Table Reference](/polymarket/tables) — Full schema documentation
-- [Query Examples](/polymarket/examples) — Common analysis patterns
-
-<CTASection price="$200" product="Polymarket Indexer" />
+- [Verified examples and order-book replay](/polymarket/examples)
+- [Live table reference](/polymarket/tables)

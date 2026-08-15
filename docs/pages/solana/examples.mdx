@@ -1,287 +1,88 @@
-# Query Examples
+# Verified Solana examples
 
-Practical SQL patterns for common analysis tasks.
+These queries are stored under `examples/solana/` and executed against the live
+database during every strict docs build. Each scan is constrained by time or by
+the newest data window.
 
----
+## Transfer and funding activity
 
-## Pump.fun Analysis
+`token_transfers` and `sol_top_ups` are intentionally separate helper tables.
+This query combines their hourly counts without joining individual records. It
+is adapted from the workflow introduced in [Two New Solana Tables: token_transfers and sol_top_ups](https://onchaindivers.substack.com/p/two-new-solana-tables-token_transfers).
 
-### New Token Launches (Last 24h)
 ```sql
+WITH
+    toStartOfHour(now()) AS end_hour,
+    end_hour - INTERVAL 24 HOUR AS start_hour
 SELECT
-    block_time,
-    name,
-    symbol,
-    mint,
-    creator,
-    bundled_buys_count as bundles,
-    bundled_buys / 1e9 as bundled_sol
-FROM pumpfun_token_creation
-WHERE block_time > now() - INTERVAL 24 HOUR
-ORDER BY block_time DESC
-```
+    hour,
+    sum(token_transfers) AS token_transfers,
+    sum(sol_top_ups) AS sol_top_ups
+FROM
+(
+    SELECT toStartOfHour(block_time) AS hour,
+           count() AS token_transfers, 0 AS sol_top_ups
+    FROM token_transfers
+    PREWHERE block_time >= start_hour AND block_time < end_hour
+    GROUP BY hour
 
-### Trading Volume by Token
-```sql
-SELECT
-    base_coin as mint,
-    count(*) as trades,
-    countIf(direction = 'buy') as buys,
-    countIf(direction = 'sell') as sells,
-    sum(quote_coin_amount) / 1e9 as total_sol
-FROM pumpfun_all_swaps
-WHERE block_time > today() - 7
-GROUP BY mint
-ORDER BY total_sol DESC
-LIMIT 100
-```
+    UNION ALL
 
-### Wallets That Bought at Launch
-```sql
-SELECT
-    s.signing_wallet,
-    count(*) as early_buys,
-    sum(s.quote_coin_amount) / 1e9 as sol_spent
-FROM pumpfun_all_swaps s
-INNER JOIN pumpfun_token_creation c ON s.base_coin = c.mint
-WHERE s.direction = 'buy'
-  AND s.block_time BETWEEN c.block_time AND c.block_time + INTERVAL 5 MINUTE
-  AND c.block_time > today() - 7
-GROUP BY s.signing_wallet
-ORDER BY early_buys DESC
-LIMIT 50
-```
-
----
-
-## AMM Migrations
-
-### Recent Pump.fun → Raydium Migrations
-```sql
-SELECT
-    m.block_time,
-    m.mint,
-    c.name,
-    c.symbol,
-    m.sol_amount / 1e9 as liquidity_sol,
-    m.pool as raydium_pool
-FROM pfamm_migrations m
-LEFT JOIN pumpfun_token_creation c ON m.mint = c.mint
-WHERE m.block_time > today() - 7
-ORDER BY m.block_time DESC
-LIMIT 50
-```
-
-### Time from Launch to Migration
-```sql
-SELECT
-    c.name,
-    c.symbol,
-    c.mint,
-    c.block_time as launched,
-    m.block_time as migrated,
-    dateDiff('hour', c.block_time, m.block_time) as hours_to_migrate,
-    m.sol_amount / 1e9 as migration_sol
-FROM pumpfun_token_creation c
-INNER JOIN pfamm_migrations m ON c.mint = m.mint
-WHERE c.block_time > today() - 30
-ORDER BY hours_to_migrate ASC
-LIMIT 100
-```
-
----
-
-## Meteora DLMM
-
-### Volume by Pool
-```sql
-SELECT
-    lb_pair,
-    base_coin,
-    quote_coin,
-    count(*) as swaps,
-    sum(base_coin_amount) as base_volume,
-    sum(quote_coin_amount) as quote_volume,
-    sum(fee) as total_fees
-FROM meteora_swaps
-WHERE block_date > today() - 7
-GROUP BY lb_pair, base_coin, quote_coin
-ORDER BY swaps DESC
-LIMIT 50
-```
-
-### Price Impact Analysis (Bin Range)
-```sql
-SELECT
-    lb_pair,
-    avg(end_bin_id - start_bin_id) as avg_bins_crossed,
-    max(end_bin_id - start_bin_id) as max_bins_crossed,
-    count(*) as swaps
-FROM meteora_swaps
-WHERE block_date > today() - 7
-GROUP BY lb_pair
-HAVING swaps > 1000
-ORDER BY avg_bins_crossed DESC
-```
-
-### Most Active Traders
-```sql
-SELECT
-    signing_wallet,
-    count(*) as swaps,
-    count(DISTINCT lb_pair) as pools_used,
-    count(DISTINCT block_date) as active_days,
-    sum(fee) as fees_paid
-FROM meteora_swaps
-WHERE block_date > today() - 30
-GROUP BY signing_wallet
-ORDER BY swaps DESC
-LIMIT 100
-```
-
----
-
-## Raydium
-
-### Hourly Volume Trend
-```sql
-SELECT
-    toStartOfHour(block_time) as hour,
-    count(*) as swaps,
-    sum(quote_coin_amount) / 1e9 as sol_volume
-FROM raydium_all_swaps
-WHERE block_time > now() - INTERVAL 24 HOUR
+    SELECT toStartOfHour(block_time) AS hour,
+           0 AS token_transfers, count() AS sol_top_ups
+    FROM sol_top_ups
+    PREWHERE block_time >= start_hour AND block_time < end_hour
+    GROUP BY hour
+)
 GROUP BY hour
 ORDER BY hour
 ```
 
-### Large Swaps Detection
-```sql
-SELECT
-    block_time,
-    signature,
-    base_coin,
-    quote_coin,
-    base_coin_amount,
-    quote_coin_amount / 1e9 as sol_amount,
-    signing_wallet
-FROM raydium_all_swaps
-WHERE block_time > now() - INTERVAL 1 HOUR
-  AND quote_coin_amount > 10 * 1e9  -- > 10 SOL
-ORDER BY quote_coin_amount DESC
-LIMIT 50
+Source: `examples/solana/transfer_activity.sql`.
+
+## PumpSwap reserve and fee reconciliation
+
+PumpSwap rows expose before/after pool reserves, exact-quote mode, virtual quote
+reserves, and protocol, LP, creator, cashback and buyback fee fields. The full
+query in `examples/solana/pumpswap_reserve_checks.sql` verifies three identities
+for the latest 25 swaps:
+
+- base reserve movement equals `base_token_amount`;
+- quote reserve movement equals `quote_token_amount`; and
+- `quote_token_amount_without_lp_fee` reconciles with the appropriate fee path
+  for buys, sells and exact-quote buys.
+
+It also selects `virtual_quote_reserves`, `coin_creator`,
+`coin_creator_fees`, `cash_back_fees`, and `buy_back_fees`, making the accounting
+inputs visible beside the checks. This example is based on the field-level
+accounting described in [10 New Columns in pumpswap_all_swaps](https://onchaindivers.substack.com/p/10-new-columns-in-pumpswap_all_swaps).
+
+Run it directly with the repository verifier:
+
+```sh
+python3 scripts/verify_examples.py --strict-live
 ```
 
-### Pool Activity Comparison
-```sql
-SELECT
-    raydium_market_id as pool,
-    count(*) as swaps,
-    uniq(signing_wallet) as unique_traders,
-    sum(quote_coin_amount) / 1e9 as total_sol
-FROM raydium_all_swaps
-WHERE block_time > today() - 1
-GROUP BY pool
-ORDER BY total_sol DESC
-LIMIT 20
+The verifier fails if any returned row has a false reconciliation flag.
+
+## Creator migration rates
+
+The creator example takes the latest timestamp present in
+`pumpfun_token_creation`, builds a 30-day window ending there, and joins mints to
+`pfamm_migrations`. Anchoring to the dataset rather than the wall clock keeps the
+query reproducible for snapshots and retained archives.
+
+The result contains token counts, migrated counts, migration percentage and the
+creator's first/last launch time. It is inspired by the cohort construction in
+[Pump.fun’s Creator Economy Is a Barbell](https://onchaindivers.substack.com/p/pumpfuns-creator-economy-is-a-barbell).
+
+```sh
+# Source query
+sed -n '1,220p' examples/solana/creator_migration_rates.sql
+
+# Execute all bounded examples
+python3 scripts/verify_examples.py --strict-live
 ```
 
----
-
-## Cross-DEX Analysis
-
-### Wallet Activity Across DEXs
-```sql
-SELECT
-    wallet,
-    sumIf(trades, dex = 'raydium') as raydium_trades,
-    sumIf(trades, dex = 'pumpfun') as pumpfun_trades,
-    sumIf(trades, dex = 'meteora') as meteora_trades,
-    sum(trades) as total
-FROM (
-    SELECT signing_wallet as wallet, 'raydium' as dex, count(*) as trades
-    FROM raydium_all_swaps WHERE block_time > today() - 7 GROUP BY signing_wallet
-    UNION ALL
-    SELECT signing_wallet, 'pumpfun', count(*)
-    FROM pumpfun_all_swaps WHERE block_time > today() - 7 GROUP BY signing_wallet
-    UNION ALL
-    SELECT signing_wallet, 'meteora', count(*)
-    FROM meteora_swaps WHERE block_time > today() - 7 GROUP BY signing_wallet
-)
-GROUP BY wallet
-HAVING total > 100
-ORDER BY total DESC
-LIMIT 100
-```
-
-### Compare DEX Volume
-```sql
-SELECT
-    toDate(block_time) as date,
-    'raydium' as dex,
-    count(*) as swaps
-FROM raydium_all_swaps
-WHERE block_time > today() - 14
-GROUP BY date
-
-UNION ALL
-
-SELECT toDate(block_time), 'pumpfun', count(*)
-FROM pumpfun_all_swaps WHERE block_time > today() - 14 GROUP BY toDate(block_time)
-
-UNION ALL
-
-SELECT toDate(block_time), 'pumpswap', count(*)
-FROM pumpswap_all_swaps WHERE block_time > today() - 14 GROUP BY toDate(block_time)
-
-UNION ALL
-
-SELECT block_date, 'meteora', count(*)
-FROM meteora_swaps WHERE block_date > today() - 14 GROUP BY block_date
-
-ORDER BY date, dex
-```
-
----
-
-## Jito Tips
-
-### Tips by Transaction
-```sql
-SELECT
-    block_time,
-    signature,
-    amount / 1e9 as tip_sol,
-    signer,
-    tip_account
-FROM jito_tips
-WHERE block_time > now() - INTERVAL 1 HOUR
-ORDER BY amount DESC
-LIMIT 50
-```
-
-### Daily Tip Volume
-```sql
-SELECT
-    block_date_utc as date,
-    count(*) as transactions,
-    sum(amount) / 1e9 as total_tips_sol,
-    avg(amount) / 1e9 as avg_tip_sol
-FROM jito_tips
-WHERE block_date_utc > today() - 30
-GROUP BY date
-ORDER BY date
-```
-
----
-
-## Performance Tips
-
-1. **Always filter by time first** — Tables are partitioned by date
-2. **Use `LIMIT` during exploration** — Prevent accidental full scans
-3. **Aggregate early** — Reduce data before joins
-4. **Check `EXPLAIN`** — See query execution plan
-
-```sql
-EXPLAIN SELECT count(*) FROM raydium_all_swaps WHERE block_time > today()
-```
+Fixed-width mint and creator fields are normalized by removing their null-byte
+padding before the join and grouping.

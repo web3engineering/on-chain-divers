@@ -2,7 +2,7 @@
 
 Tables containing HyperLiquid perpetual exchange data including trades, orders, and funding rates.
 
-*Last updated: 2026-04-05 12:45 UTC*
+*Last updated: 2026-05-23 21:01 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
@@ -10,8 +10,8 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Table | Rows | Size |
 |-------|------|------|
-| [agg_fulfilled_order](#agg-fulfilled-order) | 12,458,192 | 333.4 MB |
-| [raw_node_fills_by_block](#raw-node-fills-by-block) | 1,780,152,272 | 124.06 GB |
+| [agg_fulfilled_order](#agg-fulfilled-order) | 425,720,908 | 10.15 GB |
+| [raw_node_fills_by_block](#raw-node-fills-by-block) | 2,175,505,136 | 152.84 GB |
 | [view_perpetual_wallet](#view-perpetual-wallet) | 0 | 0 B |
 | [view_wallet_position](#view-wallet-position) | 0 | 0 B |
 
@@ -21,8 +21,8 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 12,458,192 |
-| **Size** | 333.4 MB |
+| **Rows** | 425,720,908 |
+| **Size** | 10.15 GB |
 | **Partition Key** | `toYYYYMM(utc_first_fill_dt)` |
 | **TTL** | `utc_first_fill_dt + toIntervalDay(90)` |
 
@@ -53,8 +53,8 @@ SELECT * FROM agg_fulfilled_order LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 1,780,152,272 |
-| **Size** | 124.06 GB |
+| **Rows** | 2,175,505,136 |
+| **Size** | 152.84 GB |
 | **Partition Key** | `utc_fill_dt` |
 
 **Columns:**
@@ -88,6 +88,7 @@ SELECT * FROM agg_fulfilled_order LIMIT 10
 | `liquidation_method` | `Nullable(String)` | Liquidation method used |
 | `twap_id` | `Nullable(Int64)` | TWAP order identifier |
 | `deployer_fee` | `Nullable(Float64)` | Deployer fee for spot tokens |
+| `priority_gas` | `Nullable(Float64)` | Priority gas fee paid for inclusion (in USDC) |
 
 **Example Query:**
 

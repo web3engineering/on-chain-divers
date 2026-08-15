@@ -2,16 +2,17 @@
 
 Tables containing Polymarket prediction market data including order books, trades, and market information.
 
-*Last updated: 2026-04-05 12:45 UTC*
+*Last updated: 2026-05-23 21:01 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
-## Tables (2)
+## Tables (3)
 
 | Table | Rows | Size |
 |-------|------|------|
-| [polymarket_order_filled_v3](#polymarket-order-filled-v3) | 1,014,147,816 | 160.50 GB |
-| [raw_market_meta](#raw-market-meta) | 1,552,131 | 1.31 GB |
+| [polymarket_order_filled_v3](#polymarket-order-filled-v3) | 1,348,948,406 | 217.49 GB |
+| [raw_event_meta](#raw-event-meta) | 42,322 | 428.9 MB |
+| [raw_market_meta](#raw-market-meta) | 2,330,697 | 2.09 GB |
 
 ---
 
@@ -19,8 +20,8 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 1,014,147,816 |
-| **Size** | 160.50 GB |
+| **Rows** | 1,348,948,406 |
+| **Size** | 217.49 GB |
 | **Partition Key** | `toYYYYMMDD(block_timestamp)` |
 
 **Columns:**
@@ -54,6 +55,8 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 | `max_fee_per_gas` | `UInt256` | Maximum fee per gas (EIP-1559) |
 | `max_priority_fee_per_gas` | `UInt256` | Maximum priority fee (EIP-1559) |
 | `inserted_at` | `DateTime` | Record insertion timestamp |
+| `builder` | `String` | Default: `''` |
+| `metadata` | `String` | Default: `''` |
 
 **Example Query:**
 
@@ -63,12 +66,124 @@ SELECT * FROM polymarket_order_filled_v3 LIMIT 10
 
 ---
 
+### raw_event_meta
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 42,322 |
+| **Size** | 428.9 MB |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `event_id` | `String` | Unique event identifier |
+| `ticker` | `Nullable(String)` | Event ticker symbol (URL-safe) |
+| `slug` | `Nullable(String)` | URL-friendly event slug |
+| `title` | `Nullable(String)` | Event title |
+| `subtitle` | `Nullable(String)` | Event subtitle |
+| `description` | `Nullable(String)` | Event description / resolution rules text |
+| `resolution_source` | `Nullable(String)` | Source URL/reference used for event resolution |
+| `start_dttm` | `Nullable(DateTime64(3))` | Event start datetime |
+| `creation_dttm` | `Nullable(DateTime64(3))` | Event creation datetime |
+| `end_dttm` | `Nullable(DateTime64(3))` | Event end datetime |
+| `image` | `Nullable(String)` | Event image URL |
+| `icon` | `Nullable(String)` | Event icon URL |
+| `is_active` | `Nullable(Bool)` | Whether event is active |
+| `is_closed` | `Nullable(Bool)` | Whether event is closed |
+| `is_archived` | `Nullable(Bool)` | Whether event is archived |
+| `is_new` | `Nullable(Bool)` | Whether event is flagged as new |
+| `is_featured` | `Nullable(Bool)` | Whether event is featured |
+| `is_restricted` | `Nullable(Bool)` | Whether event has access restrictions (e.g., geo-blocked) |
+| `liquidity` | `Nullable(Float64)` | Total event liquidity (aggregated across markets) |
+| `volume` | `Nullable(Float64)` | Total event trading volume |
+| `open_interest` | `Nullable(Float64)` | Open interest for the event |
+| `sort_by` | `Nullable(String)` | Sort key used for event ordering |
+| `category` | `Nullable(String)` | Event category |
+| `subcategory` | `Nullable(String)` | Event subcategory |
+| `is_template` | `Nullable(Bool)` | Whether event is a template |
+| `template_variables` | `Nullable(String)` | Template variables for templated events (JSON) |
+| `published_at` | `Nullable(String)` | Publication timestamp |
+| `created_by` | `Nullable(String)` | User ID who created the event |
+| `updated_by` | `Nullable(String)` | User ID who last updated the event |
+| `created_dttm` | `Nullable(DateTime64(3))` | Event record creation datetime |
+| `updated_dttm` | `Nullable(DateTime64(3))` | Event record last update datetime |
+| `is_comments_enabled` | `Nullable(Bool)` | Whether comments are enabled |
+| `competitive` | `Nullable(Float64)` | Event competitiveness score |
+| `volume_24hr` | `Nullable(Float64)` | 24-hour event trading volume |
+| `volume_1wk` | `Nullable(Float64)` | 7-day event trading volume |
+| `volume_1mo` | `Nullable(Float64)` | 30-day event trading volume |
+| `volume_1yr` | `Nullable(Float64)` | 1-year event trading volume |
+| `featured_image` | `Nullable(String)` | Featured image URL |
+| `disqus_thread` | `Nullable(String)` | Disqus comment thread ID |
+| `parent_event` | `Nullable(String)` | Parent event identifier (for nested events) |
+| `is_enable_order_book` | `Nullable(Bool)` | Whether order book is enabled |
+| `liquidity_amm` | `Nullable(Float64)` | AMM liquidity for the event |
+| `liquidity_clob` | `Nullable(Float64)` | CLOB liquidity for the event |
+| `is_neg_risk` | `Nullable(Bool)` | Whether event uses negative risk markets |
+| `neg_risk_market_id` | `Nullable(String)` | Negative risk market identifier |
+| `neg_risk_fee_bips` | `Nullable(Int64)` | Negative risk fee in basis points |
+| `comment_count` | `Nullable(Int64)` | Number of comments on the event |
+| `image_optimized` | `Nullable(String)` | Optimized image URL |
+| `icon_optimized` | `Nullable(String)` | Optimized icon URL |
+| `featured_image_optimized` | `Nullable(String)` | Optimized featured image URL |
+| `sub_events` | `Nullable(String)` | JSON array of sub-events |
+| `markets` | `Nullable(String)` | JSON array of markets belonging to this event |
+| `series` | `Nullable(String)` | JSON array of series the event belongs to |
+| `categories` | `Nullable(String)` | JSON array of categories |
+| `collections` | `Nullable(String)` | JSON array of collections |
+| `tags` | `Nullable(String)` | JSON array of tags |
+| `is_cyom` | `Nullable(Bool)` | Whether event is 'create your own market' (CYOM) |
+| `closed_dttm` | `Nullable(DateTime64(3))` | Event closing datetime |
+| `is_show_all_outcomes` | `Nullable(Bool)` | Whether to show all outcomes in UI |
+| `is_show_market_images` | `Nullable(Bool)` | Whether to show market images in UI |
+| `is_automatically_resolved` | `Nullable(Bool)` | Whether event is auto-resolved |
+| `is_enable_neg_risk` | `Nullable(Bool)` | Whether negative risk is enabled |
+| `is_automatically_active` | `Nullable(Bool)` | Whether event is auto-activated |
+| `event_date` | `Nullable(String)` | Event date string (display format) |
+| `start_time` | `Nullable(DateTime64(3))` | Event start time |
+| `event_week` | `Nullable(Int64)` | Week number of event (for recurring events) |
+| `series_slug` | `Nullable(String)` | Slug of the series the event belongs to |
+| `score` | `Nullable(String)` | Event score (sports events) |
+| `elapsed` | `Nullable(String)` | Elapsed time string (sports events) |
+| `period` | `Nullable(String)` | Period indicator (sports events, e.g., Q1, H2) |
+| `is_live` | `Nullable(Bool)` | Whether event is currently live (sports events) |
+| `is_ended` | `Nullable(Bool)` | Whether event has ended (sports events) |
+| `finished_timestamp` | `Nullable(DateTime64(3))` | Timestamp the event finished |
+| `gmp_chart_mode` | `Nullable(String)` | GMP chart display mode |
+| `event_creators` | `Nullable(String)` | Event creators metadata |
+| `tweet_count` | `Nullable(Int64)` | Number of associated tweets |
+| `chats` | `Nullable(String)` | Chat metadata |
+| `featured_order` | `Nullable(Int64)` | Display order when featured |
+| `is_estimate_value` | `Nullable(Bool)` | Whether value is estimated |
+| `is_cant_estimate` | `Nullable(Bool)` | Whether value cannot be estimated |
+| `estimated_value` | `Nullable(String)` | Estimated value (free-form string) |
+| `templates` | `Nullable(String)` | Templates associated with the event |
+| `spreads_main_line` | `Nullable(Float64)` | Main spread line (sports betting) |
+| `totals_main_line` | `Nullable(Float64)` | Main totals line (sports betting) |
+| `carousel_map` | `Nullable(String)` | Carousel display metadata |
+| `is_pending_deployment` | `Nullable(Bool)` | Whether event is pending deployment |
+| `is_deploying` | `Nullable(Bool)` | Whether event is currently deploying |
+| `deploying_timestamp` | `Nullable(DateTime64(3))` | Deployment timestamp |
+| `scheduled_deployment_timestamp` | `Nullable(DateTime64(3))` | Scheduled deployment time |
+| `game_status` | `Nullable(String)` | Game status (sports events) |
+| `raw_json` | `String` | Raw JSON response from Polymarket API |
+| `inserted_at` | `DateTime` | Record insertion timestamp |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="polymarket">
+SELECT * FROM raw_event_meta LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
 ### raw_market_meta
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 1,552,131 |
-| **Size** | 1.31 GB |
+| **Rows** | 2,330,697 |
+| **Size** | 2.09 GB |
 
 **Columns:**
 

@@ -1,165 +1,36 @@
-import { CTASection } from '../../components/CTABlocks'
+# HyperLiquid indexer
 
-# HyperLiquid Indexer
+The HyperLiquid database exposes raw block fills together with derived order and
+wallet views.
 
-Complete perpetual trading data with nanosecond precision. Query every fill, funding payment, and TWAP execution.
+| Table | Purpose |
+| --- | --- |
+| `raw_node_fills_by_block` | Fill time, wallet, coin, price, size, side, PnL, fee, TWAP, builder and liquidation context |
+| `agg_fulfilled_order` | Fill-level activity aggregated by fulfilled order |
+| `view_perpetual_wallet` | Current perpetual wallet state |
+| `view_wallet_position` | Current wallet positions |
 
-:::info Access
-$200/month with trial available. [Contact us](https://t.me/inventandchill) to get started.
-:::
+The raw recovery format begins with an order-level `book_snapshot` and continues
+with `book_diff` records. Replaying by order ID is important: a remove or partial
+update cannot be reconstructed reliably from aggregate price levels alone.
 
----
+OnchainDivers provides access to high-precision HyperLiquid order books through
+raw MessagePack checkpoints and compressed order-level diff streams. This makes
+it possible to reconstruct the historical BTC perpetual book—including best
+bid, best ask, spread, live order count, and depth near the midpoint—at precise
+times rather than relying on coarse candles or aggregated trades.
 
-## What's Indexed
+The chart below replays that BTC futures book once per second over the exact
+window of a Polymarket Bitcoin five-minute market. It is generated and checked
+inside Docker from the configured archives, so the visualization also serves as
+an executable test of checkpoint selection, diff continuity, and book integrity.
 
-| Table | Description | Size |
-|-------|-------------|------|
-| `fills` | All perpetual trade executions | 2.8B rows |
-| `fundings` | Funding rate payments | 156M rows |
-| `twaps` | TWAP order executions | 12M rows |
-| `user_fundings` | Per-user funding records | 89M rows |
+![High-precision HyperLiquid and Polymarket Bitcoin order books](/examples/bitcoin-5m-updown.png)
 
-**Coverage**: All perpetual markets since May 2025. Updated in real-time.
+[See the complete reproducible cross-venue workflow](/bitcoin-5m-cross-venue).
 
----
+Credentials and optional archive locations are supplied through `.env`; no
+deployment address is included in this site.
 
-## Key Features
-
-### Nanosecond Timestamps
-
-Every fill includes the exact microsecond it occurred—not just block time. Critical for:
-
-- Latency analysis between signal and execution
-- Cross-venue arbitrage timing (vs CEX, Solana)
-- Order flow pattern detection
-
-### Complete Position Context
-
-Each trade includes:
-- Entry/exit price
-- Position size before and after
-- Realized PnL
-- Liquidation flags
-- TWAP correlation
-
-### Smart Wallet Discovery
-
-Find wallets with consistent profitability patterns:
-
-```sql
-SELECT
-    user,
-    count(*) as trades,
-    sum(closedPnl) / 1e6 as realized_pnl,
-    sum(closedPnl) / nullIf(sum(abs(closedPnl)), 0) as win_rate
-FROM fills
-WHERE time > now() - INTERVAL 30 DAY
-GROUP BY user
-HAVING trades > 100
-ORDER BY realized_pnl DESC
-LIMIT 50
-```
-
----
-
-## Sample Queries
-
-### Recent Large Fills
-
-```sql
-SELECT
-    time,
-    user,
-    coin,
-    side,
-    px,
-    sz,
-    closedPnl / 1e6 as pnl_usd
-FROM fills
-WHERE time > now() - INTERVAL 1 HOUR
-  AND sz * px > 100000  -- > $100k notional
-ORDER BY sz * px DESC
-LIMIT 20
-```
-
-### Funding Rate History
-
-```sql
-SELECT
-    toStartOfHour(time) as hour,
-    coin,
-    avg(fundingRate) as avg_funding,
-    sum(fundingRate) as cumulative_funding
-FROM fundings
-WHERE time > now() - INTERVAL 7 DAY
-  AND coin = 'BTC'
-GROUP BY hour, coin
-ORDER BY hour
-```
-
-### TWAP Execution Analysis
-
-```sql
-SELECT
-    user,
-    coin,
-    count(*) as twap_fills,
-    sum(sz) as total_size,
-    avg(px) as avg_price,
-    min(time) as started,
-    max(time) as ended
-FROM twaps
-WHERE time > now() - INTERVAL 24 HOUR
-GROUP BY user, coin
-ORDER BY total_size DESC
-LIMIT 20
-```
-
--> [More examples](/hyperliquid/examples)
-
----
-
-## Connection Details
-
-| Field | Value |
-|-------|-------|
-| Host | `5.161.179.207` |
-| Port | `8123` |
-| Database | `hyperliquid` |
-
-### Python
-
-```python
-import clickhouse_connect
-
-client = clickhouse_connect.get_client(
-    host='5.161.179.207',
-    port=8123,
-    username='your_user',
-    password='your_pass',
-    database='hyperliquid'
-)
-
-df = client.query_df("""
-    SELECT * FROM fills
-    WHERE time > now() - INTERVAL 1 HOUR
-    LIMIT 1000
-""")
-```
-
-### DBeaver
-
-1. New Connection -> ClickHouse
-2. Host: `5.161.179.207`, Port: `8123`
-3. Database: `hyperliquid`
-4. Enter credentials and test connection
-
----
-
-
-## Next Steps
-
-- [Table Reference](/hyperliquid/tables) — Full schema documentation
-- [Query Examples](/hyperliquid/examples) — Common analysis patterns
-
-<CTASection price="$200" product="HyperLiquid Indexer" />
+- [Verified examples and order-book replay](/hyperliquid/examples)
+- [Live table reference](/hyperliquid/tables)

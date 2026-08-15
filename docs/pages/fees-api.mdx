@@ -1,0 +1,28 @@
+# Global fees API
+
+The fees endpoint returns aggregate costs for one Solana mint. Configure its
+complete URL privately; examples never contain the service host or port.
+
+```dotenv
+FEES_URL=https://fees.example.com/global-fees
+```
+
+Run the checked-in client:
+
+```sh
+python3 examples/fees/global_fees.py \
+  So11111111111111111111111111111111111111112
+```
+
+The client appends the `mint` query parameter safely, enforces a timeout, avoids
+printing the configured endpoint on failure, and validates these integer fields:
+
+- `total`
+- `transaction_fees`, split into `base_fees` and `priority_fees`
+- `tips`
+- `trading_fees`
+- `tx_count` and `success_count`
+
+During a strict documentation build the same call is made against the privately
+configured service. The build checks that totals are non-negative and that the
+successful transaction count cannot exceed the total transaction count.

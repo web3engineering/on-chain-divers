@@ -2,32 +2,33 @@
 
 Tables containing Solana blockchain data including DEX swaps, token trades, and transaction information.
 
-*Last updated: 2026-04-05 12:44 UTC*
+*Last updated: 2026-05-23 21:00 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
-## Tables (18)
+## Tables (19)
 
 | Table | Rows | Size |
 |-------|------|------|
-| [jito_tips](#jito-tips) | 134,478,570 | 10.53 GB |
-| [max_caps](#max-caps) | 9,105,622 | 429.1 MB |
-| [meteora_dynamic_bonding_swaps](#meteora-dynamic-bonding-swaps) | 113,111,181 | 32.62 GB |
-| [meteora_swaps](#meteora-swaps) | 69,880,924 | 12.18 GB |
-| [pfamm_migrations](#pfamm-migrations) | 78,809 | 14.4 MB |
-| [pumpfun_all_swaps](#pumpfun-all-swaps) | 2,110,203,289 | 257.13 GB |
-| [pumpfun_amm_admin_set_coin_creator](#pumpfun-amm-admin-set-coin-creator) | 98 | 20.2 KB |
-| [pumpfun_creator_fee_distributions](#pumpfun-creator-fee-distributions) | 809,980 | 134.0 MB |
-| [pumpfun_token_creation](#pumpfun-token-creation) | 12,124,116 | 2.89 GB |
-| [pumpswap_all_swaps](#pumpswap-all-swaps) | 5,265,672,904 | 1464.85 GB |
-| [raydium_all_swaps](#raydium-all-swaps) | 6,679,838,452 | 877.81 GB |
-| [raydium_cpmm_swaps](#raydium-cpmm-swaps) | 36,879,218 | 8.20 GB |
-| [raydium_launchpad_cpmm_migrations](#raydium-launchpad-cpmm-migrations) | 3,878 | 3.6 MB |
-| [raydium_launchpad_migrations](#raydium-launchpad-migrations) | 401 | 1.1 MB |
-| [raydium_launchpad_swaps](#raydium-launchpad-swaps) | 87,054,325 | 14.27 GB |
+| [jito_tips](#jito-tips) | 163,385,546 | 12.22 GB |
+| [max_caps](#max-caps) | 9,353,726 | 438.8 MB |
+| [meteora_dynamic_bonding_swaps](#meteora-dynamic-bonding-swaps) | 121,223,053 | 34.53 GB |
+| [meteora_swaps](#meteora-swaps) | 63,970,580 | 11.16 GB |
+| [pfamm_migrations](#pfamm-migrations) | 75,425 | 15.2 MB |
+| [pumpfun_all_swaps](#pumpfun-all-swaps) | 2,227,521,668 | 279.34 GB |
+| [pumpfun_amm_admin_set_coin_creator](#pumpfun-amm-admin-set-coin-creator) | 342 | 65.3 KB |
+| [pumpfun_creator_fee_distributions](#pumpfun-creator-fee-distributions) | 1,459,963 | 239.9 MB |
+| [pumpfun_token_creation](#pumpfun-token-creation) | 13,535,896 | 3.30 GB |
+| [pumpfun_v2_swaps](#pumpfun-v2-swaps) | 4,945,614 | 1.03 GB |
+| [pumpswap_all_swaps](#pumpswap-all-swaps) | 5,537,777,597 | 1591.48 GB |
+| [raydium_all_swaps](#raydium-all-swaps) | 21,469,165 | 1.85 GB |
+| [raydium_cpmm_swaps](#raydium-cpmm-swaps) | 28,520,617 | 5.84 GB |
+| [raydium_launchpad_cpmm_migrations](#raydium-launchpad-cpmm-migrations) | 4,095 | 3.9 MB |
+| [raydium_launchpad_migrations](#raydium-launchpad-migrations) | 364 | 1023.3 KB |
+| [raydium_launchpad_swaps](#raydium-launchpad-swaps) | 81,219,761 | 13.39 GB |
 | [raydium_launchpad_token_creation](#raydium-launchpad-token-creation) | 65,568 | 19.9 MB |
-| [solana_blocks](#solana-blocks) | 155,306,448 | 7.67 GB |
-| [tx_timestamps](#tx-timestamps) | 2,158,393,182 | 192.30 GB |
+| [solana_blocks](#solana-blocks) | 166,201,901 | 8.33 GB |
+| [tx_timestamps](#tx-timestamps) | 1,856,043,186 | 165.26 GB |
 
 ---
 
@@ -35,10 +36,10 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 134,478,570 |
-| **Size** | 10.53 GB |
-| **First Record** | 2026-03-22 |
-| **Last Record** | 2026-04-05 |
+| **Rows** | 163,385,546 |
+| **Size** | 12.22 GB |
+| **First Record** | 2024-11-15 |
+| **Last Record** | 2026-05-23 |
 | **Partition Key** | `block_date_utc` |
 | **TTL** | `block_date_utc + toIntervalDay(14)` |
 
@@ -58,18 +59,18 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/5Gc1Tr9D8Gj1U4e5VCA67r5qc9RYjo8uvRCbzhmi73dDTf57QoHxGshX8kDGm4cR54QaRwcpK3hRhjwrGh5wqwjJ)
+[View on Solscan](https://solscan.io/tx/5NqJSzRpyARonAFfqdprKxhXNvGREDmKA7dxTuwVpYvoqPCeVtokm7inshcCtjsbPQXg2ny2TK4En3cXZ9hkgER4)
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:43:59` |
-| `block_date_utc` | `2026-04-05` |
-| `slot` | `411,193,843` |
-| `tx_idx` | `1,107` |
-| `signature` | `5Gc1Tr9D8Gj1U4e5VCA67r5qc9RYjo8uvRCbzhmi73dDTf5...` |
-| `signer` | `roUteHjDohtkatXTb79PJ99bbxkTipgo3GJ4EJZ1YpB` |
-| `sender` | `roUteHjDohtkatXTb79PJ99bbxkTipgo3GJ4EJZ1YpB` |
-| `tip_account` | `ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt` |
+| `block_time` | `2026-05-23 13:59:22` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,711,764` |
+| `tx_idx` | `1,503` |
+| `signature` | `5NqJSzRpyARonAFfqdprKxhXNvGREDmKA7dxTuwVpYvoqPC...` |
+| `signer` | `FVnv5qH7dsrBzEDwJ8dN2m9PFtKTBAQFtqWF3M9LpwMg` |
+| `sender` | `FVnv5qH7dsrBzEDwJ8dN2m9PFtKTBAQFtqWF3M9LpwMg` |
+| `tip_account` | `DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL` |
 
 **Example Query:**
 
@@ -83,8 +84,8 @@ SELECT * FROM jito_tips LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 9,105,622 |
-| **Size** | 429.1 MB |
+| **Rows** | 9,353,726 |
+| **Size** | 438.8 MB |
 
 **Columns:**
 
@@ -99,9 +100,9 @@ SELECT * FROM jito_tips LIMIT 10
 
 | Column | Value |
 |--------|-------|
-| `token_mint` | `1138V342nCcQoa5f5AG2wFo8nSkXCMTEPNNnsCi2ou5` |
-| `max_mcap_sol` | `58.9725` |
-| `max_mcap_usdc` | `9616.72` |
+| `token_mint` | `112BvbiE2nbCcsPCHutzCBJmtSdhY4EXYGKJQyPpump` |
+| `max_mcap_sol` | `134.592` |
+| `max_mcap_usdc` | `30780.7` |
 | `max_slot` | `0` |
 
 **Example Query:**
@@ -116,10 +117,10 @@ SELECT * FROM max_caps LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 113,111,181 |
-| **Size** | 32.62 GB |
+| **Rows** | 121,223,053 |
+| **Size** | 34.53 GB |
 | **First Record** | 2025-08-18 |
-| **Last Record** | 2026-04-05 |
+| **Last Record** | 2026-05-23 |
 | **Partition Key** | `block_date_utc` |
 | **TTL** | `block_date_utc + toIntervalYear(1)` |
 
@@ -165,18 +166,18 @@ SELECT * FROM max_caps LIMIT 10
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/29CrWGws3vxCN6JDFwx7XnkRVxhsNLacfDgfkEhuv1vTh6fBVFpLFGiCVfHQY9S8q2SxUCU3X6bT6WZ7DfVTqiPc)
+[View on Solscan](https://solscan.io/tx/45GTw2X23fmxyv4PrvjJNFfT8uuiL58FHtZS9BDPV3bwG2egGjqztnLT3BbZcNCGgGs86cHhUZz4t98i63ZuSrXs)
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:43:58` |
-| `block_date_utc` | `2026-04-05` |
-| `slot` | `411,193,839` |
-| `tx_idx` | `803` |
-| `swap_idx` | `3` |
-| `signature` | `29CrWGws3vxCN6JDFwx7XnkRVxhsNLacfDgfkEhuv1vTh6f...` |
-| `fee_payer` | `7rtiKSUDLBm59b1SBmD9oajcP8xE64vAGSMbAN5CXy1q` |
-| `provided_gas_fee` | `1,000,000` |
+| `block_time` | `2026-05-23 13:59:19` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,711,757` |
+| `tx_idx` | `138` |
+| `swap_idx` | `8` |
+| `signature` | `45GTw2X23fmxyv4PrvjJNFfT8uuiL58FHtZS9BDPV3bwG2e...` |
+| `fee_payer` | `AvdQRq82hfuTLAmFMkkPy2XsTdoNzGmU7mq54vGjGDEZ` |
+| `provided_gas_fee` | `400,000` |
 
 **Example Query:**
 
@@ -190,10 +191,10 @@ SELECT * FROM meteora_dynamic_bonding_swaps LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 69,880,924 |
-| **Size** | 12.18 GB |
-| **First Record** | 2024-11-23 |
-| **Last Record** | 2026-04-05 |
+| **Rows** | 63,970,580 |
+| **Size** | 11.16 GB |
+| **First Record** | 2026-02-22 |
+| **Last Record** | 2026-05-23 |
 | **Partition Key** | `block_date` |
 | **TTL** | `block_date + toIntervalDay(90)` |
 
@@ -225,22 +226,22 @@ SELECT * FROM meteora_dynamic_bonding_swaps LIMIT 10
 | `lb_pair` | `String` | Liquidity bin pair (pool) address |
 | `from_wallet` | `String` | Source wallet for the swap |
 | `swap_for_y` | `UInt8` | Whether swapping for Y token (1=yes, 0=no) |
-| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2024-11-23)* |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2026-02-22)* |
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/2vzTyvEZD1TxxQnaiSnEBuyJaDT3utjFdrCdAFDvABKzMtj2KaRrutgBfSgDqvmtz5pRbKLakaxcccp1oPXA5X76)
+[View on Solscan](https://solscan.io/tx/5dRWnX4LwSZzPowwkqFUxS3f5hoLMHt3wVeKNVMfDPvRuFnz5AsWqFc6MpyZf4ATYoWsfNkrGYkY9X6dnnoNnher)
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:43:59` |
-| `block_date` | `2026-04-05` |
-| `slot` | `411,193,843` |
-| `tx_idx` | `616` |
-| `signing_wallet` | `CtmGbBkqaRED1LtcoYfu24Xxj6fCpsSFDQaUCJCrYuKP` |
-| `base_coin` | `So11111111111111111111111111111111111111112` |
-| `quote_coin` | `J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn` |
-| `base_coin_amount` | `180,219` |
+| `block_time` | `2026-05-23 13:59:22` |
+| `block_date` | `2026-05-23` |
+| `slot` | `421,711,764` |
+| `tx_idx` | `1,484` |
+| `signing_wallet` | `JD6rVaerbyz6wjQ433nrw6bFTgFrp46MiYmi8EtUAfsG` |
+| `base_coin` | `4nyYwRTETgwa9pAUDxirve3FFUV1zSpsu9mvsPCupump` |
+| `quote_coin` | `Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB` |
+| `base_coin_amount` | `2,582,929` |
 
 **Example Query:**
 
@@ -254,10 +255,10 @@ SELECT * FROM meteora_swaps LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 78,809 |
-| **Size** | 14.4 MB |
-| **First Record** | 2025-04-05 |
-| **Last Record** | 2026-04-05 |
+| **Rows** | 75,425 |
+| **Size** | 15.2 MB |
+| **First Record** | 2025-05-23 |
+| **Last Record** | 2026-05-23 |
 | **Partition Key** | `block_date_utc` |
 | **TTL** | `block_date_utc + toIntervalYear(1)` |
 
@@ -282,18 +283,18 @@ SELECT * FROM meteora_swaps LIMIT 10
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/5Y3HnNdDJNria3eBMLdZCUiPM198PCMLRw4JhFbwkPNrPdmPwsqdn8xxKjh1WXqyeTHENKZYkNuWbDLjQLMvFp6B)
+[View on Solscan](https://solscan.io/tx/2Rrb2HNwivzGXVs4wRW1T1y7d27cpi4zhbMFjbHmi3rXiJZ4P1s1R7q2wWtsQBq2dR2sNu1evizmQamZAnPVFQdn)
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:35:51` |
-| `block_date_utc` | `2026-04-05` |
-| `slot` | `411,192,601` |
-| `tx_idx` | `635` |
+| `block_time` | `2026-05-23 13:54:15` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,710,993` |
+| `tx_idx` | `607` |
 | `user` | `BnnNJJgy9w2MLQ9XBKJKG9FQa2r9qdW7u5VpzEkwUcc3` |
-| `mint` | `GAN1b2ztJzvmR5YJnrTzQ1g4X1Z5Qk27frvaQg7Ypump` |
+| `mint` | `8EEvvmDQRxQHWygwMAxUqXReBg9kmGzRfcf9XyHepump` |
 | `mint_amount` | `206,900,000,000,000` |
-| `sol_amount` | `84,990,359,263` |
+| `sol_amount` | `84,990,359,064` |
 
 **Example Query:**
 
@@ -307,10 +308,10 @@ SELECT * FROM pfamm_migrations LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 2,110,203,289 |
-| **Size** | 257.13 GB |
+| **Rows** | 2,227,521,668 |
+| **Size** | 279.34 GB |
 | **First Record** | 2024-06-11 |
-| **Last Record** | 2026-04-05 |
+| **Last Record** | 2026-05-23 |
 
 **Columns:**
 
@@ -333,22 +334,22 @@ SELECT * FROM pfamm_migrations LIMIT 10
 | `consumed_gas` | `UInt64` | Compute units actually consumed |
 | `top_level_transfers_json` | `String` | JSON array of top-level SOL/token transfers in the transaction |
 | `is_exact_quote` | `UInt8` | Whether quote amount was exact (1=yes, 0=no) *(populated since 2025-12-03)* |
-| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2024-11-23)* |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2024-11-15)* |
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/b'63gHPDRmGfhB5HFkxcvSMAn8rHgEjSH2PFmwnTBbmgm9AVxkHPefb9iTTbg5iVVkwKyknDcWKxdYDJ6fomB8dALb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+[View on Solscan](https://solscan.io/tx/b'5c3TDq6nbatimGrVw6xqCdUPcCAdh6DQ8xCiF1fq9LPoLDSZS37evpFyJPQDajKZjc7BwgvPgQtcK5W1zACZBqq\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:43:59` |
-| `slot` | `411,193,843` |
-| `tx_idx` | `1,111` |
-| `signing_wallet` | `b'BS5MAbSPpN7eCiV6KcCnsvt8jS3eKzvHwx25FTFDsLgc\x00` |
-| `direction` | `sell` |
-| `base_coin` | `b'H6AcqduqSWosU3TYfVaY2aNYDx2L7xpaWxDzXwTVsUu4\x00` |
-| `base_coin_amount` | `1,323,165,994,645` |
-| `quote_coin_amount` | `40,576,992` |
+| `block_time` | `2026-05-23 13:59:22` |
+| `slot` | `421,711,764` |
+| `tx_idx` | `1,502` |
+| `signing_wallet` | `b'BwWK17cbHxwWBKZkUYvzxLcNQ1YVyaFezduWbtm2de6s\x00` |
+| `direction` | `buy` |
+| `base_coin` | `b'CwyxXpdwFnvR2GrfK9Xvv5f96Nfcvfy1ygPcgL8Epump\x00` |
+| `base_coin_amount` | `1,970,279,349,080` |
+| `quote_coin_amount` | `23,294,377` |
 
 **Example Query:**
 
@@ -362,10 +363,10 @@ SELECT * FROM pumpfun_all_swaps LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 98 |
-| **Size** | 20.2 KB |
+| **Rows** | 342 |
+| **Size** | 65.3 KB |
 | **First Record** | 2026-03-15 |
-| **Last Record** | 2026-04-05 |
+| **Last Record** | 2026-05-23 |
 | **Partition Key** | `toYYYYMM(block_time)` |
 
 **Columns:**
@@ -389,18 +390,18 @@ SELECT * FROM pumpfun_all_swaps LIMIT 10
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/5quQMTxYcs3PTsjzdLH2T9imndcGgCVmyinA5HV1EB6VkrQmqYKVv5pHawMuC8xcqicoF4yugcFmQNL5yLLAeojL)
+[View on Solscan](https://solscan.io/tx/3JALGHVznb2dqjQzmE84FYej6BJCr1Rvrz4CskbSbCABheTKbun3UPbXrjiXcdz3BAC5PVsMfPvLjCaXrw3nB7em)
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 02:12:06` |
-| `block_date_utc` | `2026-04-05` |
-| `slot` | `411,161,460` |
-| `tx_idx` | `834` |
-| `swap_idx` | `17` |
-| `signature` | `5quQMTxYcs3PTsjzdLH2T9imndcGgCVmyinA5HV1EB6VkrQ...` |
-| `fee_payer` | `2pwWqhzXeH3gJ3qgmsK2NsddkehF5f2fH8uzF9RUyzCX` |
-| `provided_gas_fee` | `55,271` |
+| `block_time` | `2026-05-23 11:59:33` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,693,716` |
+| `tx_idx` | `997` |
+| `swap_idx` | `15` |
+| `signature` | `3JALGHVznb2dqjQzmE84FYej6BJCr1Rvrz4CskbSbCABheT...` |
+| `fee_payer` | `Drmq6DFr6j63QgCewPDSVNoumpcgZ12VhaRoe1kMRwR7` |
+| `provided_gas_fee` | `62,633` |
 
 **Example Query:**
 
@@ -414,10 +415,10 @@ SELECT * FROM pumpfun_amm_admin_set_coin_creator LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 809,980 |
-| **Size** | 134.0 MB |
+| **Rows** | 1,459,963 |
+| **Size** | 239.9 MB |
 | **First Record** | 2026-02-15 |
-| **Last Record** | 2026-04-05 |
+| **Last Record** | 2026-05-23 |
 | **Partition Key** | `toYYYYMMDD(block_time)` |
 
 **Columns:**
@@ -443,18 +444,18 @@ SELECT * FROM pumpfun_amm_admin_set_coin_creator LIMIT 10
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/2bGuH4vibxvR7o91zty3hqDjCJHNXSaXCuPdR7zDakTz55wNVCezQ47yAqZmLnPjiWVKjjoWCsUMkidtAj1H9EXm)
+[View on Solscan](https://solscan.io/tx/tVzdGkyvTJUpVJmr9tmrhNvSvdEnvzp1L3aYByFdhUZEYeSmhY48DcFXciuQp7eMmdAdkRsveK1SmrhQTD5Eydv)
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:43:55` |
-| `block_date_utc` | `2026-04-05` |
-| `slot` | `411,193,832` |
-| `tx_idx` | `25` |
-| `ix_idx` | `0` |
-| `signature` | `2bGuH4vibxvR7o91zty3hqDjCJHNXSaXCuPdR7zDakTz55w...` |
-| `fee_payer` | `Fipwqxg3B5yHqr5v6NafS7jPenJB9LLaDBCf71aqSXho` |
-| `provided_gas_fee` | `0` |
+| `block_time` | `2026-05-23 13:58:42` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,711,664` |
+| `tx_idx` | `484` |
+| `ix_idx` | `2` |
+| `signature` | `tVzdGkyvTJUpVJmr9tmrhNvSvdEnvzp1L3aYByFdhUZEYeS...` |
+| `fee_payer` | `J7oeos72uyK15VRZk4sBp2M79bMsk1siQorz3keJVjHL` |
+| `provided_gas_fee` | `100` |
 
 **Example Query:**
 
@@ -468,10 +469,10 @@ SELECT * FROM pumpfun_creator_fee_distributions LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 12,124,116 |
-| **Size** | 2.89 GB |
-| **First Record** | 2024-11-23 |
-| **Last Record** | 2026-04-05 |
+| **Rows** | 13,535,896 |
+| **Size** | 3.30 GB |
+| **First Record** | 2024-11-15 |
+| **Last Record** | 2026-05-23 |
 
 **Columns:**
 
@@ -498,27 +499,27 @@ SELECT * FROM pumpfun_creator_fee_distributions LIMIT 10
 | `curve_address` | `FixedString(48)` | Bonding curve account address |
 | `pf_program_index` | `UInt8` | Pump.fun program index in transaction |
 | `direct_pf_invocation` | `UInt8` | Whether pump.fun was called directly (1=yes, 0=no) |
-| `version` | `DateTime64(3)` | Record version timestamp *(populated since 2024-11-23)* |
+| `version` | `DateTime64(3)` | Record version timestamp *(populated since 2024-11-15)* |
 | `mayhem_mode` | `UInt8` | Whether mayhem mode was enabled *(populated since 2025-11-23)* |
-| `token_program` | `String` | Token program used (SPL Token or Token-2022) *(populated since 2024-11-23)* |
-| `signature` | `String` | Transaction signature (base58 encoded) *(populated since 2024-11-23)* |
+| `token_program` | `String` | Token program used (SPL Token or Token-2022) *(populated since 2024-11-15)* |
+| `signature` | `String` | Transaction signature (base58 encoded) *(populated since 2024-11-15)* |
 | `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2026-01-22)* |
 | `is_cashback_enabled` | `UInt8` | Whether cashback was enabled for creation *(populated since 2026-02-18)* |
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/LNSuCFSecL842Vk4vFwCKUPUyvHKte3DAK13gXnvUXXZoGagkHym8bY66EjiQNDnczEBGRkRqsMZG1pt1qJ1y3c)
+[View on Solscan](https://solscan.io/tx/5HNQDm9MPDAzcuVDBC1ww7Ux1X3UvquyEVn9J2jsGgHG4rkXeK6rKqr5bQRWuTBghjMf5RcUkT6cHFd6HDG79G51)
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:43:59` |
-| `slot` | `411,193,843` |
-| `tx_idx` | `12` |
-| `creator` | `b'CSR7CWmGRepNJhp3h63ZAxqix2j6o5eGUgPsCUwzdxFv\x00` |
-| `name` | `b'Professor Friat\x00\x00\x00\x00\x00'` |
-| `symbol` | `b'Friat\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0` |
-| `url` | `b'https://ipfs.io/ipfs/QmX9tHkLK2wfA3FLUumwzWhEMzo` |
-| `mint` | `b'DPEmLJY31yA696HczoUUV75j3LbKbMWQjcjv9qZDpump\x00` |
+| `block_time` | `2026-05-23 13:59:21` |
+| `slot` | `421,711,763` |
+| `tx_idx` | `1,083` |
+| `creator` | `b'HVwXuVnEey6r7qGH6nEJWPCu6rBTAxPaegoJh5H49rPQ\x00` |
+| `name` | `b'10m pnl btw\x00\x00\x00\x00\x00\x00\x00\x00\x00'` |
+| `symbol` | `b'ARYAN\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0` |
+| `url` | `b'https://metadata.j7tracker.io/metadata/e9767f6bf` |
+| `mint` | `b'6UAYtPdr1LsEVExMqqYM9ebDzpkvuhgncqc9kZ96pump\x00` |
 
 **Example Query:**
 
@@ -528,14 +529,80 @@ SELECT * FROM pumpfun_token_creation LIMIT 10
 
 ---
 
+### pumpfun_v2_swaps
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 4,945,614 |
+| **Size** | 1.03 GB |
+| **First Record** | 2024-11-15 |
+| **Last Record** | 2026-05-23 |
+| **Partition Key** | `(block_date_utc, failed)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
+| `slot` | `UInt32` | Solana slot number (block height) |
+| `tx_idx` | `UInt16` | Transaction index within the block |
+| `ix_idx` | `Int16` | Instruction index within the transaction *(populated since 2024-11-15)* |
+| `signing_wallet` | `String` | Wallet address that signed the transaction |
+| `fee_payer` | `String` | Wallet that paid the transaction fee *(populated since 2024-11-15)* |
+| `direction` | `LowCardinality(String)` | Trade direction (buy/sell) |
+| `base_coin` | `String` | Base token mint address |
+| `quote_coin` | `LowCardinality(String)` | Quote token mint address (usually SOL or USDC) |
+| `instruction_type` | `LowCardinality(String)` | Pump.fun instruction variant: `buy`, `sell`, `buy_v2`, `sell_v2`, `buy_exact_sol_in`, or `buy_exact_quote_in_v2` |
+| `base_coin_amount` | `UInt64` | Base token amount (raw units, needs decimal adjustment) |
+| `quote_coin_amount` | `UInt64` | Quote token amount (raw units) |
+| `virtual_token_balance_after` | `UInt64` | Virtual token reserves after trade (bonding curve state) |
+| `virtual_sol_balance_after` | `UInt64` | Virtual SOL reserves after trade (bonding curve state) |
+| `signature` | `String` | Transaction signature (base58 encoded) |
+| `provided_gas_fee` | `UInt64` | Gas fee provided for the transaction (lamports) |
+| `provided_gas_limit` | `UInt64` | Compute unit limit requested |
+| `fee` | `UInt64` | Transaction fee paid (lamports) |
+| `consumed_gas` | `UInt64` | Compute units actually consumed |
+| `top_level_transfers_json` | `String` | JSON array of top-level SOL/token transfers in the transaction |
+| `lookup_tables` | `String` | Default: `''` *(populated since 2024-11-15)* |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2024-11-15)* |
+| `failed` | `UInt8` | Default: `0` *(populated since 2024-11-15)* |
+| `pf_program_account_index` | `Int16` | Default: `-1` *(populated since 2024-11-15)* |
+| `cu_price_ix_index` | `Int16` | Default: `-1` *(populated since 2024-11-15)* |
+| `cu_limit_ix_index` | `Int16` | Default: `-1` *(populated since 2024-11-15)* |
+| `tip_index` | `Int16` | Default: `-1` *(populated since 2024-11-15)* |
+
+**Latest Record Sample:**
+
+[View on Solscan](https://solscan.io/tx/5bbCA6vsVULWD7kLptDhNMdi6bbzs76xjGhs9kjhVrf7nd1T56CoPW44MctPvYJVajyoGB4XCqBWxB52SMBg8HBx)
+
+| Column | Value |
+|--------|-------|
+| `block_time` | `2026-05-23 13:59:22` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,711,764` |
+| `tx_idx` | `1,223` |
+| `ix_idx` | `3` |
+| `signing_wallet` | `BwWK17cbHxwWBKZkUYvzxLcNQ1YVyaFezduWbtm2de6s` |
+| `fee_payer` | `Gygj9QQby4j2jryqyqBHvLP7ctv2SaANgh4sCb69BUpA` |
+| `direction` | `sell` |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="solana">
+SELECT * FROM pumpfun_v2_swaps LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
 ### pumpswap_all_swaps
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 5,265,672,904 |
-| **Size** | 1464.85 GB |
-| **First Record** | 2025-04-05 |
-| **Last Record** | 2026-04-05 |
+| **Rows** | 5,537,777,597 |
+| **Size** | 1591.48 GB |
+| **First Record** | 2025-05-23 |
+| **Last Record** | 2026-05-23 |
 | **Partition Key** | `block_date_utc` |
 | **TTL** | `block_date_utc + toIntervalYear(1)` |
 
@@ -573,23 +640,23 @@ SELECT * FROM pumpfun_token_creation LIMIT 10
 | `provided_gas_limit` | `UInt64` | Compute unit limit requested |
 | `fee` | `UInt64` | Transaction fee paid (lamports) |
 | `consumed_gas` | `UInt64` | Compute units actually consumed |
-| `pool` | `String` | Pool account address *(populated since 2025-04-05)* |
+| `pool` | `String` | Pool account address *(populated since 2025-05-23)* |
 | `is_exact_quote` | `UInt8` | Whether quote amount was exact (1=yes, 0=no) *(populated since 2025-12-03)* |
 | `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2025-12-13)* |
 | `top_level_transfers_json` | `String` | JSON array of top-level SOL/token transfers in the transaction *(populated since 2026-02-18)* |
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/2QC9zgBxHoyjxdK3VYG892ivHqND5P4qhsK1L82yfHpa9BsPVmJjdtpxb3xNDuGg6Y6jxf4TZhF5hW33ELLyrDPK)
+[View on Solscan](https://solscan.io/tx/oZvuLTXWs42Nz4WXPnXq8EtDFfpVwZoakJLSNr4uiXZwrxkujFvGXEnRkhumxUedr4TNWmaiQzdekztRtJrcdJo)
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:44:05` |
-| `block_date_utc` | `2026-04-05` |
-| `slot` | `411,193,857` |
-| `tx_idx` | `1,093` |
-| `signing_wallet` | `Gh6UARh1vYL57LeESCbarnyyNu7XRaiYRBCir51JsSbh` |
-| `fee_payer` | `Gh6UARh1vYL57LeESCbarnyyNu7XRaiYRBCir51JsSbh` |
+| `block_time` | `2026-05-23 13:59:22` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,711,764` |
+| `tx_idx` | `1,490` |
+| `signing_wallet` | `6swP6EWWFTaMnep6HS4FNcZRENZKq9JN3wCHpasmLmav` |
+| `fee_payer` | `6swP6EWWFTaMnep6HS4FNcZRENZKq9JN3wCHpasmLmav` |
 | `direction` | `S` |
 | `base_token` | `So11111111111111111111111111111111111111112` |
 
@@ -605,16 +672,19 @@ SELECT * FROM pumpswap_all_swaps LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 6,679,838,452 |
-| **Size** | 877.81 GB |
-| **First Record** | 2024-05-09 |
-| **Last Record** | 2026-04-05 |
+| **Rows** | 21,469,165 |
+| **Size** | 1.85 GB |
+| **First Record** | 2024-11-15 |
+| **Last Record** | 2026-05-23 |
+| **Partition Key** | `block_date_utc` |
+| **TTL** | `block_date_utc + toIntervalDay(90)` |
 
 **Columns:**
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `block_time` | `DateTime` | UTC timestamp when the block was produced |
+| `block_date_utc` | `Date` | UTC date of the block (for partitioning) |
 | `slot` | `UInt32` | Solana slot number (block height) |
 | `tx_idx` | `UInt16` | Transaction index within the block |
 | `signing_wallet` | `FixedString(48)` | Wallet address that signed the transaction |
@@ -634,22 +704,22 @@ SELECT * FROM pumpswap_all_swaps LIMIT 10
 | `provided_gas_limit` | `UInt64` | Compute unit limit requested |
 | `fee` | `UInt64` | Transaction fee paid (lamports) |
 | `consumed_gas` | `UInt64` | Compute units actually consumed |
-| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2024-11-23)* |
+| `parent_program` | `String` | Parent program that invoked this instruction (for CPI calls) *(populated since 2024-11-15)* |
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/b'4g5n547NtZdTcNoLc9axsfy8rVXPzJskjSobT3jpEC2N5mArBoqH8ufekqehhaxXwgWf5KCnN9dWokJEDpjLksK7\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+[View on Solscan](https://solscan.io/tx/b'1Z1iy6gosWmaPEEXnaXby6sk6Pojc2SLKJK8wMmVvJAgd42kRi4cftemmTrwQZ9radZdnusYp1NiYwhQLrqv6rE\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:44:56` |
-| `slot` | `411,193,989` |
-| `tx_idx` | `758` |
-| `signing_wallet` | `b'4muHSktcbRhShTzU5c39J7yiwP9EK4oCZTt6fjSzrvb8\x00` |
+| `block_time` | `2026-05-23 13:59:22` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,711,764` |
+| `tx_idx` | `1,254` |
+| `signing_wallet` | `b'MfDuWeqSHEqTFVYZ7LoexgAK9dxk7cy4DFJWjWMGVWa\x00\` |
 | `direction` | `S` |
-| `base_coin` | `b'So11111111111111111111111111111111111111112\x00\` |
-| `quote_coin` | `b'GyhUtVfYdYsnaTHmTguwHbsjHp83iEe4dQskJbmDpump\x00` |
-| `base_coin_amount` | `44,679` |
+| `base_coin` | `b'63LfDmNb3MQ8mw9MtZ2To9bEA2M71kZUUGq5tiJxcqj9\x00` |
+| `quote_coin` | `b'So11111111111111111111111111111111111111112\x00\` |
 
 **Example Query:**
 
@@ -663,10 +733,10 @@ SELECT * FROM raydium_all_swaps LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 36,879,218 |
-| **Size** | 8.20 GB |
-| **First Record** | 2024-11-23 |
-| **Last Record** | 2026-04-05 |
+| **Rows** | 28,520,617 |
+| **Size** | 5.84 GB |
+| **First Record** | 2024-11-15 |
+| **Last Record** | 2026-05-23 |
 | **Partition Key** | `block_date_utc` |
 | **TTL** | `block_date_utc + toIntervalDay(90)` |
 
@@ -710,18 +780,18 @@ SELECT * FROM raydium_all_swaps LIMIT 10
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/4wyDD6PhpiEZfnay1kcZ79VTSUvPFGKFutzYP3CiBRm5xr5YdLYPDsiWTwJ5JjLmSz9v6a5cNRPfFG1Cuj2qtmpS)
+[View on Solscan](https://solscan.io/tx/5rR47abX7Fx2xksrfh1Krc72yry78u7aRPJf7KhPaQK8aZmWRZTjS9qVVTyuWxHUCgkWmi8Jsogfs2rURRF4sBJ3)
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:44:56` |
-| `block_date_utc` | `2026-04-05` |
-| `slot` | `411,193,989` |
-| `tx_idx` | `746` |
-| `swap_idx` | `9` |
-| `signature` | `4wyDD6PhpiEZfnay1kcZ79VTSUvPFGKFutzYP3CiBRm5xr5...` |
-| `fee_payer` | `GimWfnQt2zBaadDDSBdg52hSLbtjyapP4SRBMs3GRuS5` |
-| `provided_gas_fee` | `993,601` |
+| `block_time` | `2026-05-23 13:59:22` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,711,764` |
+| `tx_idx` | `50` |
+| `swap_idx` | `13` |
+| `signature` | `5rR47abX7Fx2xksrfh1Krc72yry78u7aRPJf7KhPaQK8aZm...` |
+| `fee_payer` | `3Wm5W6eAkZdxqPEC1raB2td74DXc8cchWSFfsVWDXRRK` |
+| `provided_gas_fee` | `4,608,144` |
 
 **Example Query:**
 
@@ -735,10 +805,10 @@ SELECT * FROM raydium_cpmm_swaps LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 3,878 |
-| **Size** | 3.6 MB |
-| **First Record** | 2025-04-26 |
-| **Last Record** | 2026-04-05 |
+| **Rows** | 4,095 |
+| **Size** | 3.9 MB |
+| **First Record** | 2025-07-01 |
+| **Last Record** | 2026-05-23 |
 | **Partition Key** | `block_date_utc` |
 | **TTL** | `block_date_utc + toIntervalYear(1)` |
 
@@ -776,18 +846,18 @@ SELECT * FROM raydium_cpmm_swaps LIMIT 10
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/5beKPUNcbAgD3kHcyVVgFYLApCeyb62E9SDjyMzwRri7F6bKDRxxqvkb8i9mLpHkaTFTMJCVwQ8mLegDTrhVMEhC)
+[View on Solscan](https://solscan.io/tx/K5MwogqQ9sTWrY8TLkWLLKgHaKy3EzBa5sJuTsn9NHkyA8o9nMXGTNvmVzL76ZiKYK6QU7TKECCAugVWs5eAJe3)
 
 | Column | Value |
 |--------|-------|
-| `signature` | `5beKPUNcbAgD3kHcyVVgFYLApCeyb62E9SDjyMzwRri7F6b...` |
-| `block_time` | `2026-04-05 05:05:27` |
-| `block_date_utc` | `2026-04-05` |
-| `slot` | `411,187,970` |
-| `tx_idx` | `150` |
+| `signature` | `K5MwogqQ9sTWrY8TLkWLLKgHaKy3EzBa5sJuTsn9NHkyA8o...` |
+| `block_time` | `2026-05-23 05:57:08` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,639,294` |
+| `tx_idx` | `645` |
 | `payer` | `RAYpQbFNq9i3mu6cKpTKKRwwHFDeK5AuZz8xvxUrCgw` |
-| `base_mint` | `97AmStYeCa9WZKpRPG8XwskGBQFxjkhTMoTNHYxtbonk` |
-| `quote_mint` | `USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB` |
+| `base_mint` | `DGNjYDB8pAJ6VSotNjkfQkWLNoMfMxiuJzmm1GuV1Ron` |
+| `quote_mint` | `So11111111111111111111111111111111111111112` |
 
 **Example Query:**
 
@@ -801,10 +871,10 @@ SELECT * FROM raydium_launchpad_cpmm_migrations LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 401 |
-| **Size** | 1.1 MB |
-| **First Record** | 2025-04-25 |
-| **Last Record** | 2026-03-30 |
+| **Rows** | 364 |
+| **Size** | 1023.3 KB |
+| **First Record** | 2025-05-25 |
+| **Last Record** | 2026-05-18 |
 | **Partition Key** | `block_date_utc` |
 | **TTL** | `block_date_utc + toIntervalYear(1)` |
 
@@ -852,17 +922,17 @@ SELECT * FROM raydium_launchpad_cpmm_migrations LIMIT 10
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/3NGK9PBXSVzaKJjMCuuTndmyHixKNWhBQuudLg17TG2wrc68Xt1rS9TjwmQWNwWCQ2KqfktNoK4BLmLB1WSYzij8)
+[View on Solscan](https://solscan.io/tx/2ANgoXEHhd7GXkJn61Vr9ZDzdwrcMMix8dyL8urp4AtzuibNKHYS4uLG8k39pWqNPnoCV4Vd8qq2CcRRYXRp483k)
 
 | Column | Value |
 |--------|-------|
-| `signature` | `3NGK9PBXSVzaKJjMCuuTndmyHixKNWhBQuudLg17TG2wrc6...` |
-| `block_time` | `2026-03-30 06:40:24` |
-| `block_date_utc` | `2026-03-30` |
-| `slot` | `409,880,568` |
-| `tx_idx` | `506` |
+| `signature` | `2ANgoXEHhd7GXkJn61Vr9ZDzdwrcMMix8dyL8urp4Atzuib...` |
+| `block_time` | `2026-05-18 15:26:33` |
+| `block_date_utc` | `2026-05-18` |
+| `slot` | `420,643,167` |
+| `tx_idx` | `83` |
 | `payer` | `RAYzrepoBdjSFg7MZj2vy4XBSv2azKRXC72ztUMZMJB` |
-| `base_coin` | `5HTxobDNyShbncWFqB7fJgtuVjMwg96H6Tx4jJ8XAray` |
+| `base_coin` | `9EtWvVcMwHKGTHtHGetvknbRYkN5oo7P6inroewibonk` |
 | `quote_coin` | `So11111111111111111111111111111111111111112` |
 
 **Example Query:**
@@ -877,10 +947,10 @@ SELECT * FROM raydium_launchpad_migrations LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 87,054,325 |
-| **Size** | 14.27 GB |
-| **First Record** | 2025-04-15 |
-| **Last Record** | 2026-04-05 |
+| **Rows** | 81,219,761 |
+| **Size** | 13.39 GB |
+| **First Record** | 2025-05-23 |
+| **Last Record** | 2026-05-23 |
 | **Partition Key** | `block_date_utc` |
 | **TTL** | `block_date_utc + toIntervalYear(1)` |
 
@@ -918,18 +988,18 @@ SELECT * FROM raydium_launchpad_migrations LIMIT 10
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/63YFQFLAuuqANgjvyYsPvh3P5NFbwC77RiH4dVdFW28tbkbziMSkBigBC2Cq5yeYBPDQ8f9mHMZnp5pDR4yncHL)
+[View on Solscan](https://solscan.io/tx/2NZmxzCvvY14rc12LvSUL8S4Y84bTCGL4YFXirAbZYXwKRRgKjbhV279Cn8puZUeXBxN2XesPeoLbpYZSLpsyoqs)
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:44:39` |
-| `block_date_utc` | `2026-04-05` |
-| `slot` | `411,193,945` |
-| `tx_idx` | `1,379` |
-| `fee_payer` | `CCBwYH6fzaSfs4N7tkXQb5zXGSZ19WYGsdoBaLPXJhov` |
-| `direction` | `S` |
+| `block_time` | `2026-05-23 13:58:27` |
+| `block_date_utc` | `2026-05-23` |
+| `slot` | `421,711,626` |
+| `tx_idx` | `737` |
+| `fee_payer` | `AP25fSHL6QhuSzB8EGqtuRTs5gnusuZ4xE4kV1ifXRR4` |
+| `direction` | `B` |
 | `pool_status` | `0` |
-| `pool_state` | `AW2qknHKUJP3oarVmGjEnbQVCsChmRkq1fXBKfG7c44f` |
+| `pool_state` | `AjcYg36QKWVy4L5SE3g2x61TQ1bYT1RSmjw6u5iRubHM` |
 
 **Example Query:**
 
@@ -1008,10 +1078,10 @@ SELECT * FROM raydium_launchpad_token_creation LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 155,306,448 |
-| **Size** | 7.67 GB |
-| **First Record** | 2024-07-22 |
-| **Last Record** | 2026-04-05 |
+| **Rows** | 166,201,901 |
+| **Size** | 8.33 GB |
+| **First Record** | 1969-12-31 |
+| **Last Record** | 2026-05-23 |
 
 **Columns:**
 
@@ -1021,19 +1091,19 @@ SELECT * FROM raydium_launchpad_token_creation LIMIT 10
 | `slot` | `UInt32` | Solana slot number (block height) |
 | `hash` | `FixedString(48)` | Block hash |
 | `validator` | `FixedString(48)` | Validator identity that produced the block |
-| `rewards` | `UInt64` | Total rewards in the block (lamports) *(populated since 2024-11-23)* |
-| `amount_of_transactions` | `UInt64` | Number of transactions in the block *(populated since 2024-11-23)* |
+| `rewards` | `UInt64` | Total rewards in the block (lamports) *(populated since 2024-11-15)* |
+| `amount_of_transactions` | `UInt64` | Number of transactions in the block *(populated since 1969-12-31)* |
 
 **Latest Record Sample:**
 
 | Column | Value |
 |--------|-------|
-| `block_time` | `2026-04-05 05:44:56` |
-| `slot` | `411,193,989` |
-| `hash` | `b'AH6b3J83Nr4cyyYgWsMY627jtd4L1iAhWqdj5Mx2nS17\x00` |
-| `validator` | `b'q9XWcZ7T1wP4bW9SB4XgNNwjnFEJ982nE8aVbbNuwot\x00\` |
-| `rewards` | `22,802,914` |
-| `amount_of_transactions` | `1,110` |
+| `block_time` | `2026-05-23 13:59:22` |
+| `slot` | `421,711,764` |
+| `hash` | `b'Ak82ch9kEWULHXgE4gskv8dxMv2gSZVhLp3S8XjFEDpc\x00` |
+| `validator` | `b'1unarWPGGseFag2WfnoFv8o9P7vTPU8eHex9GinP3eY\x00\` |
+| `rewards` | `18,197,551` |
+| `amount_of_transactions` | `1,507` |
 
 **Example Query:**
 
@@ -1047,8 +1117,8 @@ SELECT * FROM solana_blocks LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 2,158,393,182 |
-| **Size** | 192.30 GB |
+| **Rows** | 1,856,043,186 |
+| **Size** | 165.26 GB |
 | **Partition Key** | `toYYYYMMDD(toDateTime(entry_timestamp))` |
 | **TTL** | `toDateTime(entry_timestamp) + toIntervalDay(14)` |
 
@@ -1063,14 +1133,14 @@ SELECT * FROM solana_blocks LIMIT 10
 
 **Latest Record Sample:**
 
-[View on Solscan](https://solscan.io/tx/9cx2JSgGqQggHUvLTqZzZH9QJk4Yruwu6Fx56LUNkoxE76Ptfomc6LHUZFKN1A25SqBq4zgcmunBQVhKYHAWCtM)
+[View on Solscan](https://solscan.io/tx/3aDBDzSgx5zASxA2RonrYXjo8T9S2Jpv5YZoqMjqgFJn47pNt8eN4QutZgxNV8xe6ipQSA1bitsuFBk7AhEEyj9Z)
 
 | Column | Value |
 |--------|-------|
-| `slot` | `411,194,014` |
-| `tx_idx` | `1,325` |
-| `entry_timestamp` | `1.77539e+09` |
-| `signature` | `9cx2JSgGqQggHUvLTqZzZH9QJk4Yruwu6Fx56LUNkoxE76P...` |
+| `slot` | `421,712,081` |
+| `tx_idx` | `1,299` |
+| `entry_timestamp` | `1.77957e+09` |
+| `signature` | `3aDBDzSgx5zASxA2RonrYXjo8T9S2Jpv5YZoqMjqgFJn47p...` |
 
 **Example Query:**
 

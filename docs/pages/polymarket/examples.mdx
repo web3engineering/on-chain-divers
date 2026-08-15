@@ -1,343 +1,91 @@
-# Polymarket Query Examples
+# Verified Polymarket examples
 
-Practical SQL patterns for prediction market analysis.
+## Recent on-chain fills
 
----
-
-## Market Analysis
-
-### Highest Volume Markets (24h)
+The checked-in query uses the current qualified table name and its partitioning
+timestamp. It returns both token and USDC amounts, fees, maker attribution and
+transaction context.
 
 ```sql
 SELECT
-    e.market_id,
-    m.question,
-    m.category,
-    count(*) as fills,
-    sum(e.size * e.price) as volume
-FROM orderbook_events e
-LEFT JOIN markets m ON e.market_id = m.id
-WHERE e.event_type = 'FILL'
-  AND e.timestamp > now() - INTERVAL 24 HOUR
-GROUP BY e.market_id, m.question, m.category
-ORDER BY volume DESC
-LIMIT 20
-```
-
-### Price Movement Detection
-
-Find markets with significant price swings:
-
-```sql
-WITH price_changes AS (
-    SELECT
-        market_id,
-        outcome,
-        min(price) as low_price,
-        max(price) as high_price,
-        argMin(price, timestamp) as open_price,
-        argMax(price, timestamp) as close_price
-    FROM orderbook_events
-    WHERE event_type = 'FILL'
-      AND timestamp > now() - INTERVAL 24 HOUR
-    GROUP BY market_id, outcome
-)
-SELECT
-    p.market_id,
-    m.question,
-    p.outcome,
-    p.open_price,
-    p.close_price,
-    p.close_price - p.open_price as price_change,
-    p.high_price - p.low_price as range
-FROM price_changes p
-LEFT JOIN markets m ON p.market_id = m.id
-WHERE abs(p.close_price - p.open_price) > 0.1  -- > 10% move
-ORDER BY abs(p.close_price - p.open_price) DESC
-LIMIT 50
-```
-
-### Markets Ending Soon
-
-```sql
-SELECT
-    id,
-    question,
-    category,
-    end_date,
-    dateDiff('hour', now(), end_date) as hours_remaining,
-    volume
-FROM markets
-WHERE resolved = 0
-  AND end_date > now()
-  AND end_date < now() + INTERVAL 7 DAY
-ORDER BY end_date
-LIMIT 50
-```
-
----
-
-## Trader Analysis
-
-### Most Active Traders
-
-```sql
-SELECT
-    taker as wallet,
-    count(*) as trades,
-    sum(size * price) as volume,
-    count(DISTINCT market_id) as markets,
-    countIf(side = 'BUY') as buys,
-    countIf(side = 'SELL') as sells
-FROM orderbook_events
-WHERE event_type = 'FILL'
-  AND timestamp > now() - INTERVAL 7 DAY
-GROUP BY wallet
-ORDER BY volume DESC
+    block_timestamp,
+    transaction_hash,
+    wallet,
+    asset,
+    side,
+    amount_token,
+    amount_usdc,
+    fee,
+    is_maker
+FROM polymarket.polymarket_order_filled_v3
+PREWHERE block_timestamp >= now() - INTERVAL 1 DAY
+ORDER BY block_timestamp DESC, block_number DESC, log_index DESC
 LIMIT 100
 ```
 
-### Top Market Makers
+Source: `examples/polymarket/recent_fills.sql`.
 
-```sql
-SELECT
-    maker,
-    count(*) as orders_filled,
-    sum(size * price) as volume_provided,
-    count(DISTINCT market_id) as markets_made,
-    avg(size) as avg_order_size
-FROM orderbook_events
-WHERE event_type = 'FILL'
-  AND timestamp > now() - INTERVAL 7 DAY
-GROUP BY maker
-ORDER BY volume_provided DESC
-LIMIT 50
+## Raw order-book captures
+
+Set the archive directory URL privately:
+
+```dotenv
+POLYMARKET_ORDERBOOKS=https://captures.example.com/polymarket/
 ```
 
-### Trader PnL Estimation
+### 1. Scan the filesystem listing
 
-Estimate realized PnL for resolved markets:
-
-```sql
-WITH trades AS (
-    SELECT
-        e.taker as wallet,
-        e.market_id,
-        e.outcome,
-        e.side,
-        e.price,
-        e.size,
-        m.winning_outcome
-    FROM orderbook_events e
-    JOIN markets m ON e.market_id = m.id
-    WHERE e.event_type = 'FILL'
-      AND m.resolved = 1
-      AND e.timestamp > now() - INTERVAL 30 DAY
-)
-SELECT
-    wallet,
-    count(*) as trades,
-    -- If bought winning outcome, profit is (1 - price) * size
-    -- If sold winning outcome, loss is (1 - price) * size
-    sum(
-        CASE
-            WHEN outcome = winning_outcome AND side = 'BUY' THEN (1 - price) * size
-            WHEN outcome = winning_outcome AND side = 'SELL' THEN -(1 - price) * size
-            WHEN outcome != winning_outcome AND side = 'BUY' THEN -price * size
-            WHEN outcome != winning_outcome AND side = 'SELL' THEN price * size
-            ELSE 0
-        END
-    ) as estimated_pnl
-FROM trades
-GROUP BY wallet
-ORDER BY estimated_pnl DESC
-LIMIT 50
+```sh
+python3 examples/orderbooks/polymarket.py scan
 ```
 
----
+The scanner accepts local directories and HTTP directory listings. It keeps
+only `.log` and `.log.zst` captures from the configured origin and rejects an
+oversized listing.
 
-## Order Book Analysis
+### 2. Download one bounded capture
 
-### Order Flow Imbalance
+Choose a name returned by the scanner:
 
-```sql
-SELECT
-    toStartOfMinute(timestamp) as minute,
-    market_id,
-    sumIf(size, side = 'BUY' AND event_type = 'PLACEMENT') as buy_orders,
-    sumIf(size, side = 'SELL' AND event_type = 'PLACEMENT') as sell_orders,
-    sumIf(size, side = 'BUY' AND event_type = 'PLACEMENT') -
-    sumIf(size, side = 'SELL' AND event_type = 'PLACEMENT') as imbalance
-FROM orderbook_events
-WHERE market_id = 'your_market_id'
-  AND timestamp > now() - INTERVAL 1 HOUR
-GROUP BY minute, market_id
-ORDER BY minute
+```sh
+python3 examples/orderbooks/polymarket.py download \
+  MARKET_CAPTURE.log.zst /tmp/market.log.zst
 ```
 
-### Cancellation Rate
+The downloader rejects path traversal and files larger than its configured
+64 MiB safety limit.
 
-```sql
-SELECT
-    maker,
-    countIf(event_type = 'PLACEMENT') as placements,
-    countIf(event_type = 'CANCELLATION') as cancellations,
-    countIf(event_type = 'FILL') as fills,
-    round(countIf(event_type = 'CANCELLATION') /
-          countIf(event_type = 'PLACEMENT') * 100, 2) as cancel_rate_pct
-FROM orderbook_events
-WHERE timestamp > now() - INTERVAL 24 HOUR
-GROUP BY maker
-HAVING placements > 100
-ORDER BY cancel_rate_pct DESC
-LIMIT 50
+### 3. Reconstruct one asset
+
+```sh
+python3 examples/orderbooks/polymarket.py reconstruct \
+  /tmp/market.log.zst CLOB_TOKEN_ID
 ```
 
-### Spread Analysis
+Each raw line is either JSON or `capture_timestamp<TAB>JSON`. A `book` event
+replaces both sides of the selected asset's book. Later `price_change` entries
+set a price level to the supplied size, or delete it when the size is zero. The
+command prints the final best bid, best ask and level counts.
 
-```sql
-WITH order_book AS (
-    SELECT
-        toStartOfMinute(timestamp) as minute,
-        market_id,
-        outcome,
-        maxIf(price, side = 'BUY') as best_bid,
-        minIf(price, side = 'SELL') as best_ask
-    FROM orderbook_events
-    WHERE event_type = 'PLACEMENT'
-      AND market_id = 'your_market_id'
-      AND timestamp > now() - INTERVAL 1 HOUR
-    GROUP BY minute, market_id, outcome
-)
-SELECT
-    minute,
-    outcome,
-    best_bid,
-    best_ask,
-    best_ask - best_bid as spread
-FROM order_book
-WHERE best_bid > 0 AND best_ask > 0
-ORDER BY minute
-```
+The docs build performs a real scan of the configured archive and an end-to-end
+scan, download, decompression and replay against a deterministic capture. This
+tests the complete reconstruction path without making the build depend on the
+size of an arbitrary production file.
 
----
+### Strict 24-hour cross-venue build check
 
-## Time-Based Analysis
+The Docker `checker` stage also computes `UTC now - 24 hours`, finds the nearest
+captured Bitcoin five-minute Up/Down event, and resolves its Up and Down CLOB
+token IDs by joining the event and market metadata. It then downloads the
+special capture named exactly after that market slug, reads its high-resolution
+best-bid/ask series, and independently replays both books to market close. The
+same five minutes are reconstructed from HyperLiquid raw files and rendered in
+the [cross-venue example](/bitcoin-5m-cross-venue).
 
-### Hourly Volume Pattern
+The same timestamp-bounded operation is available directly for an already
+downloaded capture:
 
-```sql
-SELECT
-    toHour(timestamp) as hour_of_day,
-    count(*) as fills,
-    sum(size * price) as volume
-FROM orderbook_events
-WHERE event_type = 'FILL'
-  AND timestamp > now() - INTERVAL 30 DAY
-GROUP BY hour_of_day
-ORDER BY hour_of_day
-```
-
-### Daily Active Markets
-
-```sql
-SELECT
-    toDate(timestamp) as date,
-    count(DISTINCT market_id) as active_markets,
-    count(*) as total_fills,
-    sum(size * price) as total_volume
-FROM orderbook_events
-WHERE event_type = 'FILL'
-  AND timestamp > now() - INTERVAL 30 DAY
-GROUP BY date
-ORDER BY date
-```
-
-### Event Impact Analysis
-
-Track price movement around specific timestamps:
-
-```sql
-SELECT
-    toStartOfMinute(timestamp) as minute,
-    outcome,
-    avg(price) as avg_price,
-    count(*) as fills,
-    sum(size) as volume
-FROM orderbook_events
-WHERE market_id = 'your_market_id'
-  AND event_type = 'FILL'
-  AND timestamp BETWEEN
-      toDateTime('2024-11-05 00:00:00') AND
-      toDateTime('2024-11-06 00:00:00')
-GROUP BY minute, outcome
-ORDER BY minute
-```
-
----
-
-## Category Analysis
-
-### Volume by Category
-
-```sql
-SELECT
-    m.category,
-    count(DISTINCT e.market_id) as markets,
-    count(*) as fills,
-    sum(e.size * e.price) as volume
-FROM orderbook_events e
-JOIN markets m ON e.market_id = m.id
-WHERE e.event_type = 'FILL'
-  AND e.timestamp > now() - INTERVAL 7 DAY
-GROUP BY m.category
-ORDER BY volume DESC
-```
-
-### Trending Categories
-
-Compare recent volume to historical:
-
-```sql
-WITH recent AS (
-    SELECT
-        m.category,
-        sum(e.size * e.price) as volume_7d
-    FROM orderbook_events e
-    JOIN markets m ON e.market_id = m.id
-    WHERE e.event_type = 'FILL'
-      AND e.timestamp > now() - INTERVAL 7 DAY
-    GROUP BY m.category
-),
-historical AS (
-    SELECT
-        m.category,
-        sum(e.size * e.price) / 4 as avg_weekly_volume
-    FROM orderbook_events e
-    JOIN markets m ON e.market_id = m.id
-    WHERE e.event_type = 'FILL'
-      AND e.timestamp BETWEEN now() - INTERVAL 35 DAY AND now() - INTERVAL 7 DAY
-    GROUP BY m.category
-)
-SELECT
-    r.category,
-    r.volume_7d,
-    h.avg_weekly_volume,
-    r.volume_7d / nullIf(h.avg_weekly_volume, 0) as volume_ratio
-FROM recent r
-LEFT JOIN historical h ON r.category = h.category
-ORDER BY volume_ratio DESC
-```
-
----
-
-## Performance Tips
-
-1. **Filter by timestamp first** — All tables are partitioned by date
-2. **Join with markets sparingly** — Markets table is small, but filter events first
-3. **Use market_id filter** — Significantly reduces scan size
-
-```sql
--- Check query plan
-EXPLAIN SELECT count(*) FROM orderbook_events WHERE timestamp > today()
+```sh
+python3 examples/orderbooks/polymarket.py reconstruct-at \
+  /tmp/market.log.zst TARGET_UNIX_MILLISECONDS
 ```

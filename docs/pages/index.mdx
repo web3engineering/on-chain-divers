@@ -1,112 +1,38 @@
-import { CTASection } from '../components/CTABlocks'
+# OnchainDivers indexer examples
 
-# Blockchain Data Infrastructure
+This site is the executable guide to querying OnchainDivers data. Every example
+shown here has a corresponding source file in the repository and is run during
+the documentation build.
 
-Stop scraping APIs. Query billions of transactions directly.
+## Data products
 
-We provide **direct ClickHouse access** to indexed blockchain data—Solana DEX trades, HyperLiquid perpetuals, and Polymarket prediction markets. No rate limits. No pagination. Just SQL.
+| Product | Structured data | Raw workflows |
+| --- | --- | --- |
+| [Solana](/solana/) | Pump.fun, PumpSwap, Raydium, Meteora, Jito and helper tables | Transfers, top-ups, reserve accounting and creator migration analysis |
+| [Polymarket](/polymarket/) | On-chain fills plus event and market metadata | Capture discovery, download and CLOB snapshot/delta replay |
+| [HyperLiquid](/hyperliquid/) | Fills, fulfilled orders, wallets and positions | Recovery-file discovery, download and order-level book replay |
+| [Fees API](/fees-api) | Aggregate transaction, priority, tip and trading fees | Validated JSON client |
 
-:::info Free Trial
-[Request a 7-day trial](https://forms.gle/b5Fuuns7jcA3nHKv5) — no commitment required.
-:::
+The flagship [Bitcoin five-minute cross-venue reconstruction](/bitcoin-5m-cross-venue)
+combines the Polymarket metadata and CLOB archives with HyperLiquid's raw BTC
+perpetual book in one reproducible analysis.
 
----
+## Why the examples stay current
 
-## What We Index
+The static site has a strict build gate. Before the pages are compiled, Python:
 
-| Database | Coverage | Size | From |
-|----------|----------|------|------|
-| [**Solana**](/solana/) | Raydium, Pump.fun, Meteora, PumpSwap | 2.7 TB | Jan 2024 |
-| [**HyperLiquid**](/hyperliquid/) | All perpetual trades, positions, TWAPs | 200 GB | May 2025 |
-| [**Polymarket**](/polymarket/) | Trades (since inception), order books (last 7 days), market metadata | 85 GB | — |
+1. compares each live database with its published table whitelist;
+2. requires a description for every published column;
+3. executes all ClickHouse examples with bounded time windows;
+4. checks PumpSwap reserve and fee identities;
+5. scans, copies and reconstructs deterministic raw order-book captures;
+6. downloads a Bitcoin five-minute market around UTC now minus 24 hours,
+   assembles both raw books, and renders the synchronized analysis chart; and
+7. validates the configured fees service.
 
-**16 billion+ rows** indexed and growing.
+If any of those checks fails, no site image is produced.
 
----
-
-## Why Direct Database Access?
-
-### Speed
-Run complex aggregations across billions of rows in seconds. ClickHouse is built for analytical queries.
-
-```sql
--- Count pump.fun trades in the last hour
-SELECT count(*) FROM pumpfun_all_swaps
-WHERE block_time > now() - INTERVAL 1 HOUR
--- Returns in ~200ms
-```
-
-### Flexibility
-No predefined endpoints. Write any query you need—joins, window functions, custom aggregations.
-
-```sql
--- Find wallets that traded the same token across multiple DEXs
-SELECT signing_wallet, count(DISTINCT source) as dex_count
-FROM (
-    SELECT signing_wallet, 'raydium' as source FROM raydium_all_swaps WHERE base_coin = 'TOKEN'
-    UNION ALL
-    SELECT signing_wallet, 'meteora' as source FROM meteora_swaps WHERE base_coin = 'TOKEN'
-)
-GROUP BY signing_wallet HAVING dex_count > 1
-```
-
-### Completeness
-Every transaction. Every field. Historical data back to January 2024 for Solana.
-
----
-
-## Quick Start
-
-### 1. Get Credentials
-[Request access](https://forms.gle/b5Fuuns7jcA3nHKv5) or message [@inventandchill](https://t.me/inventandchill) on Telegram.
-
-### 2. Connect
-Use any ClickHouse client—DBeaver, Python, or direct HTTP.
-
-```python
-import clickhouse_connect
-
-client = clickhouse_connect.get_client(
-    host='157.90.130.44',
-    port=8123,
-    username='your_user',
-    password='your_pass'
-)
-
-df = client.query_df("SELECT * FROM raydium_all_swaps LIMIT 10")
-```
-
-### 3. Query
-Browse [table schemas](/solana/tables) and start exploring.
-
----
-
-## Pricing
-
-| Product | Price | Trial |
-|---------|-------|-------|
-| Solana Indexer | Custom | 7 days free |
-| HyperLiquid Indexer | $200/mo | 7 days free |
-| Polymarket Indexer | $200/mo | 7 days free |
-| Geyser Node | $200/mo | 7 days free |
-
-All plans include direct support via Telegram.
-
----
-
-## Who Uses This
-
-- **Traders** building execution algorithms and MEV strategies
-- **Researchers** studying market microstructure and whale behavior
-- **Funds** backtesting strategies on historical data
-- **Builders** creating dashboards, bots, and analytics tools
-
----
-
-## Contact
-
-**Telegram**: [@inventandchill](https://t.me/inventandchill)
-**Email**: hello@web3engineering.co.uk
-**Website**: [web3engineering.co.uk](https://web3engineering.co.uk)
-
-<CTASection price="$200" product="Solana Indexer" />
+Start with [Solana connection setup](/solana/getting-started), or go directly to
+the example pages for [Solana](/solana/examples),
+[Polymarket](/polymarket/examples), and
+[HyperLiquid](/hyperliquid/examples).

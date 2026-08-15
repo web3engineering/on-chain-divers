@@ -1,0 +1,4 @@
+{"event_type":"book_snapshot","symbol":"BTC","time":"2026-08-15T00:00:00Z","orders":[{"oid":1,"side":"B","px":"120000","sz":"0.4"},{"oid":2,"side":"B","px":"119999","sz":"0.2"},{"oid":3,"side":"A","px":"120001","sz":"0.5"}]}
+{"event_type":"book_diff","symbol":"BTC","block_time":"2026-08-15T00:00:01Z","event":{"oid":1,"side":"B","px":"120000","raw_book_diff":{"update":{"newSz":"0.3"}}}}
+{"event_type":"book_diff","symbol":"BTC","block_time":"2026-08-15T00:00:02Z","event":{"oid":3,"side":"A","px":"120001","raw_book_diff":"remove"}}
+{"event_type":"book_diff","symbol":"BTC","block_time":"2026-08-15T00:00:03Z","event":{"oid":4,"side":"A","px":"120002","raw_book_diff":{"new":{"sz":"0.7"}}}}

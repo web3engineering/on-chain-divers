@@ -2,6 +2,8 @@
 """
 Generate MDX documentation for ClickHouse database tables.
 
+Project and indexer documentation: https://onchaindivers.com
+
 This script queries ClickHouse databases (Solana, Polymarket, HyperLiquid)
 and generates MDX documentation pages with table metadata, row counts,
 date ranges, TTL, partitioning, and column information.
@@ -10,8 +12,8 @@ Usage:
     npm run generate
     # or: python scripts/generate_table_docs.py
 
-The script reads credentials from local .env (or falls back to
-/root/w3e-research/.env) and outputs MDX files to docs/pages/{db}/tables.mdx.
+The script reads credentials from the project's local .env file and outputs
+MDX files to docs/pages/{db}/tables.mdx.
 
 Features:
 - Validates all columns have descriptions (crashes if unknown columns found)
@@ -29,11 +31,7 @@ from typing import Any, Dict, List, Optional, Set
 import yaml
 from dotenv import dotenv_values
 
-# Add the w3e-research directory to path for imports
-W3E_RESEARCH_PATH = Path("/root/w3e-research")
-sys.path.insert(0, str(W3E_RESEARCH_PATH))
-
-from core.clickhouse import ClickHouseAccessor, HyperLiquidAccessor, PolymarketAccessor
+from clickhouse_accessors import ClickHouseAccessor, HyperLiquidAccessor, PolymarketAccessor
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent
@@ -41,10 +39,8 @@ PROJECT_ROOT = SCRIPT_DIR.parent
 DOCS_PAGES_DIR = PROJECT_ROOT / "docs" / "pages"
 COLUMN_DESCRIPTIONS_FILE = SCRIPT_DIR / "column_descriptions.yaml"
 
-# Environment file: prefer local, fall back to w3e-research
-LOCAL_ENV_PATH = PROJECT_ROOT / ".env"
-FALLBACK_ENV_PATH = W3E_RESEARCH_PATH / ".env"
-ENV_PATH = LOCAL_ENV_PATH if LOCAL_ENV_PATH.exists() else FALLBACK_ENV_PATH
+# Environment file
+ENV_PATH = PROJECT_ROOT / ".env"
 
 # Tables to include in documentation (whitelist per database)
 # Empty set means include all tables
@@ -54,6 +50,7 @@ SOLANA_TABLES_WHITELIST: Set[str] = {
     "meteora_dynamic_bonding_swaps",
     "meteora_swaps",
     "pfamm_migrations",
+    "pumpfun_v2_swaps",
     "pumpfun_all_swaps",
     "pumpfun_amm_admin_set_coin_creator",
     "pumpfun_creator_fee_distributions",
@@ -65,13 +62,16 @@ SOLANA_TABLES_WHITELIST: Set[str] = {
     "raydium_launchpad_migrations",
     "raydium_launchpad_swaps",
     "raydium_launchpad_token_creation",
+    "sol_top_ups",
     "solana_blocks",
+    "token_transfers",
     "tx_timestamps",
 }
 
 POLYMARKET_TABLES_WHITELIST: Set[str] = {
     "polymarket_order_filled_v3",
     "raw_market_meta",
+    "raw_event_meta",
 }
 
 HYPERLIQUID_TABLES_WHITELIST: Set[str] = {
@@ -81,7 +81,29 @@ HYPERLIQUID_TABLES_WHITELIST: Set[str] = {
     "agg_fulfilled_order",
 }
 
-# Tables whitelist per database (empty = all tables)
+# Existing internal, backup, or superseded tables that are intentionally not
+# published. Keeping these explicit ensures any newly discovered table fails
+# validation instead of being silently filtered out.
+TABLE_EXCLUSIONS: Dict[str, Set[str]] = {
+    "solana": set(),
+    "polymarket": {
+        "polymarket_order_filled",
+        "polymarket_order_filled_v2",
+        "positions_converted",
+    },
+    "hyperliquid": {
+        "_backup_raw_node_fills_by_block",
+        "agg_perpetual_wallet",
+        "agg_wallet_position",
+        "dxn_funding",
+        "perp_asset_meta",
+        "perp_asset_stats",
+        "spot_asset_meta",
+        "spot_pair_meta",
+    },
+}
+
+# Published tables per database (empty = publish all tables)
 TABLE_WHITELISTS: Dict[str, Set[str]] = {
     "solana": SOLANA_TABLES_WHITELIST,
     "polymarket": POLYMARKET_TABLES_WHITELIST,
@@ -94,6 +116,22 @@ DATABASE_NAMES: Dict[str, str] = {
     "polymarket": "polymarket",
     "hyperliquid": "hyperliquid",
 }
+
+
+class TableCoverageError(RuntimeError):
+    """The live database tables differ from the documented table set."""
+
+    def __init__(self, undocumented: List[str], missing: List[str]):
+        super().__init__("Live table coverage does not match the documentation whitelist")
+        self.undocumented = undocumented
+        self.missing = missing
+
+
+def exception_label(error: Exception) -> str:
+    """Return useful diagnostics without exposing hosts, URLs, or credentials."""
+    error_code = getattr(error, "code", None)
+    suffix = f" (code {error_code})" if error_code is not None else ""
+    return f"{type(error).__name__}{suffix}"
 
 
 def load_column_descriptions() -> Dict[str, Dict[str, Dict[str, str]]]:
@@ -126,10 +164,8 @@ def format_number(num: int) -> str:
 
 def load_env_config() -> Dict[str, str]:
     """Load environment variables from .env file."""
-    if LOCAL_ENV_PATH.exists():
-        return dotenv_values(LOCAL_ENV_PATH)
-    elif FALLBACK_ENV_PATH.exists():
-        return dotenv_values(FALLBACK_ENV_PATH)
+    if ENV_PATH.exists():
+        return dotenv_values(ENV_PATH)
     return {}
 
 
@@ -188,7 +224,7 @@ def get_signature_from_helius(slot: int, tx_idx: int, rpc_url: str) -> Optional[
             if tx_idx < len(signatures):
                 return signatures[tx_idx]
     except Exception as e:
-        print(f"      Warning: Could not fetch block {slot} from RPC: {e}")
+        print(f"      Warning: Could not fetch block {slot}: {exception_label(e)}")
 
     return None
 
@@ -260,7 +296,10 @@ def get_latest_row_sample(
         }
 
     except Exception as e:
-        print(f"      Warning: Could not get sample row for {table_name}: {e}")
+        print(
+            f"      Warning: Could not get sample row for {table_name}: "
+            f"{exception_label(e)}"
+        )
         return None
 
 
@@ -283,16 +322,25 @@ def format_sample_value(value: Any) -> str:
     return f"`{str(value)[:50]}`"
 
 
-def get_table_list(accessor: ClickHouseAccessor, whitelist: Set[str], db_name: str = "default") -> List[str]:
-    """Get list of tables in the specified database, filtered by whitelist."""
+def get_table_list(
+    accessor: ClickHouseAccessor,
+    whitelist: Set[str],
+    exclusions: Set[str],
+    db_name: str = "default",
+) -> List[str]:
+    """Get tables and require complete coverage by the documentation whitelist."""
     result = accessor.query(
         f"SELECT name FROM system.tables WHERE database = '{db_name}' ORDER BY name"
     )
     all_tables = [row["name"] for row in result]
 
-    # Filter by whitelist if provided
     if whitelist:
-        return [t for t in all_tables if t in whitelist]
+        live_tables = set(all_tables)
+        undocumented = sorted(live_tables - whitelist - exclusions)
+        missing = sorted(whitelist - live_tables)
+        if undocumented or missing:
+            raise TableCoverageError(undocumented, missing)
+        return [table for table in all_tables if table in whitelist]
     return all_tables
 
 
@@ -459,7 +507,10 @@ def get_date_range_by_slot(
                 "last_record": last_result[0]["last_record"],
             }
     except Exception as e:
-        print(f"    Warning: Could not get date range for {table_name}: {e}")
+        print(
+            f"    Warning: Could not get date range for {table_name}: "
+            f"{exception_label(e)}"
+        )
     return None
 
 
@@ -639,6 +690,7 @@ def generate_database_mdx(
     accessor: ClickHouseAccessor,
     column_descriptions: Dict[str, Dict[str, str]],
     table_whitelist: Set[str],
+    table_exclusions: Set[str],
     use_slot_optimization: bool = False,
     db_name: str = "default",
     rpc_url: Optional[str] = None,
@@ -663,11 +715,39 @@ def generate_database_mdx(
     lines.append("import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'")
     lines.append("")
 
-    tables = get_table_list(accessor, table_whitelist, db_name)
+    tables = get_table_list(accessor, table_whitelist, table_exclusions, db_name)
 
     if not tables:
         lines.append("*No tables found in this database.*")
         return "\n".join(lines), undocumented_columns
+
+    # Validate the live schema before running expensive metadata, date-range,
+    # and sample queries. A schema with missing descriptions must never produce
+    # publishable output.
+    common_descriptions = column_descriptions.get("_common", {})
+    columns_by_table: Dict[str, List[Dict[str, Any]]] = {}
+    descriptions_by_table: Dict[str, Dict[str, str]] = {}
+
+    for table_name in tables:
+        print(f"    Validating schema for {table_name}...")
+        columns = get_column_info(accessor, table_name, db_name)
+        table_descriptions = column_descriptions.get(table_name, {})
+        merged_descriptions = {**common_descriptions, **table_descriptions}
+
+        columns_by_table[table_name] = columns
+        descriptions_by_table[table_name] = merged_descriptions
+
+        undocumented = validate_column_descriptions(
+            table_name,
+            columns,
+            merged_descriptions,
+            database_name,
+        )
+        if undocumented:
+            undocumented_columns[table_name] = undocumented
+
+    if undocumented_columns:
+        return "", undocumented_columns
 
     lines.append(f"## Tables ({len(tables)})")
     lines.append("")
@@ -694,19 +774,9 @@ def generate_database_mdx(
     # Detailed table documentation
     for table_name, metadata in table_data:
         print(f"    Documenting {table_name}...")
-        columns = get_column_info(accessor, table_name, db_name)
+        columns = columns_by_table[table_name]
         date_range = get_date_range(accessor, table_name, columns, use_slot_optimization, db_name)
-
-        # Get table-specific descriptions, falling back to _common
-        table_descriptions = column_descriptions.get(table_name, {})
-        common_descriptions = column_descriptions.get("_common", {})
-        # Merge: table-specific overrides common
-        merged_descriptions = {**common_descriptions, **table_descriptions}
-
-        # Validate all columns have descriptions
-        undoc = validate_column_descriptions(table_name, columns, merged_descriptions, database_name)
-        if undoc:
-            undocumented_columns[table_name] = undoc
+        merged_descriptions = descriptions_by_table[table_name]
 
         # Get sample data (only for Solana tables with RPC access)
         sample_data = None
@@ -743,6 +813,9 @@ def generate_database_mdx(
 
 def main():
     """Main function to generate all table documentation."""
+    strict_generation = os.environ.get("DOCS_STRICT_GENERATION") == "1"
+    generation_errors: List[str] = []
+
     print("Loading column descriptions...")
     all_descriptions = load_column_descriptions()
     print(f"Using environment file: {ENV_PATH}")
@@ -751,13 +824,15 @@ def main():
     env_config = load_env_config()
     rpc_url = env_config.get("RPC_URL")
     if rpc_url:
-        print(f"RPC URL configured: {rpc_url[:30]}...")
+        print("RPC URL configured")
     else:
         print("Warning: RPC_URL not found in .env - will skip signature lookups for tables without signature column")
 
     # Check for .env file
     if not ENV_PATH.exists():
-        print(f"Warning: .env file not found at {ENV_PATH}")
+        print(f"Error: .env file not found at {ENV_PATH}")
+        if strict_generation:
+            sys.exit(1)
         print("Creating placeholder documentation files...")
         create_placeholder_docs()
         return
@@ -798,12 +873,14 @@ def main():
 
         print(f"\nProcessing {db['display_name']}...")
 
+        accessor = None
         try:
             accessor = db["accessor_class"](env_path=str(ENV_PATH))
             accessor.connect()
 
             column_descriptions = all_descriptions.get(db_name, {})
             table_whitelist = TABLE_WHITELISTS.get(db_name, set())
+            table_exclusions = TABLE_EXCLUSIONS.get(db_name, set())
             clickhouse_db_name = DATABASE_NAMES.get(db_name, "default")
 
             mdx_content, undocumented = generate_database_mdx(
@@ -813,6 +890,7 @@ def main():
                 accessor,
                 column_descriptions,
                 table_whitelist,
+                table_exclusions,
                 db.get("use_slot_optimization", False),
                 clickhouse_db_name,
                 rpc_url=rpc_url,
@@ -820,18 +898,37 @@ def main():
 
             if undocumented:
                 all_undocumented[db_name] = undocumented
+                continue
 
             with open(output_file, "w") as f:
                 f.write(mdx_content)
 
             print(f"  Generated: {output_file}")
-
-            accessor.disconnect()
-
         except Exception as e:
-            print(f"  Error connecting to {db_name}: {e}")
-            print(f"  Creating placeholder for {db_name}...")
-            create_placeholder_file(db_name, db["display_name"], db["description"], str(e))
+            generation_errors.append(db_name)
+            print(f"  Error generating {db_name}: {exception_label(e)}")
+            if isinstance(e, TableCoverageError):
+                for table_name in e.undocumented:
+                    print(f"    Undocumented live table: {table_name}")
+                for table_name in e.missing:
+                    print(f"    Documented table missing from database: {table_name}")
+            if not strict_generation:
+                print(f"  Creating placeholder for {db_name}...")
+                create_placeholder_file(
+                    db_name,
+                    db["display_name"],
+                    db["description"],
+                    "Data source unavailable.",
+                )
+        finally:
+            if accessor:
+                accessor.disconnect()
+
+    if generation_errors and strict_generation:
+        print("\nERROR: Documentation generation failed for:")
+        for db_name in generation_errors:
+            print(f"  - {db_name}")
+        sys.exit(1)
 
     # Check for undocumented columns and crash if any found
     if all_undocumented:

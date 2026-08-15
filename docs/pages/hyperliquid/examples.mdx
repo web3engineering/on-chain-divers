@@ -1,320 +1,112 @@
-# HyperLiquid Query Examples
+# Verified HyperLiquid examples
 
-Practical SQL patterns for perpetual trading analysis.
+## Largest recent fills
 
----
-
-## Trader Analysis
-
-### Most Profitable Traders (30 Days)
+The query reads the current raw fill table and retains wallet, fee, builder,
+TWAP and liquidation context through the underlying row.
 
 ```sql
 SELECT
-    user,
-    count(*) as trades,
-    sum(closedPnl) / 1e6 as realized_pnl,
-    avg(closedPnl) / 1e6 as avg_pnl_per_trade,
-    countIf(closedPnl > 0) as wins,
-    countIf(closedPnl < 0) as losses
-FROM fills
-WHERE time > now() - INTERVAL 30 DAY
-  AND closedPnl != 0
-GROUP BY user
-HAVING trades > 50
-ORDER BY realized_pnl DESC
+    utc_fill_dttm,
+    fill_id,
+    wallet_address,
+    coin,
+    side,
+    price,
+    size,
+    price * size AS notional,
+    closed_pnl,
+    fee,
+    liquidation_user
+FROM hyperliquid.raw_node_fills_by_block
+PREWHERE utc_fill_dt >= today() - 1
+ORDER BY notional DESC
 LIMIT 100
 ```
 
-### Trading Volume by Wallet
+Source: `examples/hyperliquid/largest_recent_fills.sql`.
 
-```sql
-SELECT
-    user,
-    count(*) as trades,
-    sum(sz * px) as notional_volume,
-    count(DISTINCT coin) as markets_traded,
-    count(DISTINCT toDate(time)) as active_days
-FROM fills
-WHERE time > now() - INTERVAL 7 DAY
-GROUP BY user
-ORDER BY notional_volume DESC
-LIMIT 50
+## Raw order-book archive
+
+The example supports a local directory or a configurable HTTP archive listing:
+
+```dotenv
+HYPERLIQUID_ORDER_BOOKS=https://captures.example.com/hyperliquid/
 ```
 
-### Win Rate Analysis
+### 1. Scan the raw filesystem
 
-```sql
-SELECT
-    user,
-    count(*) as closing_trades,
-    countIf(closedPnl > 0) as profitable,
-    countIf(closedPnl < 0) as unprofitable,
-    round(countIf(closedPnl > 0) / count(*) * 100, 2) as win_rate_pct,
-    sum(closedPnl) / 1e6 as total_pnl
-FROM fills
-WHERE time > now() - INTERVAL 30 DAY
-  AND closedPnl != 0
-GROUP BY user
-HAVING closing_trades > 100
-ORDER BY win_rate_pct DESC
-LIMIT 50
+```sh
+python3 examples/orderbooks/hyperliquid.py scan
 ```
 
----
+The recursive listing includes MessagePack ABCI checkpoints under `abci/` and
+compressed hourly JSON streams under `book_diffs/`, `order_statuses/`, and
+`fills/`.
 
-## Market Analysis
+### 2. Download a checkpoint and its hourly diffs
 
-### Volume by Market
+Choose paths returned by the scanner. Nested paths are allowed, but traversal
+outside the configured archive is rejected.
 
-```sql
-SELECT
-    coin,
-    count(*) as trades,
-    sum(sz * px) as notional_volume,
-    uniq(user) as unique_traders,
-    avg(sz * px) as avg_trade_size
-FROM fills
-WHERE time > now() - INTERVAL 24 HOUR
-GROUP BY coin
-ORDER BY notional_volume DESC
+```sh
+python3 examples/orderbooks/hyperliquid.py download \
+  abci/CHECKPOINT.rmp /tmp/checkpoint.rmp
+python3 examples/orderbooks/hyperliquid.py download \
+  book_diffs/YYYYMMDD/HOUR.zst /tmp/book-diffs.zst
 ```
 
-### Hourly Volume Trend
+The same-origin, traversal and 64 MiB bounds used by the Polymarket downloader
+also apply here.
 
-```sql
-SELECT
-    toStartOfHour(time) as hour,
-    coin,
-    count(*) as trades,
-    sum(sz * px) as volume
-FROM fills
-WHERE time > now() - INTERVAL 7 DAY
-  AND coin = 'BTC'
-GROUP BY hour, coin
-ORDER BY hour
+### 3. Reconstruct directly from the raw formats
+
+```sh
+python3 examples/orderbooks/hyperliquid.py reconstruct-raw \
+  /tmp/checkpoint.rmp BTC ACTION_ASSET SIZE_DECIMALS \
+  /tmp/book-diffs.zst
 ```
 
-### Long vs Short Bias
+`ACTION_ASSET` and `SIZE_DECIMALS` are the historical numeric asset encoding and
+size precision from that checkpoint's metadata. The replay reader seeks directly
+to the selected spot or perpetual book inside the MessagePack checkpoint rather
+than loading the entire checkpoint into memory. It then streams the zstd hourly
+envelopes and applies matching `raw_book_diff` records by order ID. Each diff:
 
-```sql
-SELECT
-    toStartOfHour(time) as hour,
-    coin,
-    sumIf(sz, side = 'B') as buy_volume,
-    sumIf(sz, side = 'A') as sell_volume,
-    sumIf(sz, side = 'B') - sumIf(sz, side = 'A') as net_bias
-FROM fills
-WHERE time > now() - INTERVAL 24 HOUR
-  AND coin = 'ETH'
-GROUP BY hour, coin
-ORDER BY hour
-```
+- inserts a new order with its order ID, side, price and size;
+- changes the remaining size of an existing order; or
+- removes the order ID.
 
----
+Only after replay are live orders aggregated into price levels. This preserves
+correctness for partial fills and cancellation of one order among several at the
+same price. The output reports timestamp, best bid, best ask and live order
+count.
 
-## Liquidation Analysis
+The strict build executes scan, bounded download and reconstruction against both
+a deterministic JSONL recovery sequence and a generated MessagePack checkpoint
+plus raw hourly diff stream. It also recursively scans the configured live
+HyperLiquid archive, so storage-layout drift fails the docs build.
 
-### Recent Liquidations
+### Strict 24-hour cross-venue build check
 
-```sql
-SELECT
-    time,
-    user,
-    coin,
-    side,
-    px as liquidation_price,
-    sz as size,
-    closedPnl / 1e6 as pnl
-FROM fills
-WHERE liquidation = 1
-  AND time > now() - INTERVAL 24 HOUR
-ORDER BY time DESC
-LIMIT 100
-```
+Inside the Docker `checker` stage, the verifier selects a captured Polymarket
+Bitcoin five-minute interval near `UTC now - 24 hours` and reads checkpoint
+timestamps from the live archive. It downloads the newest ABCI MessagePack
+checkpoint at or before that interval plus every required hourly diff file. For
+the BTC perpetual book it then:
 
-### Liquidation Volume by Market
+1. loads the order-level checkpoint state for action asset `0`;
+2. ignores diff blocks already represented by the checkpoint;
+3. applies raw diffs across the exact market window;
+4. samples bid, ask, midpoint, spread and ten-basis-point depth each second; and
+5. requires live orders and a non-crossed `best_bid < best_ask` result.
 
-```sql
-SELECT
-    coin,
-    count(*) as liquidations,
-    sum(sz * px) as liquidated_notional,
-    sum(closedPnl) / 1e6 as total_pnl_lost
-FROM fills
-WHERE liquidation = 1
-  AND time > now() - INTERVAL 7 DAY
-GROUP BY coin
-ORDER BY liquidated_notional DESC
-```
+The raw inputs are held in a temporary directory and removed before the checker
+layer is committed. The generated chart continues to the static-site builder.
+This is intentionally a large, slow integrity check.
 
-### Wallets with Multiple Liquidations
-
-```sql
-SELECT
-    user,
-    count(*) as liquidation_count,
-    sum(sz * px) as total_liquidated,
-    arrayDistinct(groupArray(coin)) as markets
-FROM fills
-WHERE liquidation = 1
-  AND time > now() - INTERVAL 30 DAY
-GROUP BY user
-HAVING liquidation_count > 3
-ORDER BY liquidation_count DESC
-LIMIT 50
-```
-
----
-
-## Funding Analysis
-
-### Current Funding Rates
-
-```sql
-SELECT
-    coin,
-    argMax(fundingRate, time) as latest_funding,
-    argMax(fundingRate, time) * 24 * 365 as annualized
-FROM fundings
-WHERE time > now() - INTERVAL 1 HOUR
-GROUP BY coin
-ORDER BY abs(latest_funding) DESC
-```
-
-### Funding Rate History
-
-```sql
-SELECT
-    toStartOfHour(time) as hour,
-    coin,
-    avg(fundingRate) as avg_funding,
-    avg(fundingRate) * 24 * 365 as annualized
-FROM fundings
-WHERE time > now() - INTERVAL 7 DAY
-  AND coin IN ('BTC', 'ETH', 'SOL')
-GROUP BY hour, coin
-ORDER BY hour, coin
-```
-
-### Top Funding Earners
-
-```sql
-SELECT
-    user,
-    sum(usdc) as total_funding_pnl,
-    count(*) as funding_events,
-    avg(usdc) as avg_funding_payment
-FROM user_fundings
-WHERE time > now() - INTERVAL 30 DAY
-GROUP BY user
-ORDER BY total_funding_pnl DESC
-LIMIT 50
-```
-
----
-
-## TWAP Analysis
-
-### Active TWAP Orders
-
-```sql
-SELECT
-    twapId,
-    user,
-    coin,
-    side,
-    min(time) as started,
-    max(time) as last_fill,
-    count(*) as fills,
-    sum(sz) as total_filled,
-    sum(sz * px) / sum(sz) as avg_price
-FROM twaps
-WHERE time > now() - INTERVAL 24 HOUR
-GROUP BY twapId, user, coin, side
-ORDER BY started DESC
-LIMIT 50
-```
-
-### TWAP Execution Quality
-
-```sql
-WITH twap_summary AS (
-    SELECT
-        twapId,
-        user,
-        coin,
-        sum(sz * px) / sum(sz) as twap_avg_price,
-        sum(sz) as total_size,
-        dateDiff('minute', min(time), max(time)) as duration_minutes
-    FROM twaps
-    WHERE time > now() - INTERVAL 7 DAY
-    GROUP BY twapId, user, coin
-    HAVING count(*) > 5
-)
-SELECT
-    coin,
-    count(*) as twap_orders,
-    avg(total_size) as avg_order_size,
-    avg(duration_minutes) as avg_duration_min
-FROM twap_summary
-GROUP BY coin
-ORDER BY twap_orders DESC
-```
-
----
-
-## Cross-Analysis
-
-### Correlation: Large Fills and Liquidations
-
-```sql
-SELECT
-    toStartOfMinute(time) as minute,
-    coin,
-    sumIf(sz * px, liquidation = 0) as regular_volume,
-    sumIf(sz * px, liquidation = 1) as liquidation_volume,
-    countIf(liquidation = 1) as liquidation_count
-FROM fills
-WHERE time > now() - INTERVAL 1 HOUR
-  AND coin = 'BTC'
-GROUP BY minute, coin
-HAVING liquidation_count > 0
-ORDER BY minute
-```
-
-### Smart Wallet Tracker
-
-Track wallets with high win rates and significant volume:
-
-```sql
-WITH wallet_stats AS (
-    SELECT
-        user,
-        count(*) as trades,
-        sum(sz * px) as volume,
-        sum(closedPnl) / 1e6 as pnl,
-        countIf(closedPnl > 0) / countIf(closedPnl != 0) as win_rate
-    FROM fills
-    WHERE time > now() - INTERVAL 30 DAY
-    GROUP BY user
-    HAVING trades > 100 AND countIf(closedPnl != 0) > 50
-)
-SELECT *
-FROM wallet_stats
-WHERE win_rate > 0.55 AND pnl > 10000
-ORDER BY pnl DESC
-LIMIT 50
-```
-
----
-
-## Performance Tips
-
-1. **Always filter by time** — Tables are partitioned by date
-2. **Use coin filter** — Narrows scan significantly
-3. **Aggregate first** — Reduce data before complex operations
-
-```sql
--- Check query plan
-EXPLAIN SELECT count(*) FROM fills WHERE time > today()
+```sh
+python3 examples/orderbooks/hyperliquid.py reconstruct-raw-at \
+  /tmp/checkpoint.rmp BTC 0 5 TARGET_UTC \
+  /tmp/book-diffs-1.zst /tmp/book-diffs-2.zst
 ```

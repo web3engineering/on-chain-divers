@@ -5,6 +5,7 @@
 
 # Dependencies
 node_modules/
+.venv/
 
 # Build output
 dist/
@@ -28,3 +29,4 @@ __pycache__/
 # Logs
 nohup.out
 *.log
+!examples/orderbooks/fixtures/**/*.log

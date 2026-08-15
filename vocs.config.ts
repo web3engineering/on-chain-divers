@@ -1,8 +1,13 @@
 import { defineConfig } from 'vocs'
 
 export default defineConfig({
-  title: 'W3E Docs',
-  description: 'Professional blockchain data infrastructure for traders, researchers, and builders',
+  vite: {
+    server: {
+      allowedHosts: ['onchaindivers.com'],
+    },
+  },
+  title: 'OnchainDivers Examples',
+  description: 'Executable examples for the OnchainDivers Solana, Polymarket, and HyperLiquid indexers',
   topNav: [
     { text: 'Blog', link: 'https://blog.onchaindivers.com' },
     { text: 'Request Trial', link: 'https://forms.gle/b5Fuuns7jcA3nHKv5' },
@@ -38,22 +43,7 @@ export default defineConfig({
         { text: 'Table Reference', link: '/polymarket/tables' },
       ],
     },
-    {
-      text: 'Geyser Node',
-      link: '/geyser',
-    },
-    {
-      text: 'Axiom API',
-      link: '/axiom-api',
-    },
-    {
-      text: 'Services',
-      collapsed: true,
-      items: [
-        { text: 'Overview', link: '/services/' },
-        { text: 'AI Assistant', link: '/services/ai-assistant' },
-        { text: 'WSOL Exchange', link: '/services/wsol-exchange' },
-      ],
-    },
+    { text: 'Bitcoin 5m Cross-Venue', link: '/bitcoin-5m-cross-venue' },
+    { text: 'Fees API', link: '/fees-api' },
   ],
 })

@@ -1,0 +1,63 @@
+# Bitcoin 5m Up/Down across two order books
+
+This feature example starts from a question that requires all three
+[OnchainDivers](https://onchaindivers.com) data surfaces: what did the prediction
+market see while the underlying BTC futures book moved during one five-minute
+resolution window?
+
+![Reconstructed Bitcoin five-minute Polymarket and HyperLiquid books](/examples/bitcoin-5m-updown.png)
+
+The image above is not checked in and cannot go stale unnoticed. The Python
+checker regenerates it from raw data before every successful documentation
+build.
+
+## What the script does
+
+`examples/cross_venue/bitcoin_5m_updown.py` performs the complete workflow:
+
+1. It asks `polymarket.raw_event_meta` for the completed
+   `btc-updown-5m-<epoch>` event near UTC now minus 24 hours, with a 15-minute
+   archive-finalization buffer. The epoch suffix
+   defines the exact interval; the script does not mistake metadata creation
+   time for market time. Tiny archive-edge files still being finalized are
+   skipped in favor of the nearest substantial dedicated capture, and a window
+   away from the UTC hour boundary avoids downloading a redundant hourly shard.
+2. It asks `polymarket.raw_market_meta` for the Up and Down rows, requires their
+   embedded event ID to match, and obtains both CLOB token IDs. No market or
+   token ID is hard-coded.
+3. It downloads the dedicated `<market-slug>.log.zst` file, extracts every
+   explicit best-bid/ask transition during the five minutes, and independently
+   replays full snapshots and price-level changes for both outcomes at close.
+4. It binary-searches HyperLiquid checkpoint timestamps, downloads the newest
+   MessagePack checkpoint before the interval and every required compressed
+   hourly diff shard, then loads BTC perpetual action asset `0` at size precision
+   `5`.
+5. It applies new, update, and remove messages by order ID while maintaining
+   aggregated bid and ask levels. Once per second it records best bid, best ask,
+   midpoint, spread, live order count, and depth within ten basis points.
+6. It renders four synchronized panels: BTC bid/ask, Up/Down probability,
+   normalized BTC return versus Up probability, and futures depth/spread.
+
+The adjacent JSON summary records the selected interval, resolved token IDs,
+sample counts, final order count, raw byte count, and chart path for automated
+checks.
+
+## Run it reproducibly
+
+All dependencies and execution happen inside the same checker image used by the
+site build:
+
+```sh
+docker build --target checker-base -t onchaindivers-docs:checker-base .
+docker run --rm \
+  --env-file .env \
+  --volume "$PWD/docs/public/examples:/app/docs/public/examples" \
+  onchaindivers-docs:checker-base \
+  python3 -u examples/cross_venue/bitcoin_5m_updown.py
+```
+
+The strict build invokes the same `run()` function after it has scanned both
+configured archives. It requires two Polymarket outcomes, the full 300
+one-second HyperLiquid samples, valid non-crossed books, and a substantial PNG.
+Any metadata drift, archive gap, raw-format change, truncated file, broken replay,
+or rendering failure prevents the static site from being built.
