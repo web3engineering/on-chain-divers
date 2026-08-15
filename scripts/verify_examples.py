@@ -20,7 +20,12 @@ from pathlib import Path
 import msgpack
 from dotenv import dotenv_values
 
-from clickhouse_accessors import ClickHouseAccessor, HyperLiquidAccessor, PolymarketAccessor
+from clickhouse_accessors import (
+    ClickHouseAccessor,
+    HyperLiquidAccessor,
+    PolymarketAccessor,
+    RobinhoodAccessor,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -186,6 +191,8 @@ def verify_sql() -> None:
         (ClickHouseAccessor, "solana/creator_migration_rates.sql"),
         (PolymarketAccessor, "polymarket/recent_fills.sql"),
         (HyperLiquidAccessor, "hyperliquid/largest_recent_fills.sql"),
+        (RobinhoodAccessor, "robinhood/recent_uniswap_trades.sql"),
+        (RobinhoodAccessor, "robinhood/most_active_pools.sql"),
     ]
     for accessor_type, relative in examples:
         client = accessor_type(str(ROOT / ".env"))

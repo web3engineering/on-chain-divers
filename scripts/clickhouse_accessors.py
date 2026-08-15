@@ -94,3 +94,15 @@ class PolymarketAccessor(ClickHouseAccessor):
         self.username = self._required(config, "POLY_CLICKHOUSE_USER")
         self.password = self._required(config, "POLY_CLICKHOUSE_PASSWORD")
         self.client = None
+
+
+class RobinhoodAccessor(ClickHouseAccessor):
+    """Access the separate Robinhood database using dedicated credentials."""
+
+    def __init__(self, env_path: str):
+        config = self._load_config(env_path)
+        url = self._required(config, "ROBINHOOD_CLICKHOUSE_URL")
+        self.host, self.port = self._host_and_port(url)
+        self.username = self._required(config, "ROBINHOOD_CLICKHOUSE_USER")
+        self.password = self._required(config, "ROBINHOOD_CLICKHOUSE_PASSWORD")
+        self.client = None

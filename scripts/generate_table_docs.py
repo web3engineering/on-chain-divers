@@ -4,7 +4,8 @@ Generate MDX documentation for ClickHouse database tables.
 
 Project and indexer documentation: https://onchaindivers.com
 
-This script queries ClickHouse databases (Solana, Polymarket, HyperLiquid)
+This script queries ClickHouse databases (Solana, Polymarket, HyperLiquid,
+Robinhood)
 and generates MDX documentation pages with table metadata, row counts,
 date ranges, TTL, partitioning, and column information.
 
@@ -31,7 +32,12 @@ from typing import Any, Dict, List, Optional, Set
 import yaml
 from dotenv import dotenv_values
 
-from clickhouse_accessors import ClickHouseAccessor, HyperLiquidAccessor, PolymarketAccessor
+from clickhouse_accessors import (
+    ClickHouseAccessor,
+    HyperLiquidAccessor,
+    PolymarketAccessor,
+    RobinhoodAccessor,
+)
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent
@@ -81,6 +87,14 @@ HYPERLIQUID_TABLES_WHITELIST: Set[str] = {
     "agg_fulfilled_order",
 }
 
+ROBINHOOD_TABLES_WHITELIST: Set[str] = {
+    "tokens",
+    "uniswap_v3_pools",
+    "uniswap_v3_trades",
+    "uniswap_v4_pools",
+    "uniswap_v4_trades",
+}
+
 # Existing internal, backup, or superseded tables that are intentionally not
 # published. Keeping these explicit ensures any newly discovered table fails
 # validation instead of being silently filtered out.
@@ -101,6 +115,7 @@ TABLE_EXCLUSIONS: Dict[str, Set[str]] = {
         "spot_asset_meta",
         "spot_pair_meta",
     },
+    "robinhood": set(),
 }
 
 # Published tables per database (empty = publish all tables)
@@ -108,6 +123,7 @@ TABLE_WHITELISTS: Dict[str, Set[str]] = {
     "solana": SOLANA_TABLES_WHITELIST,
     "polymarket": POLYMARKET_TABLES_WHITELIST,
     "hyperliquid": HYPERLIQUID_TABLES_WHITELIST,
+    "robinhood": ROBINHOOD_TABLES_WHITELIST,
 }
 
 # ClickHouse database names (the actual database to query, not the connection default)
@@ -115,6 +131,7 @@ DATABASE_NAMES: Dict[str, str] = {
     "solana": "default",  # Solana uses the default database
     "polymarket": "polymarket",
     "hyperliquid": "hyperliquid",
+    "robinhood": "robinhood",
 }
 
 
@@ -556,7 +573,14 @@ def get_date_range(
         return get_date_range_by_slot(accessor, table_name, db_name)
 
     # Fallback to generic timestamp columns
-    timestamp_columns = ["block_time", "timestamp", "time", "created_at", "event_time"]
+    timestamp_columns = [
+        "block_time",
+        "block_timestamp",
+        "timestamp",
+        "time",
+        "created_at",
+        "event_time",
+    ]
     return get_date_range_generic(accessor, table_name, timestamp_columns, db_name)
 
 
@@ -804,7 +828,7 @@ def generate_database_mdx(
         lines.append("**Example Query:**")
         lines.append("")
         lines.append(f"<ClickHouseSqlExample database=\"{database_name}\">")
-        lines.append(f"SELECT * FROM {table_name} LIMIT 10")
+        lines.append(f"SELECT * FROM {db_name}.{table_name} LIMIT 10")
         lines.append("</ClickHouseSqlExample>")
         lines.append("")
         lines.append("---")
@@ -862,6 +886,13 @@ def main():
             "display_name": "HyperLiquid Tables",
             "description": "Tables containing HyperLiquid perpetual exchange data including trades, orders, and funding rates.",
             "accessor_class": HyperLiquidAccessor,
+            "use_slot_optimization": False,
+        },
+        {
+            "name": "robinhood",
+            "display_name": "Robinhood Chain Tables",
+            "description": "Tables containing Robinhood Chain token metadata and decoded Uniswap v3 and v4 pool and swap events.",
+            "accessor_class": RobinhoodAccessor,
             "use_slot_optimization": False,
         },
     ]
@@ -959,6 +990,7 @@ def create_placeholder_docs():
         ("solana", "Solana Tables", "Tables containing Solana blockchain data."),
         ("polymarket", "Polymarket Tables", "Tables containing Polymarket prediction market data."),
         ("hyperliquid", "HyperLiquid Tables", "Tables containing HyperLiquid perpetual trading data."),
+        ("robinhood", "Robinhood Chain Tables", "Tables containing Robinhood Chain token and Uniswap data."),
     ]
 
     for db_name, display_name, description in databases:

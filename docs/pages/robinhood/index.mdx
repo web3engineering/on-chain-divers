@@ -1,0 +1,28 @@
+# Robinhood Chain indexer
+
+Robinhood Chain is an Ethereum-compatible Arbitrum Layer 2. OnchainDivers
+provides its decoded token and Uniswap activity in a dedicated `robinhood`
+ClickHouse database, separate from the Solana, Polymarket and HyperLiquid
+datasets.
+
+The network uses ETH for gas and chain ID `4663`. See the
+[official Robinhood Chain documentation](https://docs.robinhood.com/chain/)
+for network concepts and connection details.
+
+| Table | Purpose |
+| --- | --- |
+| `tokens` | ERC-20 identities, descriptive metadata, creator and creation context |
+| `uniswap_v3_pools` | v3 token pairs, pool fee and tick spacing |
+| `uniswap_v3_trades` | v3 swap amounts, price, liquidity, tick and transaction context |
+| `uniswap_v4_pools` | v4 currencies, fee, hooks and initial pool state |
+| `uniswap_v4_trades` | v4 swap amounts, fee, price, liquidity, tick and transaction context |
+
+All decoded records retain block, log, transaction, gas and EIP-1559 fee
+fields. This makes it possible to reproduce event ordering and relate protocol
+activity to its execution cost without querying a second provider.
+
+Credentials are supplied through `.env`; no deployment address or credential
+is included in this site.
+
+- [Verified Robinhood Chain examples](/robinhood/examples)
+- [Live Robinhood Chain table reference](/robinhood/tables)

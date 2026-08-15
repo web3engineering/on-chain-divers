@@ -1,0 +1,123 @@
+# Verified Robinhood Chain examples
+
+Robinhood data uses dedicated read-only credentials because `robinhood` is a
+separate ClickHouse database. Configure these values in `.env`:
+
+```dotenv
+ROBINHOOD_CLICKHOUSE_URL=clickhouse.example.com:8123
+ROBINHOOD_CLICKHOUSE_USER=docs_reader
+ROBINHOOD_CLICKHOUSE_PASSWORD=replace-me
+```
+
+## Compare recent Uniswap v3 and v4 swaps
+
+The first query normalizes pool identifiers and signed raw token amounts across
+both Uniswap versions while preserving their protocol-specific sender and
+recipient behavior. Amounts remain strings so 128-bit and 256-bit integers are
+not truncated by downstream JSON consumers.
+
+```sql
+SELECT
+    protocol,
+    block_timestamp,
+    transaction_hash,
+    pool,
+    sender,
+    recipient,
+    amount0_raw,
+    amount1_raw,
+    tick,
+    sqrt_price_x96
+FROM
+(
+    SELECT
+        'uniswap_v3' AS protocol,
+        block_timestamp,
+        transaction_hash,
+        pool_address AS pool,
+        sender,
+        toNullable(recipient) AS recipient,
+        toString(amount0) AS amount0_raw,
+        toString(amount1) AS amount1_raw,
+        tick,
+        toString(sqrt_price_x96) AS sqrt_price_x96
+    FROM robinhood.uniswap_v3_trades
+    PREWHERE block_timestamp >= now() - INTERVAL 1 HOUR
+    ORDER BY block_number DESC, transaction_index DESC, log_index DESC
+    LIMIT 50
+
+    UNION ALL
+
+    SELECT
+        'uniswap_v4' AS protocol,
+        block_timestamp,
+        transaction_hash,
+        pool_id AS pool,
+        sender,
+        CAST(NULL, 'Nullable(String)') AS recipient,
+        toString(amount0) AS amount0_raw,
+        toString(amount1) AS amount1_raw,
+        tick,
+        toString(sqrt_price_x96) AS sqrt_price_x96
+    FROM robinhood.uniswap_v4_trades
+    PREWHERE block_timestamp >= now() - INTERVAL 1 HOUR
+    ORDER BY block_number DESC, transaction_index DESC, log_index DESC
+    LIMIT 50
+)
+ORDER BY block_timestamp DESC
+LIMIT 100
+```
+
+Source: `examples/robinhood/recent_uniswap_trades.sql`.
+
+## Find the most active pools
+
+The second query scans the latest complete UTC hour rather than a moving partial
+hour. It groups both protocols into one result while retaining the pool key
+format used by each version.
+
+```sql
+WITH pool_activity AS
+(
+    SELECT
+        'uniswap_v3' AS protocol,
+        pool_address AS pool,
+        count() AS trades,
+        uniqExact(transaction_hash) AS transactions,
+        min(block_timestamp) AS first_trade,
+        max(block_timestamp) AS last_trade
+    FROM robinhood.uniswap_v3_trades
+    PREWHERE block_timestamp >= toStartOfHour(now()) - INTERVAL 1 HOUR
+        AND block_timestamp < toStartOfHour(now())
+    GROUP BY pool_address
+
+    UNION ALL
+
+    SELECT
+        'uniswap_v4' AS protocol,
+        pool_id AS pool,
+        count() AS trades,
+        uniqExact(transaction_hash) AS transactions,
+        min(block_timestamp) AS first_trade,
+        max(block_timestamp) AS last_trade
+    FROM robinhood.uniswap_v4_trades
+    PREWHERE block_timestamp >= toStartOfHour(now()) - INTERVAL 1 HOUR
+        AND block_timestamp < toStartOfHour(now())
+    GROUP BY pool_id
+)
+SELECT
+    protocol,
+    pool,
+    trades,
+    transactions,
+    first_trade,
+    last_trade
+FROM pool_activity
+ORDER BY trades DESC, protocol, pool
+LIMIT 50
+```
+
+Source: `examples/robinhood/most_active_pools.sql`.
+
+Both source queries execute against the live database during the Docker checker
+stage. Empty results or schema/query errors fail the documentation build.

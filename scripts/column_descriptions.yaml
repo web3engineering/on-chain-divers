@@ -622,3 +622,73 @@ hyperliquid:
     size: "Total filled size (in contracts)"
     volume: "Total filled volume in USD"
     closed_pnl: "Realized PnL from this order"
+
+robinhood:
+  _common:
+    event_id: "Unique identifier for the decoded contract event"
+    block_number: "EVM block number containing the event"
+    log_index: "Event log index within the transaction receipt"
+    transaction_index: "Transaction index within the block"
+    contract_address: "Address of the contract that emitted the event"
+    block_hash: "Hash of the block containing the event"
+    block_timestamp: "UTC timestamp of the block containing the event"
+    gas_used: "Gas consumed by the transaction"
+    gas_limit: "Transaction gas limit"
+    base_fee_per_gas: "Block base fee per gas in wei"
+    transaction_hash: "Hash of the transaction containing the event"
+    transaction_from: "Address that submitted the transaction"
+    transaction_to: "Transaction destination address"
+    transaction_value: "Native ETH value sent with the transaction, in wei"
+    transaction_gas: "Gas limit declared by the transaction"
+    transaction_nonce: "Sender nonce used by the transaction"
+    max_fee_per_gas: "Maximum EIP-1559 fee per gas in wei"
+    max_priority_fee_per_gas: "Maximum EIP-1559 priority fee per gas in wei"
+    inserted_at: "UTC timestamp when the record was inserted into ClickHouse"
+
+  tokens:
+    token_address: "ERC-20 token contract address"
+    name: "Token name from contract metadata"
+    symbol: "Token ticker symbol from contract metadata"
+    decimals: "Number of decimal places used by the token"
+    description: "Human-readable token description when available"
+    website: "Project website URL when available"
+    image: "Token image URL when available"
+    extra_data: "Additional token metadata serialized as text"
+    creator: "Address associated with creation of the token"
+
+  uniswap_v3_pools:
+    pool_address: "Address of the Uniswap v3 pool contract"
+    token0: "Address of token0 in the pool"
+    token1: "Address of token1 in the pool"
+    fee: "Pool swap fee in hundredths of a basis point"
+    tick_spacing: "Permitted spacing between initialized ticks"
+
+  uniswap_v3_trades:
+    pool_address: "Address of the Uniswap v3 pool contract"
+    sender: "Address that initiated the swap callback"
+    recipient: "Address that received the swap output"
+    amount0: "Signed change in the pool's token0 balance, in raw token units"
+    amount1: "Signed change in the pool's token1 balance, in raw token units"
+    sqrt_price_x96: "Pool square-root price after the swap as a Q64.96 integer"
+    liquidity: "In-range pool liquidity after the swap"
+    tick: "Pool tick after the swap"
+
+  uniswap_v4_pools:
+    pool_id: "Uniswap v4 pool identifier derived from its PoolKey"
+    currency0: "Address of currency0, or the native-currency sentinel"
+    currency1: "Address of currency1, or the native-currency sentinel"
+    fee: "Pool swap fee in hundredths of a basis point"
+    tick_spacing: "Permitted spacing between initialized ticks"
+    hooks: "Address of the hooks contract configured for the pool"
+    init_sqrt_price_x96: "Initial square-root price encoded as a Q64.96 integer"
+    init_tick: "Pool tick at initialization"
+
+  uniswap_v4_trades:
+    pool_id: "Uniswap v4 pool identifier derived from its PoolKey"
+    sender: "Address recorded as the swap sender"
+    amount0: "Signed change in the pool's currency0 balance, in raw units"
+    amount1: "Signed change in the pool's currency1 balance, in raw units"
+    sqrt_price_x96: "Pool square-root price after the swap as a Q64.96 integer"
+    liquidity: "In-range pool liquidity after the swap"
+    tick: "Pool tick after the swap"
+    fee: "Swap fee applied to this event in hundredths of a basis point"

@@ -7,7 +7,7 @@ export default defineConfig({
     },
   },
   title: 'OnchainDivers Examples',
-  description: 'Executable examples for the OnchainDivers Solana, Polymarket, and HyperLiquid indexers',
+  description: 'Executable examples for the OnchainDivers Solana, Polymarket, HyperLiquid, and Robinhood Chain indexers',
   topNav: [
     { text: 'Blog', link: 'https://onchaindivers.substack.com/' },
     { text: 'Request Trial', link: 'https://forms.gle/b5Fuuns7jcA3nHKv5' },
@@ -41,6 +41,15 @@ export default defineConfig({
         { text: 'Overview', link: '/polymarket/' },
         { text: 'Query Examples', link: '/polymarket/examples' },
         { text: 'Table Reference', link: '/polymarket/tables' },
+      ],
+    },
+    {
+      text: 'Robinhood Chain Indexer',
+      collapsed: false,
+      items: [
+        { text: 'Overview', link: '/robinhood/' },
+        { text: 'Query Examples', link: '/robinhood/examples' },
+        { text: 'Table Reference', link: '/robinhood/tables' },
       ],
     },
     { text: 'Bitcoin 5m Cross-Venue', link: '/bitcoin-5m-cross-venue' },

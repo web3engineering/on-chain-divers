@@ -6,7 +6,7 @@ import {
   createColumnHelper,
 } from '@tanstack/react-table';
 
-type Database = 'solana' | 'polymarket' | 'hyperliquid';
+type Database = 'solana' | 'polymarket' | 'hyperliquid' | 'robinhood';
 
 interface Credentials {
   host: string;
@@ -23,6 +23,14 @@ const DATABASE_DEFAULTS: Record<Database, { host: string; port: string }> = {
   solana: { host: '', port: '8443' },
   polymarket: { host: '', port: '8443' },
   hyperliquid: { host: '', port: '8443' },
+  robinhood: { host: '', port: '8443' },
+};
+
+const CLICKHOUSE_DATABASES: Record<Database, string> = {
+  solana: 'default',
+  polymarket: 'polymarket',
+  hyperliquid: 'hyperliquid',
+  robinhood: 'robinhood',
 };
 
 const STORAGE_KEY_PREFIX = 'clickhouse_credentials_';
@@ -370,7 +378,8 @@ export function ClickHouseSqlExample({ database, children }: ClickHouseSqlExampl
         }
 
         const protocol = port === '8443' ? 'https' : 'http';
-        const url = `${protocol}://${host}:${port}/?default_format=JSON`;
+        const databaseName = encodeURIComponent(CLICKHOUSE_DATABASES[database]);
+        const url = `${protocol}://${host}:${port}/?default_format=JSON&database=${databaseName}`;
 
         const response = await fetch(url, {
           method: 'POST',

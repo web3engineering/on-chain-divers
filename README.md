@@ -6,6 +6,7 @@ This repository is a self-contained, executable guide to the
 - structured ClickHouse data for Solana DEX activity and helper tables;
 - structured ClickHouse data for Polymarket fills and metadata;
 - structured ClickHouse data for HyperLiquid fills, orders, wallets and positions;
+- structured ClickHouse data for Robinhood Chain tokens and Uniswap v3/v4 activity;
 - the aggregate fees API;
 - raw Polymarket and HyperLiquid order-book archive discovery, download and replay; and
 - a synchronized Bitcoin five-minute Polymarket/HyperLiquid market reconstruction
@@ -24,6 +25,7 @@ build.
 | Solana | Pump.fun, PumpSwap, Raydium AMM/CPMM/Launchpad, Meteora DLMM/Dynamic Bonding, Jito | token transfers, SOL top-ups, blocks, transaction timestamps, token creation, migrations, creator fees, caps |
 | Polymarket | order fills | event and market metadata |
 | HyperLiquid | raw fills and fulfilled orders | perpetual wallets and wallet positions |
+| Robinhood Chain | Uniswap v3 and v4 pools and swaps | token metadata and EVM transaction context |
 
 The exact live schemas and row counts are generated into the table-reference
 pages. The generator intentionally uses a whitelist: a newly appearing table or
@@ -58,7 +60,7 @@ the docs.
 
 The Dockerfile is deliberately multi-stage:
 
-1. The Python `checker` stage queries all three ClickHouse databases, generates
+1. The Python `checker` stage queries all four ClickHouse databases, generates
    schema pages, downloads the configured raw samples, and executes every
    published example, including the 24-hour historical cross-venue chart.
 2. Node.js builds the static Vocs site from that verified content.

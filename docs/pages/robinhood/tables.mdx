@@ -1,0 +1,265 @@
+# Robinhood Chain Tables
+
+Tables containing Robinhood Chain token metadata and decoded Uniswap v3 and v4 pool and swap events.
+
+*Last updated: 2026-08-15 21:21 UTC*
+
+import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
+
+## Tables (5)
+
+| Table | Rows | Size |
+|-------|------|------|
+| [tokens](#tokens) | 51,016 | 24.4 MB |
+| [uniswap_v3_pools](#uniswap_v3_pools) | 449,012 | 158.8 MB |
+| [uniswap_v3_trades](#uniswap_v3_trades) | 93,646,638 | 24.96 GB |
+| [uniswap_v4_pools](#uniswap_v4_pools) | 382,494 | 147.9 MB |
+| [uniswap_v4_trades](#uniswap_v4_trades) | 36,091,891 | 8.67 GB |
+
+---
+
+### tokens
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 51,016 |
+| **Size** | 24.4 MB |
+| **First Record** | 2026-07-08 |
+| **Last Record** | 2026-08-15 |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `token_address` | `String` | ERC-20 token contract address |
+| `name` | `String` | Token name from contract metadata |
+| `symbol` | `String` | Token ticker symbol from contract metadata |
+| `decimals` | `UInt8` | Number of decimal places used by the token |
+| `description` | `String` | Human-readable token description when available |
+| `website` | `String` | Project website URL when available |
+| `image` | `String` | Token image URL when available |
+| `extra_data` | `String` | Additional token metadata serialized as text |
+| `creator` | `String` | Address associated with creation of the token |
+| `event_id` | `String` | Unique identifier for the decoded contract event |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `log_index` | `UInt32` | Event log index within the transaction receipt |
+| `transaction_index` | `UInt32` | Transaction index within the block |
+| `contract_address` | `String` | Address of the contract that emitted the event |
+| `block_hash` | `String` | Hash of the block containing the event |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block containing the event |
+| `gas_used` | `UInt64` | Gas consumed by the transaction |
+| `gas_limit` | `UInt64` | Transaction gas limit |
+| `base_fee_per_gas` | `UInt256` | Block base fee per gas in wei |
+| `transaction_hash` | `String` | Hash of the transaction containing the event |
+| `transaction_from` | `String` | Address that submitted the transaction |
+| `transaction_to` | `String` | Transaction destination address |
+| `transaction_value` | `UInt256` | Native ETH value sent with the transaction, in wei |
+| `transaction_gas` | `UInt64` | Gas limit declared by the transaction |
+| `transaction_nonce` | `UInt64` | Sender nonce used by the transaction |
+| `max_fee_per_gas` | `UInt256` | Maximum EIP-1559 fee per gas in wei |
+| `max_priority_fee_per_gas` | `UInt256` | Maximum EIP-1559 priority fee per gas in wei |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.tokens LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### uniswap_v3_pools
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 449,012 |
+| **Size** | 158.8 MB |
+| **First Record** | 2026-06-18 |
+| **Last Record** | 2026-08-15 |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `pool_address` | `String` | Address of the Uniswap v3 pool contract |
+| `token0` | `String` | Address of token0 in the pool |
+| `token1` | `String` | Address of token1 in the pool |
+| `fee` | `UInt32` | Pool swap fee in hundredths of a basis point |
+| `tick_spacing` | `Int32` | Permitted spacing between initialized ticks |
+| `event_id` | `String` | Unique identifier for the decoded contract event |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `log_index` | `UInt32` | Event log index within the transaction receipt |
+| `transaction_index` | `UInt32` | Transaction index within the block |
+| `contract_address` | `String` | Address of the contract that emitted the event |
+| `block_hash` | `String` | Hash of the block containing the event |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block containing the event |
+| `gas_used` | `UInt64` | Gas consumed by the transaction |
+| `gas_limit` | `UInt64` | Transaction gas limit |
+| `base_fee_per_gas` | `UInt256` | Block base fee per gas in wei |
+| `transaction_hash` | `String` | Hash of the transaction containing the event |
+| `transaction_from` | `String` | Address that submitted the transaction |
+| `transaction_to` | `String` | Transaction destination address |
+| `transaction_value` | `UInt256` | Native ETH value sent with the transaction, in wei |
+| `transaction_gas` | `UInt64` | Gas limit declared by the transaction |
+| `transaction_nonce` | `UInt64` | Sender nonce used by the transaction |
+| `max_fee_per_gas` | `UInt256` | Maximum EIP-1559 fee per gas in wei |
+| `max_priority_fee_per_gas` | `UInt256` | Maximum EIP-1559 priority fee per gas in wei |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.uniswap_v3_pools LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### uniswap_v3_trades
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 93,646,638 |
+| **Size** | 24.96 GB |
+| **First Record** | 2026-05-22 |
+| **Last Record** | 2026-08-15 |
+| **Partition Key** | `toYYYYMMDD(block_timestamp)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `pool_address` | `String` | Address of the Uniswap v3 pool contract |
+| `sender` | `String` | Address that initiated the swap callback |
+| `recipient` | `String` | Address that received the swap output |
+| `amount0` | `Int256` | Signed change in the pool's token0 balance, in raw token units |
+| `amount1` | `Int256` | Signed change in the pool's token1 balance, in raw token units |
+| `sqrt_price_x96` | `UInt256` | Pool square-root price after the swap as a Q64.96 integer |
+| `liquidity` | `UInt128` | In-range pool liquidity after the swap |
+| `tick` | `Int32` | Pool tick after the swap |
+| `event_id` | `String` | Unique identifier for the decoded contract event |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `log_index` | `UInt32` | Event log index within the transaction receipt |
+| `transaction_index` | `UInt32` | Transaction index within the block |
+| `contract_address` | `String` | Address of the contract that emitted the event |
+| `block_hash` | `String` | Hash of the block containing the event |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block containing the event |
+| `gas_used` | `UInt64` | Gas consumed by the transaction |
+| `gas_limit` | `UInt64` | Transaction gas limit |
+| `base_fee_per_gas` | `UInt256` | Block base fee per gas in wei |
+| `transaction_hash` | `String` | Hash of the transaction containing the event |
+| `transaction_from` | `String` | Address that submitted the transaction |
+| `transaction_to` | `String` | Transaction destination address |
+| `transaction_value` | `UInt256` | Native ETH value sent with the transaction, in wei |
+| `transaction_gas` | `UInt64` | Gas limit declared by the transaction |
+| `transaction_nonce` | `UInt64` | Sender nonce used by the transaction |
+| `max_fee_per_gas` | `UInt256` | Maximum EIP-1559 fee per gas in wei |
+| `max_priority_fee_per_gas` | `UInt256` | Maximum EIP-1559 priority fee per gas in wei |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.uniswap_v3_trades LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### uniswap_v4_pools
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 382,494 |
+| **Size** | 147.9 MB |
+| **First Record** | 2026-05-22 |
+| **Last Record** | 2026-08-15 |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `pool_id` | `String` | Uniswap v4 pool identifier derived from its PoolKey |
+| `currency0` | `String` | Address of currency0, or the native-currency sentinel |
+| `currency1` | `String` | Address of currency1, or the native-currency sentinel |
+| `fee` | `UInt32` | Pool swap fee in hundredths of a basis point |
+| `tick_spacing` | `Int32` | Permitted spacing between initialized ticks |
+| `hooks` | `String` | Address of the hooks contract configured for the pool |
+| `init_sqrt_price_x96` | `UInt256` | Initial square-root price encoded as a Q64.96 integer |
+| `init_tick` | `Int32` | Pool tick at initialization |
+| `event_id` | `String` | Unique identifier for the decoded contract event |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `log_index` | `UInt32` | Event log index within the transaction receipt |
+| `transaction_index` | `UInt32` | Transaction index within the block |
+| `contract_address` | `String` | Address of the contract that emitted the event |
+| `block_hash` | `String` | Hash of the block containing the event |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block containing the event |
+| `gas_used` | `UInt64` | Gas consumed by the transaction |
+| `gas_limit` | `UInt64` | Transaction gas limit |
+| `base_fee_per_gas` | `UInt256` | Block base fee per gas in wei |
+| `transaction_hash` | `String` | Hash of the transaction containing the event |
+| `transaction_from` | `String` | Address that submitted the transaction |
+| `transaction_to` | `String` | Transaction destination address |
+| `transaction_value` | `UInt256` | Native ETH value sent with the transaction, in wei |
+| `transaction_gas` | `UInt64` | Gas limit declared by the transaction |
+| `transaction_nonce` | `UInt64` | Sender nonce used by the transaction |
+| `max_fee_per_gas` | `UInt256` | Maximum EIP-1559 fee per gas in wei |
+| `max_priority_fee_per_gas` | `UInt256` | Maximum EIP-1559 priority fee per gas in wei |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.uniswap_v4_pools LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### uniswap_v4_trades
+
+| Statistic | Value |
+|-----------|-------|
+| **Rows** | 36,091,891 |
+| **Size** | 8.67 GB |
+| **First Record** | 2026-05-22 |
+| **Last Record** | 2026-08-15 |
+| **Partition Key** | `toYYYYMMDD(block_timestamp)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `pool_id` | `String` | Uniswap v4 pool identifier derived from its PoolKey |
+| `sender` | `String` | Address recorded as the swap sender |
+| `amount0` | `Int128` | Signed change in the pool's currency0 balance, in raw units |
+| `amount1` | `Int128` | Signed change in the pool's currency1 balance, in raw units |
+| `sqrt_price_x96` | `UInt256` | Pool square-root price after the swap as a Q64.96 integer |
+| `liquidity` | `UInt128` | In-range pool liquidity after the swap |
+| `tick` | `Int32` | Pool tick after the swap |
+| `fee` | `UInt32` | Swap fee applied to this event in hundredths of a basis point |
+| `event_id` | `String` | Unique identifier for the decoded contract event |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `log_index` | `UInt32` | Event log index within the transaction receipt |
+| `transaction_index` | `UInt32` | Transaction index within the block |
+| `contract_address` | `String` | Address of the contract that emitted the event |
+| `block_hash` | `String` | Hash of the block containing the event |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block containing the event |
+| `gas_used` | `UInt64` | Gas consumed by the transaction |
+| `gas_limit` | `UInt64` | Transaction gas limit |
+| `base_fee_per_gas` | `UInt256` | Block base fee per gas in wei |
+| `transaction_hash` | `String` | Hash of the transaction containing the event |
+| `transaction_from` | `String` | Address that submitted the transaction |
+| `transaction_to` | `String` | Transaction destination address |
+| `transaction_value` | `UInt256` | Native ETH value sent with the transaction, in wei |
+| `transaction_gas` | `UInt64` | Gas limit declared by the transaction |
+| `transaction_nonce` | `UInt64` | Sender nonce used by the transaction |
+| `max_fee_per_gas` | `UInt256` | Maximum EIP-1559 fee per gas in wei |
+| `max_priority_fee_per_gas` | `UInt256` | Maximum EIP-1559 priority fee per gas in wei |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.uniswap_v4_trades LIMIT 10
+</ClickHouseSqlExample>
+
+---
+

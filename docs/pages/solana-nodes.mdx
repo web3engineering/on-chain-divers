@@ -8,30 +8,36 @@ transaction-execution signals. All prices below are monthly in USD.
 
 | Service | Topology | Price | Best for |
 | --- | --- | ---: | --- |
-| Shared Yellowstone gRPC | Shared | **$200/month** | Indexers, dashboards, account monitoring, and general real-time transaction feeds |
-| Shared proprietary plugin | Shared | **$700/month** | Latency-sensitive consumers that need a faster path than standard shared gRPC while retaining shared economics |
-| Dedicated node with proprietary plugin | Dedicated | **$2,200/month** | Production trading and ingestion systems that need isolated node capacity and predictable performance |
+| Basic gRPC | Shared | **$200/month** | Indexers, dashboards, account monitoring, and general real-time transaction feeds |
+| Very-fast gRPC | Shared | **$700/month** | Latency-sensitive production consumers that still want shared infrastructure |
+| Ultra-low-latency gRPC | Shared | **$1,200/month** | Trading systems that need approximately 1 ms lower delivery latency than the $700 tier |
+| Dedicated custom gRPC | Dedicated | **$3,300/month** | The $1,200 low-latency stack on an isolated node with customer-specific configuration |
 
-### Shared Yellowstone gRPC — $200/month
+### Basic shared gRPC — $200/month
 
 The shared gRPC service provides filtered transactions, account updates, slots,
 blocks, and block metadata without requiring customers to operate validator-grade
 hardware. It is the practical default for indexers and applications that need a
 reliable push stream instead of polling JSON-RPC.
 
-### Shared proprietary plugin — $700/month
+### Very-fast shared gRPC — $700/month
 
-This service uses our proprietary node plugin and a lower-overhead delivery path.
-It is still shared infrastructure, but is designed for consumers whose event
-pipeline is sensitive to the extra latency and processing overhead of a standard
-gRPC stack.
+This is the faster shared gRPC tier for latency-sensitive production consumers.
+It retains shared economics while using the lower-latency delivery path intended
+for trading and time-sensitive ingestion.
 
-### Dedicated node and proprietary plugin — $2,200/month
+### Ultra-low-latency shared gRPC — $1,200/month
 
-The dedicated tier provides an isolated Solana node running the proprietary
-plugin. Capacity is not shared with unrelated customers, making this the right
-choice for sustained high-volume ingestion, trading systems, and workloads that
-need predictable resource availability.
+This shared tier reduces delivery latency by approximately **1 ms** compared with
+the $700 service. It is intended for systems where a millisecond is materially
+important but isolated node capacity is unnecessary.
+
+### Dedicated custom gRPC — $3,300/month
+
+The dedicated tier runs the $1,200 low-latency stack on an isolated Solana node
+with customer-specific configuration. Capacity is not shared with unrelated
+customers, making this the right choice for sustained high-volume ingestion and
+production trading systems that need predictable resources and custom tuning.
 
 ## Earliest-data feeds
 
@@ -67,10 +73,13 @@ onboarding.
 
 ## Choosing a service
 
-- Start with **shared gRPC** for conventional real-time indexing and monitoring.
-- Choose the **shared proprietary plugin** when latency matters but dedicated
-  capacity is unnecessary.
-- Choose a **dedicated node** for isolated, sustained production workloads.
+- Start with **basic gRPC** for conventional real-time indexing and monitoring.
+- Choose **very-fast gRPC** when latency matters but the ultra-low-latency tier
+  is unnecessary.
+- Choose **ultra-low-latency gRPC** when approximately 1 ms over the $700 tier
+  is material to the strategy.
+- Choose **dedicated custom gRPC** for the fastest stack with isolated capacity
+  and customer-specific tuning.
 - Add **shreds** when you need raw block propagation before RPC assembly.
 - Add **preconfirmations** when transaction execution status must arrive before
   shreds and you can correctly reconcile an early, non-final signal.
