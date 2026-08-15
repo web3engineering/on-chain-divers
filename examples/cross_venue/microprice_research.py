@@ -104,11 +104,41 @@ def polymarket_series(
     bids: dict[Decimal, Decimal] = {}
     asks: dict[Decimal, Decimal] = {}
     points: list[dict] = []
+    pending_timestamp: int | None = None
+    pending_changed = False
+    skipped_crossed = 0
+
+    def flush() -> None:
+        """Sample only after every recorder message at one millisecond."""
+        nonlocal pending_changed, skipped_crossed
+        if (
+            not pending_changed
+            or pending_timestamp is None
+            or pending_timestamp < start_ms
+            or not bids
+            or not asks
+        ):
+            pending_changed = False
+            return
+        # Independent websocket messages at one capture millisecond are not an
+        # observable sequence. Even after grouping, a recorder timestamp can
+        # occasionally end between exchange batches; omit that incomplete state
+        # but retain its level mutations for the next complete timestamp.
+        if max(bids) >= min(asks):
+            skipped_crossed += 1
+        else:
+            append_state(points, book_point(pending_timestamp, bids, asks))
+        pending_changed = False
+
     for capture_ms, event in bitcoin.poly.captured_records(capture):
         timestamp = bitcoin.poly.event_millis(event, capture_ms)
-        if timestamp is None or timestamp > end_ms:
+        if timestamp is None:
             continue
-        changed = False
+        if timestamp > end_ms:
+            continue
+        if pending_timestamp is not None and timestamp != pending_timestamp:
+            flush()
+        pending_timestamp = timestamp
         if event.get("event_type") == "book" and str(event.get("asset_id")) == asset_id:
             bids = {
                 Decimal(row["price"]): Decimal(row["size"])
@@ -118,7 +148,7 @@ def polymarket_series(
                 Decimal(row["price"]): Decimal(row["size"])
                 for row in event.get("asks", [])
             }
-            changed = True
+            pending_changed = True
         elif event.get("event_type") == "price_change":
             for change in event.get("price_changes", []):
                 if str(change.get("asset_id")) != asset_id:
@@ -129,11 +159,14 @@ def polymarket_series(
                     side.pop(price, None)
                 else:
                     side[price] = size
-                changed = True
-        if changed and timestamp >= start_ms and bids and asks:
-            append_state(points, book_point(timestamp, bids, asks))
+                pending_changed = True
+    flush()
     if len(points) < 100:
         raise ValueError("Polymarket replay produced too few microprice observations")
+    if skipped_crossed:
+        print(
+            f"omitted {skipped_crossed} incomplete crossed Polymarket recorder state(s)"
+        )
     return points
 
 
@@ -346,8 +379,19 @@ def run_downloaded(downloaded: bitcoin.DownloadedMarket, output: Path) -> dict:
     ]
 
     plt.style.use("dark_background")
-    figure, axes = plt.subplots(2, 2, figsize=(20, 14), layout="constrained")
+    figure, axes = plt.subplots(2, 2, figsize=(20, 14))
     figure.patch.set_facecolor("#081018")
+    # Reserve explicit bands for the title/subtitle and provenance footer.
+    # ``constrained_layout`` does not know that arbitrary figure text exists
+    # and otherwise lets the top panel headings collide with the subtitle.
+    figure.subplots_adjust(
+        left=0.055,
+        right=0.965,
+        bottom=0.075,
+        top=0.875,
+        wspace=0.22,
+        hspace=0.22,
+    )
     results: dict[str, dict] = {}
     for ax, study in zip(axes.flat, studies):
         title, predictors, target, key, unit, x_label, y_label, minimum = study
@@ -361,11 +405,12 @@ def run_downloaded(downloaded: bitcoin.DownloadedMarket, output: Path) -> dict:
         fontsize=22,
         fontweight="bold",
         x=0.01,
+        y=0.985,
         ha="left",
     )
     figure.text(
         0.01,
-        0.965,
+        0.945,
         f"{event['title']}  •  {bitcoin.utc_text(event['start'])} to "
         f"{bitcoin.utc_text(event['end'])}  •  Up outcome vs BTC perpetual",
         fontsize=11,
@@ -379,6 +424,7 @@ def run_downloaded(downloaded: bitcoin.DownloadedMarket, output: Path) -> dict:
         fontsize=10,
         color="#8fa1b2",
         ha="right",
+        va="bottom",
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(output, dpi=170, facecolor=figure.get_facecolor())

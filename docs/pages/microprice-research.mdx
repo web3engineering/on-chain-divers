@@ -71,6 +71,9 @@ best-bid/ask chart stream. It performs full book reconstruction:
 
 - Polymarket `book` messages replace the complete selected outcome book;
   subsequent `price_change` messages update or remove individual price levels.
+  Messages sharing a recorder millisecond are applied atomically. A rare
+  incomplete recorder state that remains crossed after grouping is omitted,
+  while its mutations are retained for the next complete state.
 - HyperLiquid starts from the BTC order-ID checkpoint and applies every new,
   update, and remove diff. Updates sharing a block timestamp are applied before
   the state is sampled, avoiding artificial half-block books.
