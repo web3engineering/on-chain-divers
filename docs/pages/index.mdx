@@ -1,8 +1,20 @@
-# OnchainDivers indexer examples
+# OnchainDivers data and examples
 
-This site is the executable guide to querying OnchainDivers data. Every example
-shown here has a corresponding source file in the repository and is run during
-the documentation build.
+OnchainDivers provides read-only ClickHouse access to structured blockchain and
+exchange data. We collect raw activity, parse protocol-specific transactions and
+events, and expose analysis-ready tables with consistent timestamps, asset and
+wallet identifiers, amounts, fees, and execution context.
+
+The datasets cover the main Solana DEXes and launchpads, HyperLiquid,
+Polymarket, and Robinhood Chain. They are designed for quantitative research,
+strategy backtesting, market and wallet analysis, execution-quality studies,
+dashboards, alerts, and production data pipelines. Researchers can work directly
+in SQL without operating archive nodes or maintaining a separate parser for
+every protocol revision.
+
+This site is an executable guide to those datasets. Every published example has
+a corresponding source file in the repository and is rerun against live data
+during the documentation build.
 
 ## Data products
 
@@ -13,6 +25,25 @@ the documentation build.
 | [HyperLiquid](/hyperliquid/) | Fills, fulfilled orders, wallets and positions | Recovery-file discovery, download and order-level book replay |
 | [Robinhood Chain](/robinhood/) | Tokens plus Uniswap v3/v4 pools and swaps | Pool discovery, protocol comparison and EVM transaction context |
 | [Fees API](/fees-api) | Aggregate transaction, priority, tip and trading fees | Validated JSON client |
+
+The ClickHouse datasets are complemented by high-precision raw order-book
+archives for Polymarket and HyperLiquid. These archives support historical book
+reconstruction, spread and liquidity analysis, cross-venue comparisons, and
+backtests that require the market state visible at a specific moment rather than
+trades alone.
+
+## What you can build
+
+- Research token launches, migrations, swaps, transfers, creator fees, and
+  trader behavior across the main Solana venues.
+- Backtest signals against decoded trades and historically reconstructed order
+  books without relying on today's market state.
+- Compare Polymarket probability markets with HyperLiquid perpetual futures at
+  sub-market time ranges.
+- Analyze wallets, positions, fills, fees, slippage, pool state, and protocol
+  activity using regular ClickHouse SQL.
+- Build reproducible notebooks, scheduled reports, dashboards, and monitoring
+  jobs on top of the same documented schemas.
 
 The flagship [Bitcoin five-minute cross-venue reconstruction](/bitcoin-5m-cross-venue)
 combines the Polymarket metadata and CLOB archives with HyperLiquid's raw BTC
