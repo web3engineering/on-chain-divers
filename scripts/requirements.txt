@@ -4,3 +4,4 @@ PyYAML==6.0.2
 zstandard==0.23.0
 msgpack==1.1.1
 matplotlib==3.10.5
+numpy==2.5.2

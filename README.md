@@ -8,9 +8,11 @@ This repository is a self-contained, executable guide to the
 - structured ClickHouse data for HyperLiquid fills, orders, wallets and positions;
 - structured ClickHouse data for Robinhood Chain tokens and Uniswap v3/v4 activity;
 - the aggregate fees API;
-- raw Polymarket and HyperLiquid order-book archive discovery, download and replay; and
+- raw Polymarket and HyperLiquid order-book archive discovery, download and replay;
 - a synchronized Bitcoin five-minute Polymarket/HyperLiquid market reconstruction
-  with a publication-sized diagnostic plot.
+  with a publication-sized diagnostic plot; and
+- a four-panel microprice study relating one- and two-level imbalance to
+  Polymarket and HyperLiquid midpoint movement 300 milliseconds later.
 
 The examples under [`examples/`](examples/) are the source programs. The docs
 explain the same programs, and `scripts/verify_examples.py` executes them during

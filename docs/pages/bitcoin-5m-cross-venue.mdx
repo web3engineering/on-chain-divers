@@ -11,6 +11,10 @@ The image above is not checked in and cannot go stale unnoticed. The Python
 checker regenerates it from raw data before every successful documentation
 build.
 
+The same downloaded raw files also drive the
+[simple 300 ms microprice research example](/microprice-research), so the large
+HyperLiquid checkpoint is fetched only once per strict build.
+
 ## What the script does
 
 `examples/cross_venue/bitcoin_5m_updown.py` performs the complete workflow:

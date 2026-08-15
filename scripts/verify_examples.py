@@ -47,7 +47,11 @@ hyper = module("hyper_example", ORDERBOOKS / "hyperliquid.py")
 archive = module("archive_example", ORDERBOOKS / "archive.py")
 fees = module("fees_example", ROOT / "examples" / "fees" / "global_fees.py")
 bitcoin = module(
-    "bitcoin_5m_example", ROOT / "examples" / "cross_venue" / "bitcoin_5m_updown.py"
+    "bitcoin_5m_updown", ROOT / "examples" / "cross_venue" / "bitcoin_5m_updown.py"
+)
+microprice = module(
+    "microprice_research",
+    ROOT / "examples" / "cross_venue" / "microprice_research.py",
 )
 
 
@@ -304,12 +308,18 @@ def verify_orderbooks(strict_live: bool) -> None:
     if strict_live:
         assert poly_source is not None and hyper_source is not None
         output = ROOT / "docs" / "public" / "examples" / "bitcoin-5m-updown.png"
-        result = bitcoin.run(
+        microprice_output = (
+            ROOT / "docs" / "public" / "examples" / "microprice-research.png"
+        )
+        with bitcoin.downloaded_market(
             ROOT / ".env",
-            output,
             poly_names=poly_live_names,
             hyper_names=hyper_live_names,
-        )
+        ) as downloaded:
+            result = bitcoin.run_downloaded(downloaded, output)
+            microprice_result = microprice.run_downloaded(
+                downloaded, microprice_output
+            )
         if (
             not output.is_file()
             or output.stat().st_size < 250_000
@@ -319,6 +329,22 @@ def verify_orderbooks(strict_live: bool) -> None:
         if result["hyperliquid"]["samples"] < 290 or set(result["outcomes"]) != {"Up", "Down"}:
             raise AssertionError("cross-venue example did not cover both books and five minutes")
         print("verified feature example: Bitcoin 5m cross-venue plot")
+        if (
+            not microprice_output.is_file()
+            or microprice_output.stat().st_size < 200_000
+            or microprice_output.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n"
+        ):
+            raise AssertionError("microprice example did not produce a substantial PNG")
+        if (
+            microprice_result["horizon_ms"] != 300
+            or len(microprice_result["studies"]) != 4
+            or min(
+                study["observations"]
+                for study in microprice_result["studies"].values()
+            ) < 100
+        ):
+            raise AssertionError("microprice example did not produce four aligned studies")
+        print("verified feature example: 300 ms microprice heatmaps")
 
 
 def verify_fees(strict_live: bool) -> None:

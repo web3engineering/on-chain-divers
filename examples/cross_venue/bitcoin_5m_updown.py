@@ -23,6 +23,7 @@ import json
 import os
 import sys
 import tempfile
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
@@ -431,15 +432,35 @@ def render_plot(
     plt.close(figure)
 
 
-def run(
+@dataclass
+class DownloadedMarket:
+    """One selected market and its locally downloaded raw replay inputs."""
+
+    event: dict
+    outcomes: dict[str, dict]
+    poly_capture: Path
+    checkpoint: Path
+    diff_paths: list[Path]
+    context: dict
+    input_names: list[str]
+    input_sizes: list[int]
+
+
+@contextmanager
+def downloaded_market(
     env_path: Path,
-    output: Path,
     hours_ago: float = 24,
     now: datetime | None = None,
     poly_names: list[str] | None = None,
     hyper_names: list[str] | None = None,
-) -> dict:
-    """Execute metadata discovery, raw downloads, replay, rendering and checks."""
+):
+    """Select and download one market, then share its files with analyses.
+
+    The strict Docker checker enters this context once and runs both the main
+    cross-venue chart and the microprice study before the temporary files are
+    removed. This keeps the 1-3 GiB HyperLiquid checkpoint from being fetched
+    twice while preserving a standalone, reproducible API for each analysis.
+    """
     reference_now = (now or datetime.now(UTC)).astimezone(UTC)
     # Stay near the requested 24-hour age while giving both asynchronous raw
     # archives a small finalization buffer. This also avoids choosing a file
@@ -464,11 +485,11 @@ def run(
     diff_names = required_diffs(
         hyper_names, checkpoint_time, event["end"] - timedelta(microseconds=1)
     )
-    inputs = [event["capture_name"], checkpoint_name, *diff_names]
+    input_names = [event["capture_name"], checkpoint_name, *diff_names]
     poly_size = int(event["capture_bytes"])
     checkpoint_size = archive.content_length(hyper_source, checkpoint_name)
     diff_sizes = [archive.content_length(hyper_source, name) for name in diff_names]
-    sizes = [poly_size, checkpoint_size, *diff_sizes]
+    input_sizes = [poly_size, checkpoint_size, *diff_sizes]
     print(
         f"selected dedicated Polymarket capture {event['capture_name']} and "
         f"{len(outcomes)} CLOB outcomes ({poly_size:,} bytes)"
@@ -526,14 +547,36 @@ def run(
                 )
             )
 
-        hyper_points = hyper_series(
-            checkpoint,
-            diff_paths,
-            context,
-            event["start"],
-            event["end"] - timedelta(microseconds=1),
+        yield DownloadedMarket(
+            event=event,
+            outcomes=outcomes,
+            poly_capture=poly_capture,
+            checkpoint=checkpoint,
+            diff_paths=diff_paths,
+            context=context,
+            input_names=input_names,
+            input_sizes=input_sizes,
         )
-        render_plot(output, event, outcomes, poly_points, hyper_points)
+
+
+def run_downloaded(downloaded: DownloadedMarket, output: Path) -> dict:
+    """Render the original cross-venue chart from already downloaded inputs."""
+    event = downloaded.event
+    outcomes = downloaded.outcomes
+    start_ms = int(event["start"].timestamp() * 1000)
+    end_ms = int(event["end"].timestamp() * 1000)
+    asset_ids = {str(row["clob_token_id"]) for row in outcomes.values()}
+    poly_points = poly.best_quote_series(
+        downloaded.poly_capture, asset_ids, start_ms, end_ms - 1
+    )
+    hyper_points = hyper_series(
+        downloaded.checkpoint,
+        downloaded.diff_paths,
+        downloaded.context,
+        event["start"],
+        event["end"] - timedelta(microseconds=1),
+    )
+    render_plot(output, event, outcomes, poly_points, hyper_points)
 
     summary = {
         "source": "https://onchaindivers.com",
@@ -556,8 +599,8 @@ def run(
             "close_mid": hyper_points[-1]["mid"],
             "close_orders": hyper_points[-1]["orders"],
         },
-        "raw_files": len(inputs),
-        "raw_bytes": sum(sizes),
+        "raw_files": len(downloaded.input_names),
+        "raw_bytes": sum(downloaded.input_sizes),
         "plot": str(output),
     }
     summary_path = output.with_suffix(".summary.json")
@@ -567,6 +610,25 @@ def run(
         f"{sum(item['quote_points'] for item in summary['outcomes'].values())} Polymarket quote changes"
     )
     return summary
+
+
+def run(
+    env_path: Path,
+    output: Path,
+    hours_ago: float = 24,
+    now: datetime | None = None,
+    poly_names: list[str] | None = None,
+    hyper_names: list[str] | None = None,
+) -> dict:
+    """Download one market and render the original cross-venue analysis."""
+    with downloaded_market(
+        env_path,
+        hours_ago=hours_ago,
+        now=now,
+        poly_names=poly_names,
+        hyper_names=hyper_names,
+    ) as downloaded:
+        return run_downloaded(downloaded, output)
 
 
 def main() -> None:

@@ -53,6 +53,7 @@ export default defineConfig({
       ],
     },
     { text: 'Bitcoin 5m Cross-Venue', link: '/bitcoin-5m-cross-venue' },
+    { text: 'Simple Microprice Research', link: '/microprice-research' },
     { text: 'Fees API', link: '/fees-api' },
     {
       text: 'Solana Services',
