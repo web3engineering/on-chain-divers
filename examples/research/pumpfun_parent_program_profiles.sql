@@ -1,6 +1,6 @@
 -- OnchainDivers indexer research: https://onchaindivers.com
--- Return per-token parent-program buy counts for complete 128-slot windows.
--- The Python companion normalizes each token and computes Jensen-Shannon distance.
+-- Compare early parent-program composition for migrated and non-migrated tokens.
+-- A token is migrated when pfamm_migrations contains it by this cohort's cutoff.
 WITH
     (SELECT max(block_time) FROM pumpfun_token_creation) AS end_time,
     end_time - INTERVAL 24 HOUR AS start_time,
@@ -20,6 +20,16 @@ WITH
             min(block_time) AS launched_at
         FROM pumpfun_token_creation
         PREWHERE block_time >= start_time AND block_time < end_time
+        GROUP BY mint
+    ),
+    migrations AS
+    (
+        SELECT
+            replaceAll(mint, '\0', '') AS mint
+        FROM pfamm_migrations
+        PREWHERE block_date_utc >= toDate(start_time)
+            AND block_date_utc <= toDate(end_time)
+        WHERE block_time >= start_time AND block_time <= end_time
         GROUP BY mint
     ),
     program_counts AS
@@ -60,7 +70,9 @@ SELECT
     launched_at,
     parent_program,
     buys,
-    sum(buys) OVER (PARTITION BY mint) AS total_buys
+    sum(buys) OVER (PARTITION BY program_counts.mint) AS total_buys,
+    toUInt8(migration.mint != '') AS migrated
 FROM program_counts
+LEFT JOIN migrations AS migration ON program_counts.mint = migration.mint
 QUALIFY total_buys >= 48
-ORDER BY mint, parent_program
+ORDER BY program_counts.mint, parent_program

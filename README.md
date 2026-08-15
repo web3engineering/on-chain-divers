@@ -14,7 +14,8 @@ This repository is a self-contained, executable guide to the
 - a four-panel microprice study relating one- and two-level imbalance to
   Polymarket and HyperLiquid midpoint movement 300 milliseconds later;
 - a live ranking of Pump.fun creators with sustained eight-slot buy streaks; and
-- a Jensen–Shannon anomaly screen for early Pump.fun parent-program activity.
+- a comparison of early Pump.fun parent-program composition for migrated and
+  non-migrated launches.
 
 The examples under [`examples/`](examples/) are the source programs. The docs
 explain the same programs, and `scripts/verify_examples.py` executes them during

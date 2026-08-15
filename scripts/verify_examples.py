@@ -54,7 +54,7 @@ microprice = module(
     ROOT / "examples" / "cross_venue" / "microprice_research.py",
 )
 research = module(
-    "pumpfun_creator_and_anomaly_research",
+    "pumpfun_creator_and_migration_research",
     ROOT / "examples" / "research" / "generate_pumpfun_research.py",
 )
 
@@ -370,18 +370,27 @@ def verify_research() -> None:
     summary = research.run(ROOT / ".env", pages, public)
     if (
         len(summary["reliable_creators"]) != 5
-        or len(summary["anomalous_tokens"]) != 5
         or summary["eligible_profile_tokens"] < 100
-        or len(summary["average_parent_program_distribution"]) < 2
     ):
         raise AssertionError("Pump.fun research output is incomplete")
+    groups = summary["migration_comparison"]
+    for label in ("migrated", "not_migrated"):
+        if (
+            groups[label]["token_count"] < 1
+            or len(groups[label]["parent_program_distribution"]) < 2
+        ):
+            raise AssertionError(f"Pump.fun {label} comparison cohort is incomplete")
     reliable_page = (pages / "reliable-pumpfun-creators.mdx").read_text()
-    weird_page = (pages / "weird-pumpfun-activity.mdx").read_text()
+    migration_page = (pages / "pumpfun-migration-parent-programs.mdx").read_text()
     if "github.com/web3engineering/on-chain-divers" not in reliable_page:
         raise AssertionError("reliable-creator page is missing its GitHub source link")
-    if weird_page.count("https://gmgn.ai/sol/token/") != 5:
-        raise AssertionError("weird-activity page does not contain five GMGN links")
-    print("verified research: reliable Pump.fun creators and unusual activity")
+    if (
+        "github.com/web3engineering/on-chain-divers" not in migration_page
+        or "Migrated" not in migration_page
+        or "Not migrated" not in migration_page
+    ):
+        raise AssertionError("migration comparison page is incomplete")
+    print("verified research: reliable creators and migration parent-program comparison")
 
 
 def main() -> None:

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Generate two reproducible Pump.fun research pages from live ClickHouse data.
 
-The outputs rank sustained-activity token creators and identify launches whose
-early parent-program mix differs most from the equal-token population average.
+The outputs rank sustained-activity token creators and compare early parent-
+program composition between launches that did and did not migrate.
 
 Data, access, and indexer documentation: https://onchaindivers.com
 """
@@ -12,8 +12,6 @@ from __future__ import annotations
 import argparse
 import html
 import json
-import math
-import re
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -31,7 +29,6 @@ GITHUB_ROOT = "https://github.com/web3engineering/on-chain-divers/blob/master"
 SOURCE_URL = f"{GITHUB_ROOT}/examples/research/generate_pumpfun_research.py"
 RELIABLE_SQL_URL = f"{GITHUB_ROOT}/examples/research/reliable_pumpfun_creators.sql"
 PROFILES_SQL_URL = f"{GITHUB_ROOT}/examples/research/pumpfun_parent_program_profiles.sql"
-BASE58 = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{32,48}$")
 
 
 def md(value: object) -> str:
@@ -68,8 +65,8 @@ def query_file(client: ClickHouseAccessor, name: str) -> list[dict]:
         raise RuntimeError(f"{name} failed: {type(error).__name__}{suffix}") from None
 
 
-def average_profiles(rows: list[dict]) -> tuple[dict[str, dict], dict[str, float]]:
-    """Build per-token distributions and their equal-token population average."""
+def migration_profiles(rows: list[dict]) -> tuple[dict[str, dict], dict[str, dict]]:
+    """Build equal-token parent-program distributions for both migration groups."""
     tokens: dict[str, dict] = {}
     for row in rows:
         mint = str(row["mint"])
@@ -83,6 +80,7 @@ def average_profiles(rows: list[dict]) -> tuple[dict[str, dict], dict[str, float
                 "launch_slot": int(row["launch_slot"]),
                 "launched_at": utc_text(row["launched_at"]),
                 "total_buys": int(row["total_buys"]),
+                "migrated": bool(int(row["migrated"])),
                 "counts": {},
             },
         )
@@ -90,57 +88,27 @@ def average_profiles(rows: list[dict]) -> tuple[dict[str, dict], dict[str, float
     if not tokens:
         raise ValueError("parent-program query returned no eligible tokens")
 
-    average: defaultdict[str, float] = defaultdict(float)
+    groups: dict[str, dict] = {}
     for token in tokens.values():
         total = sum(token["counts"].values())
         token["profile"] = {
             program: count / total for program, count in token["counts"].items()
         }
-        for program, share in token["profile"].items():
-            average[program] += share / len(tokens)
-    return tokens, dict(average)
-
-
-def jensen_shannon_distance(profile: dict[str, float], average: dict[str, float]) -> float:
-    """Return base-2 Jensen-Shannon distance, bounded between zero and one."""
-    programs = set(profile) | set(average)
-    divergence = 0.0
-    for program in programs:
-        p = profile.get(program, 0.0)
-        q = average.get(program, 0.0)
-        midpoint = (p + q) / 2
-        if p:
-            divergence += 0.5 * p * math.log2(p / midpoint)
-        if q:
-            divergence += 0.5 * q * math.log2(q / midpoint)
-    return math.sqrt(max(0.0, divergence))
-
-
-def anomalous_tokens(
-    tokens: dict[str, dict], average: dict[str, float], limit: int = 5
-) -> list[dict]:
-    """Select the deterministic farthest profiles and explain their largest delta."""
-    ranked: list[dict] = []
-    for token in tokens.values():
-        profile = token["profile"]
-        standout = max(
-            set(profile) | set(average),
-            key=lambda program: abs(profile.get(program, 0.0) - average.get(program, 0.0)),
-        )
-        dominant = max(profile, key=profile.get)
-        ranked.append(
-            {
-                **token,
-                "distance": jensen_shannon_distance(profile, average),
-                "standout_program": standout,
-                "token_share": profile.get(standout, 0.0),
-                "average_share": average.get(standout, 0.0),
-                "dominant_program": dominant,
-                "dominant_share": profile[dominant],
-                "dominant_average_share": average.get(dominant, 0.0),
-            }
-        )
-    return sorted(ranked, key=lambda row: (-row["distance"], row["mint"]))[:limit]
+    for migrated, label in ((True, "migrated"), (False, "not_migrated")):
+        members = [token for token in tokens.values() if token["migrated"] is migrated]
+        if not members:
+            raise ValueError(f"parent-program query returned no {label} tokens")
+        distribution: defaultdict[str, float] = defaultdict(float)
+        for token in members:
+            for program, share in token["profile"].items():
+                distribution[program] += share / len(members)
+        groups[label] = {
+            "token_count": len(members),
+            "cohort_share": len(members) / len(tokens),
+            "mean_buys": sum(token["total_buys"] for token in members) / len(members),
+            "parent_program_distribution": dict(distribution),
+        }
+    return tokens, groups
 
 
 def reliable_page(creators: list[dict], window_end: object) -> str:
@@ -188,79 +156,77 @@ def reliable_page(creators: list[dict], window_end: object) -> str:
     return "\n".join(lines) + "\n"
 
 
-def weird_page(
-    anomalies: list[dict],
-    average: dict[str, float],
+def migration_page(
+    groups: dict[str, dict],
     eligible_count: int,
     window_end: object,
 ) -> str:
-    top_programs = sorted(average.items(), key=lambda item: (-item[1], item[0]))[:10]
-    other_share = max(0.0, 1.0 - sum(share for _, share in top_programs))
+    migrated = groups["migrated"]
+    not_migrated = groups["not_migrated"]
+    migrated_mix = migrated["parent_program_distribution"]
+    not_migrated_mix = not_migrated["parent_program_distribution"]
+    all_programs = set(migrated_mix) | set(not_migrated_mix)
+    top_programs = sorted(
+        all_programs,
+        key=lambda program: (
+            -max(migrated_mix.get(program, 0.0), not_migrated_mix.get(program, 0.0)),
+            program,
+        ),
+    )[:12]
+    migrated_other = max(0.0, 1.0 - sum(migrated_mix.get(p, 0.0) for p in top_programs))
+    not_migrated_other = max(
+        0.0, 1.0 - sum(not_migrated_mix.get(p, 0.0) for p in top_programs)
+    )
     lines = [
-        "# Pump.fun tokens with unusual early activity",
+        "# Pump.fun parent programs: migrated vs not migrated",
         "",
-        "This screen compares Pump.fun launches from the latest 24-hour data window.",
+        "This study compares Pump.fun launches from the latest 24-hour data window.",
         "For each token it counts distinct buys by `parent_program` during slots",
         "`launch_slot + 1` through `launch_slot + 128`, keeps tokens with at least 48",
-        "buys, normalizes each token to a distribution, and averages those distributions",
-        "with equal weight per token. Launches without a complete 128-slot horizon are",
-        "excluded.",
+        "buys, and labels it migrated when the mint appears in `pfamm_migrations` by",
+        "the cohort cutoff. Launches without a complete 128-slot horizon are excluded.",
         "",
         f"*Window end: {md(utc_text(window_end))} · Eligible tokens: {eligible_count:,}*",
         "",
-        "## Average parent-program distribution",
+        "## Cohorts",
         "",
-        "| Parent program | Average token share |",
-        "| --- | ---: |",
+        "| Cohort | Tokens | Share of eligible launches | Mean buys in first 128 slots |",
+        "| --- | ---: | ---: | ---: |",
+        f"| Migrated | {migrated['token_count']:,} | {migrated['cohort_share'] * 100:.2f}% | {migrated['mean_buys']:,.1f} |",
+        f"| Not migrated | {not_migrated['token_count']:,} | {not_migrated['cohort_share'] * 100:.2f}% | {not_migrated['mean_buys']:,.1f} |",
+        "",
+        "## Parent-program composition",
+        "",
+        "Every token is normalized to a distribution before cohort averaging, so a",
+        "high-volume token cannot dominate the result. The difference is migrated minus",
+        "not migrated, in percentage points.",
+        "",
+        "| Parent program | Migrated | Not migrated | Difference |",
+        "| --- | ---: | ---: | ---: |",
     ]
-    for program, share in top_programs:
-        lines.append(f"| {code(program)} | {share * 100:.3f}% |")
-    lines.append(f"| Other ({max(0, len(average) - len(top_programs))} programs) | {other_share * 100:.3f}% |")
-    lines.extend(
-        [
-            "",
-            "## Five farthest token profiles",
-            "",
-            "Distance is base-2 Jensen–Shannon distance from the average profile. It is",
-            "bounded from 0 (identical) to 1 (disjoint). Ties are ordered by mint so the",
-            "selection is reproducible.",
-            "",
-            "| Rank | Token | Symbol / name | Buys | Distance | Dominant parent-program mix |",
-            "| ---: | --- | --- | ---: | ---: | --- |",
-        ]
-    )
-    for rank, token in enumerate(anomalies, 1):
-        mint = str(token["mint"])
-        if not BASE58.fullmatch(mint):
-            raise ValueError("invalid Solana mint in anomaly result")
-        gmgn = f"https://gmgn.ai/sol/token/{mint}?chain=sol"
-        dominant = (
-            f"{code(token['dominant_program'])}: "
-            f"token {token['dominant_share'] * 100:.2f}% vs average "
-            f"{token['dominant_average_share'] * 100:.2f}%"
-        )
+    for program in top_programs:
+        migrated_share = migrated_mix.get(program, 0.0)
+        not_migrated_share = not_migrated_mix.get(program, 0.0)
         lines.append(
-            "| "
-            + " | ".join(
-                [
-                    str(rank),
-                    f"[{code(short(mint))}]({gmgn})",
-                    f"{code(token['symbol'])} / {md(token['name'])}",
-                    f"{int(token['total_buys']):,}",
-                    f"{float(token['distance']):.4f}",
-                    dominant,
-                ]
-            )
-            + " |"
+            f"| {code(program)} | {migrated_share * 100:.3f}% | "
+            f"{not_migrated_share * 100:.3f}% | "
+            f"{(migrated_share - not_migrated_share) * 100:+.3f} pp |"
         )
+    lines.append(
+        f"| Other ({max(0, len(all_programs) - len(top_programs))} programs) | "
+        f"{migrated_other * 100:.3f}% | {not_migrated_other * 100:.3f}% | "
+        f"{(migrated_other - not_migrated_other) * 100:+.3f} pp |"
+    )
     lines.extend(
         [
             "",
             f"[View the profile SQL on GitHub]({PROFILES_SQL_URL}) and",
-            f"[the distance calculation]({SOURCE_URL}).",
+            f"[the cohort calculation]({SOURCE_URL}).",
             "",
-            "Unusual means statistically different in this one feature window; it does not",
-            "by itself imply manipulation, fraud, or future performance.",
+            "Migration is observed only through the displayed cutoff. Tokens launched near",
+            "that cutoff have less time to migrate, so the not-migrated cohort is",
+            "right-censored. This descriptive comparison does not establish causality or",
+            "predict future migration.",
         ]
     )
     return "\n".join(lines) + "\n"
@@ -288,36 +254,30 @@ def run(env_path: Path, pages_dir: Path, public_dir: Path) -> dict:
         client.disconnect()
     if len(creators) != 5:
         raise ValueError(f"expected five reliable creators, received {len(creators)}")
-    tokens, average = average_profiles(profile_rows)
-    anomalies = anomalous_tokens(tokens, average)
-    if len(anomalies) != 5:
-        raise ValueError(f"expected five anomalous tokens, received {len(anomalies)}")
+    tokens, groups = migration_profiles(profile_rows)
 
     pages_dir.mkdir(parents=True, exist_ok=True)
     public_dir.mkdir(parents=True, exist_ok=True)
     (pages_dir / "reliable-pumpfun-creators.mdx").write_text(
         reliable_page(creators, window)
     )
-    (pages_dir / "weird-pumpfun-activity.mdx").write_text(
-        weird_page(anomalies, average, len(tokens), window)
+    (pages_dir / "pumpfun-migration-parent-programs.mdx").write_text(
+        migration_page(groups, len(tokens), window)
     )
     summary = {
         "source": "https://onchaindivers.com",
         "window_end": utc_text(window),
         "reliable_creators": creators,
         "eligible_profile_tokens": len(tokens),
-        "average_parent_program_distribution": average,
-        "anomalous_tokens": [
-            {key: value for key, value in token.items() if key not in {"counts", "profile"}}
-            for token in anomalies
-        ],
+        "migration_comparison": groups,
     }
     (public_dir / "pumpfun-research.json").write_text(
         json.dumps(summary, indent=2, default=str) + "\n"
     )
     print(
         f"generated Pump.fun research: {len(creators)} creators, "
-        f"{len(tokens):,} eligible profiles, {len(average)} parent programs"
+        f"{len(tokens):,} eligible profiles, "
+        f"{groups['migrated']['token_count']:,} migrated"
     )
     return summary
 
