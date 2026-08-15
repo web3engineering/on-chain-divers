@@ -1,0 +1,81 @@
+# Solana Nodes and Low-Latency Feeds
+
+OnchainDivers provides managed Solana data infrastructure for applications that
+need anything from a standard filtered gRPC stream to the earliest available
+transaction-execution signals. All prices below are monthly in USD.
+
+## Node access
+
+| Service | Topology | Price | Best for |
+| --- | --- | ---: | --- |
+| Shared Yellowstone gRPC | Shared | **$200/month** | Indexers, dashboards, account monitoring, and general real-time transaction feeds |
+| Shared proprietary plugin | Shared | **$700/month** | Latency-sensitive consumers that need a faster path than standard shared gRPC while retaining shared economics |
+| Dedicated node with proprietary plugin | Dedicated | **$2,200/month** | Production trading and ingestion systems that need isolated node capacity and predictable performance |
+
+### Shared Yellowstone gRPC — $200/month
+
+The shared gRPC service provides filtered transactions, account updates, slots,
+blocks, and block metadata without requiring customers to operate validator-grade
+hardware. It is the practical default for indexers and applications that need a
+reliable push stream instead of polling JSON-RPC.
+
+### Shared proprietary plugin — $700/month
+
+This service uses our proprietary node plugin and a lower-overhead delivery path.
+It is still shared infrastructure, but is designed for consumers whose event
+pipeline is sensitive to the extra latency and processing overhead of a standard
+gRPC stack.
+
+### Dedicated node and proprietary plugin — $2,200/month
+
+The dedicated tier provides an isolated Solana node running the proprietary
+plugin. Capacity is not shared with unrelated customers, making this the right
+choice for sustained high-volume ingestion, trading systems, and workloads that
+need predictable resource availability.
+
+## Earliest-data feeds
+
+| Feed | Price | What it exposes |
+| --- | ---: | --- |
+| Shreds | **$500/month** | Raw Turbine data and coding packets for reconstructing entries, transactions, and blocks before conventional RPC delivery |
+| Preconfirmations | **$1,600/month** | Transaction execution-status signals emitted before shred propagation and standard RPC commitment levels |
+
+### Shreds — $500/month
+
+Solana leaders split block data into network-sized packets called **shreds**.
+Data shreds carry block contents, while coding shreds add erasure recovery so a
+receiver can reconstruct a block even when some packets are missing. Consuming
+the shred stream removes the wait for an RPC node to assemble and expose the
+complete block, which is useful for low-latency indexing, market-data pipelines,
+and trading infrastructure.
+
+### What are preconfirmations? — $1,600/month
+
+A **preconfirmation**, or **preconf**, is an early signal emitted when a Solana
+leader has executed a transaction and knows its local execution result, but
+before that result has been packaged into entries, converted into shreds, and
+propagated through Turbine. It can therefore arrive earlier than a shred-derived
+stream and earlier than the RPC `processed`, `confirmed`, or `finalized`
+commitment levels.
+
+Preconfirmations are valuable when a system needs to react to a likely landing
+or failure as soon as the leader knows the outcome. They are not the same as
+cluster finality: clients must reconcile the signal with the later shred,
+processed, confirmed, or finalized record, and availability depends on leader
+coverage. Exact fields, coverage, and delivery semantics are documented during
+onboarding.
+
+## Choosing a service
+
+- Start with **shared gRPC** for conventional real-time indexing and monitoring.
+- Choose the **shared proprietary plugin** when latency matters but dedicated
+  capacity is unnecessary.
+- Choose a **dedicated node** for isolated, sustained production workloads.
+- Add **shreds** when you need raw block propagation before RPC assembly.
+- Add **preconfirmations** when transaction execution status must arrive before
+  shreds and you can correctly reconcile an early, non-final signal.
+
+## Get access
+
+Contact [@inventandchill on Telegram](https://t.me/inventandchill) to discuss
+filters, expected throughput, deployment region, authentication, and onboarding.

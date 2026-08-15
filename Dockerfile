@@ -34,9 +34,10 @@ RUN npm ci
 
 # Build the site from the MDX generated in the preceding Python stage.
 COPY --from=checker /app/docs ./docs
+COPY scripts/verify_static_links.mjs ./scripts/verify_static_links.mjs
 COPY tsconfig.json vocs.config.ts ./
 
-RUN npm run build
+RUN npm run build && npm run verify-links
 
 # Artifact-only image: its filesystem contains just the generated static site.
 FROM scratch AS static

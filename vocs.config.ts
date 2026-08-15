@@ -9,7 +9,7 @@ export default defineConfig({
   title: 'OnchainDivers Examples',
   description: 'Executable examples for the OnchainDivers Solana, Polymarket, and HyperLiquid indexers',
   topNav: [
-    { text: 'Blog', link: 'https://blog.onchaindivers.com' },
+    { text: 'Blog', link: 'https://onchaindivers.substack.com/' },
     { text: 'Request Trial', link: 'https://forms.gle/b5Fuuns7jcA3nHKv5' },
     { text: 'Telegram', link: 'https://t.me/inventandchill' },
   ],
@@ -45,5 +45,13 @@ export default defineConfig({
     },
     { text: 'Bitcoin 5m Cross-Venue', link: '/bitcoin-5m-cross-venue' },
     { text: 'Fees API', link: '/fees-api' },
+    {
+      text: 'Solana Services',
+      collapsed: false,
+      items: [
+        { text: 'Nodes & Low-Latency Feeds', link: '/solana-nodes' },
+        { text: 'WSOL Exchange', link: '/services/wsol-exchange' },
+      ],
+    },
   ],
 })

@@ -762,7 +762,9 @@ def generate_database_mdx(
         metadata = get_table_metadata(accessor, table_name, db_name)
         table_data.append((table_name, metadata))
         lines.append(
-            f"| [{table_name}](#{table_name.lower().replace('_', '-')}) | "
+            # Vocs preserves underscores in heading IDs. Keep the fragment
+            # byte-for-byte aligned with the generated ``### table_name``.
+            f"| [{table_name}](#{table_name.lower()}) | "
             f"{format_number(metadata['total_rows'])} | "
             f"{format_bytes(metadata['total_bytes'])} |"
         )
