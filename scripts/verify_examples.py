@@ -57,6 +57,10 @@ research = module(
     "pumpfun_creator_and_migration_research",
     ROOT / "examples" / "research" / "generate_pumpfun_research.py",
 )
+wallet_fingerprints = module(
+    "wallet_fingerprint_research",
+    ROOT / "examples" / "research" / "generate_wallet_fingerprint_research.py",
+)
 
 
 def env_value(key: str) -> str | None:
@@ -447,7 +451,34 @@ def verify_research() -> None:
         or "Not migrated" not in migration_page
     ):
         raise AssertionError("migration comparison page is incomplete")
-    print("verified research: reliable creators and migration parent-program comparison")
+    wallet_summary = wallet_fingerprints.run(ROOT / ".env", pages, public)
+    if (
+        wallet_summary["eligible_wallets"] < 10
+        or len(wallet_summary["stable_examples"]) != 5
+        or len(wallet_summary["changed_examples"]) != 5
+        or wallet_summary["tier_counts"]["stable"]
+        < wallet_summary["eligible_wallets"] * 0.70
+        or wallet_summary["tier_counts"]["changed"]
+        >= wallet_summary["eligible_wallets"] / 4
+        or any(
+            row["tier"] != "stable"
+            for row in wallet_summary["stable_examples"]
+        )
+        or any(
+            row["tier"] != "changed"
+            for row in wallet_summary["changed_examples"]
+        )
+        or wallet_summary["changed_examples"][0]["change_score"]
+        < wallet_summary["stable_examples"][-1]["change_score"]
+    ):
+        raise AssertionError("wallet-fingerprint research output is incomplete")
+    fingerprint_page = (pages / "wallet-fingerprint-changes.mdx").read_text()
+    if (
+        "not claims of a wallet sale" not in fingerprint_page
+        or "github.com/web3engineering/on-chain-divers" not in fingerprint_page
+    ):
+        raise AssertionError("wallet-fingerprint page is missing methodology safeguards")
+    print("verified research: creators, migrations, and wallet fingerprint changes")
 
 
 def main() -> None:

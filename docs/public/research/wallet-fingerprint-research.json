@@ -1,0 +1,955 @@
+{
+  "source": "https://onchaindivers.com",
+  "window_end": "2026-08-16T18:45:38Z",
+  "eligible_wallets": 250,
+  "tier_counts": {
+    "stable": 228,
+    "review": 11,
+    "changed": 11
+  },
+  "tier_thresholds": {
+    "stable_max_score": 15.0,
+    "changed_min_score": 30.0,
+    "minimum_internal_stability": 45.0
+  },
+  "stable_examples": [
+    {
+      "wallet": "C5EMTGGE87SqLyuvhShLDMj2jUBwqBLJAZF6ybK8Jyqw",
+      "previous_transactions": 716,
+      "recent_transactions": 878,
+      "change_score": 0.05842360038612806,
+      "minimum_internal_stability": 83.54203123366636,
+      "change_drivers": [
+        "priority fee",
+        "CU usage",
+        "CU limit"
+      ],
+      "components": {
+        "preferred tip route": 0.0,
+        "average tip": 0.0,
+        "CU usage": 0.00021804631425536504,
+        "CU limit": 0.0,
+        "priority fee": 0.0055807044615063675,
+        "instruction order": 0.0,
+        "parent program": 0.0,
+        "fee-payer pattern": 0.0,
+        "instruction type": 0.0,
+        "buy/sell mix": 0.0
+      },
+      "previous": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 324,
+        "median_cu_limit": 100000.0,
+        "median_cu_used": 76027.0,
+        "average_priority_fee": 8089105.508,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.514,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "2/1/-1/6",
+        "preferred_instruction_type": "buy",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "2/1/-1/6": 0.514,
+          "1/0/-1/2": 0.486
+        },
+        "instruction_type_distribution": {
+          "buy": 0.514,
+          "sell_v2": 0.486
+        },
+        "internal_stability": 83.54203123366636,
+        "fingerprint": "f17147366236"
+      },
+      "recent": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 357,
+        "median_cu_limit": 100000.0,
+        "median_cu_used": 76001.0,
+        "average_priority_fee": 8151937.338,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.514,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "2/1/-1/6",
+        "preferred_instruction_type": "buy",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "2/1/-1/6": 0.514,
+          "1/0/-1/2": 0.486
+        },
+        "instruction_type_distribution": {
+          "buy": 0.514,
+          "sell_v2": 0.486
+        },
+        "internal_stability": 83.5621348145263,
+        "fingerprint": "f17147366236"
+      },
+      "tier": "stable"
+    },
+    {
+      "wallet": "H4ybzNqTqc6Q2Kis1k95fybGg1RsFKHrvtQ3zh9833X3",
+      "previous_transactions": 1565,
+      "recent_transactions": 1034,
+      "change_score": 0.08203165554903935,
+      "minimum_internal_stability": 82.2577394586153,
+      "change_drivers": [
+        "instruction order",
+        "priority fee",
+        "instruction type"
+      ],
+      "components": {
+        "preferred tip route": 0.0,
+        "average tip": 0.0,
+        "CU usage": 0.000628719555429316,
+        "CU limit": 0.0,
+        "priority fee": 0.0020487020883887524,
+        "instruction order": 0.0020000000000000018,
+        "parent program": 0.0,
+        "fee-payer pattern": 0.0,
+        "instruction type": 0.008000000000000004,
+        "buy/sell mix": 0.0020000000000000018
+      },
+      "previous": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 377,
+        "median_cu_limit": 350000.0,
+        "median_cu_used": 80104.5,
+        "average_priority_fee": 351600.0,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.504,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "1/0/-1/7",
+        "preferred_instruction_type": "buy",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/2": 0.496,
+          "1/0/-1/7": 0.504
+        },
+        "instruction_type_distribution": {
+          "sell": 0.496,
+          "buy": 0.504
+        },
+        "internal_stability": 82.45898045715003,
+        "fingerprint": "f4e3495cea95"
+      },
+      "recent": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 344,
+        "median_cu_limit": 350000.0,
+        "median_cu_used": 80026.0,
+        "average_priority_fee": 350600.0,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.502,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "1/0/-1/7",
+        "preferred_instruction_type": "buy",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/2": 0.498,
+          "1/0/-1/7": 0.502
+        },
+        "instruction_type_distribution": {
+          "sell": 0.496,
+          "buy": 0.496,
+          "buy_v2": 0.006,
+          "sell_v2": 0.002
+        },
+        "internal_stability": 82.2577394586153,
+        "fingerprint": "f4e3495cea95"
+      },
+      "tier": "stable"
+    },
+    {
+      "wallet": "GVVP8N7jnxgr3QdtR461bsuCNNQmuNu4DBW2Ab4tzKVp",
+      "previous_transactions": 8715,
+      "recent_transactions": 7036,
+      "change_score": 0.17263470815148568,
+      "minimum_internal_stability": 86.6668638469253,
+      "change_drivers": [
+        "CU usage",
+        "instruction type",
+        "instruction order"
+      ],
+      "components": {
+        "preferred tip route": 0.0,
+        "average tip": 0.0,
+        "CU usage": 0.006386225679290478,
+        "CU limit": 0.0,
+        "priority fee": 0.0,
+        "instruction order": 0.0020000000000000018,
+        "parent program": 0.0,
+        "fee-payer pattern": 0.0,
+        "instruction type": 0.01999999999999999,
+        "buy/sell mix": 0.019999999999999962
+      },
+      "previous": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 244,
+        "median_cu_limit": 220000.0,
+        "median_cu_used": 90123.5,
+        "average_priority_fee": 700000.0,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.468,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "1/0/-1/8",
+        "preferred_instruction_type": "sell_v2",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/4": 0.306,
+          "1/0/-1/8": 0.694
+        },
+        "instruction_type_distribution": {
+          "buy_v2": 0.468,
+          "sell_v2": 0.532
+        },
+        "internal_stability": 87.00144792431308,
+        "fingerprint": "e99af7134e32"
+      },
+      "recent": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 245,
+        "median_cu_limit": 220000.0,
+        "median_cu_used": 89241.0,
+        "average_priority_fee": 700000.0,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.488,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "1/0/-1/8",
+        "preferred_instruction_type": "sell_v2",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/8": 0.696,
+          "1/0/-1/4": 0.304
+        },
+        "instruction_type_distribution": {
+          "sell_v2": 0.512,
+          "buy_v2": 0.488
+        },
+        "internal_stability": 86.6668638469253,
+        "fingerprint": "e99af7134e32"
+      },
+      "tier": "stable"
+    },
+    {
+      "wallet": "5aYMeaGo7PH7HMVjE7PGjARhAU9DUCRk3yJ4KnmL5nWY",
+      "previous_transactions": 1704,
+      "recent_transactions": 1788,
+      "change_score": 0.1828303320057826,
+      "minimum_internal_stability": 82.5902162267459,
+      "change_drivers": [
+        "instruction order",
+        "instruction type",
+        "CU usage"
+      ],
+      "components": {
+        "preferred tip route": 0.0,
+        "average tip": 0.0,
+        "CU usage": 0.0012358610004818717,
+        "CU limit": 0.0,
+        "priority fee": 0.0,
+        "instruction order": 0.008000000000000007,
+        "parent program": 0.0,
+        "fee-payer pattern": 0.0,
+        "instruction type": 0.008000000000000007,
+        "buy/sell mix": 0.008000000000000007
+      },
+      "previous": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 427,
+        "median_cu_limit": 200000.0,
+        "median_cu_used": 93514.5,
+        "average_priority_fee": 0.0,
+        "average_tip_lamports": 1000.0,
+        "tip_rate": 1.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.5,
+        "preferred_tip_route": "jito",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "-1/0/3/1",
+        "preferred_instruction_type": "buy_v2",
+        "tip_route_distribution": {
+          "jito": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "-1/0/3/1": 0.5,
+          "-1/0/3/6": 0.5
+        },
+        "instruction_type_distribution": {
+          "sell_v2": 0.5,
+          "buy_v2": 0.5
+        },
+        "internal_stability": 82.5902162267459,
+        "fingerprint": "5f40de6dc056"
+      },
+      "recent": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 426,
+        "median_cu_limit": 200000.0,
+        "median_cu_used": 93692.0,
+        "average_priority_fee": 0.0,
+        "average_tip_lamports": 1000.0,
+        "tip_rate": 1.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.508,
+        "preferred_tip_route": "jito",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "-1/0/3/6",
+        "preferred_instruction_type": "buy_v2",
+        "tip_route_distribution": {
+          "jito": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "-1/0/3/6": 0.508,
+          "-1/0/3/1": 0.492
+        },
+        "instruction_type_distribution": {
+          "buy_v2": 0.508,
+          "sell_v2": 0.492
+        },
+        "internal_stability": 82.90807679749233,
+        "fingerprint": "32104b25187a"
+      },
+      "tier": "stable"
+    },
+    {
+      "wallet": "5XEj4qt6STm1dKvwTiqiuLRYJoMWUey4BqiwDPTuaUVG",
+      "previous_transactions": 832,
+      "recent_transactions": 922,
+      "change_score": 0.18334431873388632,
+      "minimum_internal_stability": 91.39460451977402,
+      "change_drivers": [
+        "instruction order",
+        "instruction type",
+        "buy/sell mix"
+      ],
+      "components": {
+        "preferred tip route": 0.0,
+        "average tip": 0.0,
+        "CU usage": 0.0007786932278238527,
+        "CU limit": 0.0,
+        "priority fee": 0.0,
+        "instruction order": 0.006000000000000003,
+        "parent program": 0.0,
+        "fee-payer pattern": 0.0,
+        "instruction type": 0.02200000000000002,
+        "buy/sell mix": 0.02200000000000002
+      },
+      "previous": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 347,
+        "median_cu_limit": 220000.0,
+        "median_cu_used": 106320.5,
+        "average_priority_fee": 700000.0,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.518,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "1/0/-1/8",
+        "preferred_instruction_type": "buy_v2",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/8": 0.994,
+          "1/0/-1/9": 0.002,
+          "1/0/-1/4": 0.004
+        },
+        "instruction_type_distribution": {
+          "sell_v2": 0.482,
+          "buy_v2": 0.518
+        },
+        "internal_stability": 91.71072068943747,
+        "fingerprint": "0ccf30c83982"
+      },
+      "recent": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 366,
+        "median_cu_limit": 220000.0,
+        "median_cu_used": 106195.0,
+        "average_priority_fee": 700000.0,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.496,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "1/0/-1/8",
+        "preferred_instruction_type": "sell_v2",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/8": 0.988,
+          "1/0/-1/9": 0.006,
+          "1/0/-1/4": 0.006
+        },
+        "instruction_type_distribution": {
+          "buy_v2": 0.496,
+          "sell_v2": 0.504
+        },
+        "internal_stability": 91.39460451977402,
+        "fingerprint": "43201e2490da"
+      },
+      "tier": "stable"
+    }
+  ],
+  "changed_examples": [
+    {
+      "wallet": "8YyEXS73cPj9rH1FVfWbfAubMctYN52eag3sN7f5DB25",
+      "previous_transactions": 1314,
+      "recent_transactions": 819,
+      "change_score": 44.35857447246177,
+      "minimum_internal_stability": 72.33830601454882,
+      "change_drivers": [
+        "parent program",
+        "instruction order",
+        "average tip"
+      ],
+      "components": {
+        "preferred tip route": 0.134,
+        "average tip": 1.0,
+        "CU usage": 0.2904393271425137,
+        "CU limit": 0.32192809488736235,
+        "priority fee": 0.20940215978779775,
+        "instruction order": 0.6119999999999999,
+        "parent program": 0.624,
+        "fee-payer pattern": 0.0,
+        "instruction type": 0.624,
+        "buy/sell mix": 0.05399999999999994
+      },
+      "previous": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 126,
+        "median_cu_limit": 240000.0,
+        "median_cu_used": 119378.0,
+        "average_priority_fee": 498443.768,
+        "average_tip_lamports": 13400.0,
+        "tip_rate": 0.134,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.896,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "term9YPb9mzAsABaqN71A4xdbxHmpBNZavpBiQKZzN3",
+        "preferred_instruction_order": "1/0/-1/3",
+        "preferred_instruction_type": "buy_exact_quote_in_v2",
+        "tip_route_distribution": {
+          "jito": 0.134,
+          "none": 0.866
+        },
+        "parent_program_distribution": {
+          "term9YPb9mzAsABaqN71A4xdbxHmpBNZavpBiQKZzN3": 0.624,
+          "FLASHX8DrLbgeR8FcfNV1F5krxYcYMUdBkrP1EPBtxB9": 0.376
+        },
+        "instruction_order_distribution": {
+          "1/0/5/6": 0.09,
+          "1/0/-1/10": 0.066,
+          "1/0/-1/6": 0.306,
+          "1/0/5/10": 0.01,
+          "1/0/4/4": 0.008,
+          "1/0/-1/4": 0.056,
+          "1/0/6/19": 0.018,
+          "1/0/-1/19": 0.06,
+          "1/0/-1/23": 0.002,
+          "1/0/6/23": 0.004,
+          "1/0/6/13": 0.004,
+          "1/0/-1/3": 0.336,
+          "1/0/-1/8": 0.04
+        },
+        "instruction_type_distribution": {
+          "buy_exact_quote_in_v2": 0.556,
+          "sell_v2": 0.068,
+          "sell": 0.036,
+          "buy": 0.34
+        },
+        "internal_stability": 72.33830601454882,
+        "fingerprint": "bb4ff8ed5cc7"
+      },
+      "recent": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 40,
+        "median_cu_limit": 150000.0,
+        "median_cu_used": 76496.5,
+        "average_priority_fee": 666666.0,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.95,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "FLASHX8DrLbgeR8FcfNV1F5krxYcYMUdBkrP1EPBtxB9",
+        "preferred_instruction_order": "1/0/-1/3",
+        "preferred_instruction_type": "buy",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "FLASHX8DrLbgeR8FcfNV1F5krxYcYMUdBkrP1EPBtxB9": 1.0
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/8": 0.044,
+          "1/0/-1/3": 0.944,
+          "1/0/-1/4": 0.01,
+          "1/0/-1/6": 0.002
+        },
+        "instruction_type_distribution": {
+          "buy": 0.95,
+          "sell": 0.05
+        },
+        "internal_stability": 98.08191367235177,
+        "fingerprint": "7c97d0e28a18"
+      },
+      "tier": "changed"
+    },
+    {
+      "wallet": "DnfFp7okR3fQruvWTe46F3riQxrk6HqmsWTXULb3Hukd",
+      "previous_transactions": 1646,
+      "recent_transactions": 1912,
+      "change_score": 41.13362268060431,
+      "minimum_internal_stability": 56.981214387593994,
+      "change_drivers": [
+        "average tip",
+        "priority fee",
+        "instruction order"
+      ],
+      "components": {
+        "preferred tip route": 0.32599999999999996,
+        "average tip": 1.0,
+        "CU usage": 0.05363522338369244,
+        "CU limit": 0.0,
+        "priority fee": 1.0,
+        "instruction order": 0.428,
+        "parent program": 0.404,
+        "fee-payer pattern": 0.018000000000000016,
+        "instruction type": 0.274,
+        "buy/sell mix": 0.0040000000000000036
+      },
+      "previous": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 145,
+        "median_cu_limit": 400000.0,
+        "median_cu_used": 117765.5,
+        "average_priority_fee": 8157352.598,
+        "average_tip_lamports": 2068209.354,
+        "tip_rate": 0.59,
+        "self_paid_rate": 0.98,
+        "buy_rate": 0.682,
+        "preferred_tip_route": "jito",
+        "preferred_parent_program": "6Vo3245eszAb5wuqEMw8mGdbfRUdKbHhDHP5LcaGuTAB",
+        "preferred_instruction_order": "1/0/2/3",
+        "preferred_instruction_type": "buy_exact_quote_in_v2",
+        "tip_route_distribution": {
+          "jito": 0.59,
+          "none": 0.41
+        },
+        "parent_program_distribution": {
+          "<direct>": 0.406,
+          "6Vo3245eszAb5wuqEMw8mGdbfRUdKbHhDHP5LcaGuTAB": 0.594
+        },
+        "instruction_order_distribution": {
+          "1/0/2/3": 0.37,
+          "1/0/-1/10": 0.324,
+          "1/0/-1/16": 0.022,
+          "1/0/2/8": 0.034,
+          "1/0/7/6": 0.056,
+          "1/0/7/10": 0.1,
+          "1/0/-1/6": 0.056,
+          "1/0/9/16": 0.012,
+          "1/0/9/20": 0.002,
+          "1/0/-1/12": 0.006,
+          "1/0/7/14": 0.006,
+          "1/0/2/4": 0.002,
+          "1/0/6/16": 0.004,
+          "1/0/-1/14": 0.002,
+          "1/0/6/20": 0.004
+        },
+        "instruction_type_distribution": {
+          "sell_v2": 0.318,
+          "buy_v2": 0.272,
+          "buy_exact_quote_in_v2": 0.41
+        },
+        "internal_stability": 56.981214387593994,
+        "fingerprint": "487adde0604c"
+      },
+      "recent": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 161,
+        "median_cu_limit": 400000.0,
+        "median_cu_used": 127627.5,
+        "average_priority_fee": 105776.672,
+        "average_tip_lamports": 126988.586,
+        "tip_rate": 0.264,
+        "self_paid_rate": 0.998,
+        "buy_rate": 0.686,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "6Vo3245eszAb5wuqEMw8mGdbfRUdKbHhDHP5LcaGuTAB",
+        "preferred_instruction_order": "1/0/-1/10",
+        "preferred_instruction_type": "buy_exact_quote_in_v2",
+        "tip_route_distribution": {
+          "none": 0.736,
+          "jito": 0.264
+        },
+        "parent_program_distribution": {
+          "6Vo3245eszAb5wuqEMw8mGdbfRUdKbHhDHP5LcaGuTAB": 0.998,
+          "<direct>": 0.002
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/10": 0.592,
+          "1/0/-1/6": 0.122,
+          "1/0/7/10": 0.168,
+          "1/0/7/6": 0.074,
+          "1/0/6/12": 0.002,
+          "1/0/-1/14": 0.002,
+          "1/0/-1/16": 0.018,
+          "1/0/7/14": 0.002,
+          "1/0/9/16": 0.002,
+          "1/0/6/16": 0.01,
+          "1/0/-1/12": 0.002,
+          "1/0/6/20": 0.004,
+          "1/0/2/3": 0.002
+        },
+        "instruction_type_distribution": {
+          "sell_v2": 0.314,
+          "buy_exact_quote_in_v2": 0.684,
+          "buy_v2": 0.002
+        },
+        "internal_stability": 81.95358924709862,
+        "fingerprint": "562650a40045"
+      },
+      "tier": "changed"
+    },
+    {
+      "wallet": "3C1GhzuKGVfAweANVea4enCFQmoRPip1xCAHXVGGuNWM",
+      "previous_transactions": 744,
+      "recent_transactions": 973,
+      "change_score": 36.15914026647163,
+      "minimum_internal_stability": 77.65925725880038,
+      "change_drivers": [
+        "instruction order",
+        "parent program",
+        "CU usage"
+      ],
+      "components": {
+        "preferred tip route": 0.0,
+        "average tip": 0.0,
+        "CU usage": 0.2736576520617019,
+        "CU limit": 0.0745035241070192,
+        "priority fee": 0.04822132006610142,
+        "instruction order": 0.854,
+        "parent program": 0.854,
+        "fee-payer pattern": 0.0,
+        "instruction type": 0.444,
+        "buy/sell mix": 0.016000000000000014
+      },
+      "previous": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 332,
+        "median_cu_limit": 172953.0,
+        "median_cu_used": 117059.0,
+        "average_priority_fee": 163238.566,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.51,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+        "preferred_instruction_order": "1/0/-1/8",
+        "preferred_instruction_type": "buy_exact_quote_in_v2",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4": 0.854,
+          "<direct>": 0.146
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/8": 0.428,
+          "1/0/-1/16": 0.376,
+          "1/0/-1/19": 0.05,
+          "1/0/-1/14": 0.084,
+          "1/0/-1/3": 0.062
+        },
+        "instruction_type_distribution": {
+          "sell_v2": 0.428,
+          "buy_exact_quote_in_v2": 0.51,
+          "sell": 0.062
+        },
+        "internal_stability": 77.65925725880038,
+        "fingerprint": "64e8e76a47ff"
+      },
+      "recent": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 374,
+        "median_cu_limit": 155000.0,
+        "median_cu_used": 76945.5,
+        "average_priority_fee": 152618.322,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.494,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "1/0/-1/3",
+        "preferred_instruction_type": "sell",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/14": 0.494,
+          "1/0/-1/3": 0.506
+        },
+        "instruction_type_distribution": {
+          "buy_exact_quote_in_v2": 0.494,
+          "sell": 0.506
+        },
+        "internal_stability": 79.18492457493682,
+        "fingerprint": "9a5f5e2517f8"
+      },
+      "tier": "changed"
+    },
+    {
+      "wallet": "BohHTVdwVDnSvhpg8GcLjZQ8ipNC6dEWydDWLh6JqVNN",
+      "previous_transactions": 737,
+      "recent_transactions": 1038,
+      "change_score": 35.0988843533461,
+      "minimum_internal_stability": 76.42773142342352,
+      "change_drivers": [
+        "parent program",
+        "instruction order",
+        "CU usage"
+      ],
+      "components": {
+        "preferred tip route": 0.0,
+        "average tip": 0.0,
+        "CU usage": 0.24669986919299153,
+        "CU limit": 0.0588984327791861,
+        "priority fee": 0.09715015952383409,
+        "instruction order": 0.826,
+        "parent program": 0.8260000000000001,
+        "fee-payer pattern": 0.0,
+        "instruction type": 0.42000000000000004,
+        "buy/sell mix": 0.0020000000000000018
+      },
+      "previous": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 332,
+        "median_cu_limit": 142063.0,
+        "median_cu_used": 108251.0,
+        "average_priority_fee": 169590.2,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.484,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+        "preferred_instruction_order": "1/0/-1/8",
+        "preferred_instruction_type": "buy_exact_quote_in_v2",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4": 0.826,
+          "<direct>": 0.174
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/8": 0.42,
+          "1/0/-1/16": 0.358,
+          "1/0/-1/19": 0.048,
+          "1/0/-1/14": 0.078,
+          "1/0/-1/3": 0.096
+        },
+        "instruction_type_distribution": {
+          "sell_v2": 0.42,
+          "buy_exact_quote_in_v2": 0.484,
+          "sell": 0.096
+        },
+        "internal_stability": 76.42773142342352,
+        "fingerprint": "d05dc4b818d2"
+      },
+      "recent": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 391,
+        "median_cu_limit": 155000.0,
+        "median_cu_used": 73999.5,
+        "average_priority_fee": 148095.266,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.486,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "1/0/-1/3",
+        "preferred_instruction_type": "sell",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/3": 0.514,
+          "1/0/-1/14": 0.486
+        },
+        "instruction_type_distribution": {
+          "sell": 0.514,
+          "buy_exact_quote_in_v2": 0.486
+        },
+        "internal_stability": 80.1275836697455,
+        "fingerprint": "d3d9ecc49543"
+      },
+      "tier": "changed"
+    },
+    {
+      "wallet": "A29DzkWim6tdaN4TKVzG8iE6u8dMwERuWro7ivuW3L6o",
+      "previous_transactions": 798,
+      "recent_transactions": 748,
+      "change_score": 34.54496605226151,
+      "minimum_internal_stability": 77.31708513785954,
+      "change_drivers": [
+        "instruction order",
+        "parent program",
+        "CU usage"
+      ],
+      "components": {
+        "preferred tip route": 0.0,
+        "average tip": 0.0,
+        "CU usage": 0.2586067076754942,
+        "CU limit": 0.0745035241070192,
+        "priority fee": 0.09406503190853774,
+        "instruction order": 0.802,
+        "parent program": 0.802,
+        "fee-payer pattern": 0.0,
+        "instruction type": 0.41600000000000004,
+        "buy/sell mix": 0.052000000000000046
+      },
+      "previous": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 351,
+        "median_cu_limit": 172953.0,
+        "median_cu_used": 115597.5,
+        "average_priority_fee": 168161.348,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.542,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+        "preferred_instruction_order": "1/0/-1/16",
+        "preferred_instruction_type": "buy_exact_quote_in_v2",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4": 0.802,
+          "<direct>": 0.198
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/16": 0.406,
+          "1/0/-1/8": 0.364,
+          "1/0/-1/19": 0.032,
+          "1/0/-1/14": 0.104,
+          "1/0/-1/3": 0.094
+        },
+        "instruction_type_distribution": {
+          "buy_exact_quote_in_v2": 0.542,
+          "sell_v2": 0.364,
+          "sell": 0.094
+        },
+        "internal_stability": 77.31708513785954,
+        "fingerprint": "eb1d929bc10b"
+      },
+      "recent": {
+        "sampled_transactions": 500,
+        "distinct_tokens": 341,
+        "median_cu_limit": 155000.0,
+        "median_cu_used": 77757.5,
+        "average_priority_fee": 147480.132,
+        "average_tip_lamports": 0.0,
+        "tip_rate": 0.0,
+        "self_paid_rate": 1.0,
+        "buy_rate": 0.49,
+        "preferred_tip_route": "none",
+        "preferred_parent_program": "<direct>",
+        "preferred_instruction_order": "1/0/-1/3",
+        "preferred_instruction_type": "sell",
+        "tip_route_distribution": {
+          "none": 1.0
+        },
+        "parent_program_distribution": {
+          "<direct>": 1.0
+        },
+        "instruction_order_distribution": {
+          "1/0/-1/3": 0.51,
+          "1/0/-1/14": 0.49
+        },
+        "instruction_type_distribution": {
+          "sell": 0.51,
+          "buy_exact_quote_in_v2": 0.49
+        },
+        "internal_stability": 79.71941122209513,
+        "fingerprint": "9a5f5e2517f8"
+      },
+      "tier": "changed"
+    }
+  ]
+}

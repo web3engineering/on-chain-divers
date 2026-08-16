@@ -58,6 +58,7 @@ export default defineConfig({
       items: [
         { text: 'Reliable Pump.fun Creators', link: '/research/reliable-pumpfun-creators' },
         { text: 'Pump.fun Migration Programs', link: '/research/pumpfun-migration-parent-programs' },
+        { text: 'Wallet Fingerprint Changes', link: '/research/wallet-fingerprint-changes' },
         { text: 'Bitcoin 5m Cross-Venue', link: '/bitcoin-5m-cross-venue' },
         { text: 'Simple Microprice', link: '/microprice-research' },
       ],

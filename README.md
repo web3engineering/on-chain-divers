@@ -17,7 +17,9 @@ This repository is a self-contained, executable guide to the
   first-100-slot trade count of their weakest launch, plus migration-aware p95
   market-cap distributions valued with a Meteora DLMM SOL/USDC rate; and
 - a comparison of early Pump.fun parent-program composition for migrated and
-  non-migrated launches.
+  non-migrated launches; and
+- a two-window wallet fingerprint monitor for transaction-builder changes that
+  may warrant pausing a copytrading strategy.
 
 The examples under [`examples/`](examples/) are the source programs. The docs
 explain the same programs, and `scripts/verify_examples.py` executes them during
