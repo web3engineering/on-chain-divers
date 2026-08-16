@@ -8,10 +8,10 @@ surfaces:
 * the dedicated Polymarket CLOB capture named after the market slug; and
 * HyperLiquid's raw MessagePack checkpoint plus hourly order-level diffs.
 
-It chooses the nearest replayable Bitcoin Up/Down interval around UTC now minus 24 hours, obtains
-the outcome CLOB token IDs from metadata (never hard-codes them), replays both
-venues over the same five minutes, and writes a publication-sized PNG plus a
-machine-readable JSON summary.
+It chooses the nearest replayable Bitcoin Up/Down interval around UTC now minus
+24 hours, obtains the outcome CLOB token IDs from metadata (never hard-codes
+them), replays both venues over the same five minutes, and writes a
+publication-sized PNG plus a machine-readable JSON summary.
 
 Data, access, and indexer documentation: https://onchaindivers.com
 """
@@ -53,7 +53,6 @@ from clickhouse_accessors import PolymarketAccessor  # noqa: E402
 UTC = timezone.utc
 GIB = 1024 * 1024 * 1024
 ARCHIVE_FINALIZATION_LAG = timedelta(minutes=15)
-MIN_DEDICATED_CAPTURE_BYTES = 8 * 1024 * 1024
 
 
 def env_value(key: str, env_path: Path) -> str:
@@ -93,7 +92,6 @@ def choose_market(
         FROM polymarket.raw_event_meta
         WHERE startsWith(slug, 'btc-updown-5m-')
           AND interval_start BETWEEN {target_epoch - 7200} AND {target_epoch + 7200}
-          AND modulo(interval_start, 3600) BETWEEN 300 AND 3000
         ORDER BY abs(interval_start - {target_epoch}), end_dttm DESC
         LIMIT 200
     """
@@ -113,13 +111,11 @@ def choose_market(
             None,
         )
         if dedicated and dedicated not in excluded_captures:
-            # The newest archive entry can appear while its recorder is still
-            # finalizing. A complete liquid BTC five-minute capture is normally
-            # several MiB; rejecting tiny edge files avoids selecting a handful
-            # of post-settlement messages merely because the filename exists.
+            # Size is reported for reproducibility, not used as a validity
+            # proxy. Capture volume varies with market activity, and the caller
+            # validates both outcome streams plus full snapshot/delta replays
+            # before downloading the much larger HyperLiquid inputs.
             capture_bytes = archive.content_length(capture_source, dedicated)
-            if capture_bytes < MIN_DEDICATED_CAPTURE_BYTES:
-                continue
             start = datetime.fromtimestamp(int(row["interval_start"]), tz=UTC)
             return {
                 "event_id": str(row["event_id"]),

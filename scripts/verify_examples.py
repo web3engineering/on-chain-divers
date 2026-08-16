@@ -238,6 +238,32 @@ def verify_orderbooks(strict_live: bool) -> None:
         raise AssertionError("Polymarket replay produced the wrong top of book")
     print("verified order book: Polymarket scan, download and replay")
 
+    # Dedicated capture size and position within an hour are not validity
+    # signals. A quiet but replayable :55 market must remain selectable; the
+    # live path performs the substantive two-outcome replay checks afterward.
+    class CaptureMetadataFixture:
+        def query(self, _sql: str, **_kwargs) -> list[dict]:
+            return [{
+                "event_id": "fixture-event",
+                "slug": "btc-updown-5m-1786751700",
+                "title": "Bitcoin Up or Down",
+                "interval_start": 1786751700,
+            }]
+
+    with tempfile.TemporaryDirectory() as temporary:
+        capture_root = Path(temporary)
+        capture_name = "btc-updown-5m-1786751700.log.zst"
+        (capture_root / capture_name).write_bytes(b"small fixture")
+        selected = bitcoin.choose_market(
+            CaptureMetadataFixture(),
+            datetime.fromtimestamp(1786751700, tz=timezone.utc),
+            {capture_name},
+            str(capture_root),
+        )
+    if selected["capture_name"] != capture_name or selected["capture_bytes"] != 13:
+        raise AssertionError("quiet or hour-boundary Polymarket capture was rejected")
+    print("verified capture selection: activity-independent BTC 5m candidate")
+
     hyper_root = ORDERBOOKS / "fixtures" / "hyperliquid"
     names = archive.scan(str(hyper_root), (".jsonl", ".log"))
     with tempfile.TemporaryDirectory() as temporary:
