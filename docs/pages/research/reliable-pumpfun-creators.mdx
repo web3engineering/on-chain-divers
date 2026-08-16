@@ -7,16 +7,68 @@ the minimum count across their launches. In other words, the leading creator
 has the strongest worst-performing launch. Both buys and sells count as trades.
 Only launches with a complete 100-slot observation horizon are included.
 
-*Window end: 2026-08-16T00:04:54Z*
+For every token, robust peak market cap is its p95 swap-implied valuation.
+Pump.fun observations are combined with PumpSwap observations after migration.
+The calculation assumes one billion tokens with six decimals. SOL/USD is the
+median of the 100 most recent WSOL/USDC Meteora DLMM swaps in the window; a
+single rate is used for the day.
 
-| Rank | Creator | Launches | Minimum trades | Average | Median | Maximum | Weakest launch |
-| ---: | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| 1 | `C2TFeiRyzzApUxvjrfaXF1RLfad2SfaHvSqGaEPmmxfv` | 10 | 166 | 249.90 | 231.0 | 408 | `ほお` `4f66fo…cSpump` |
-| 2 | `54yAKtNUBDi4VPNzcSr6qXxA86ZYKBCiHB2MgzrfMrpK` | 5 | 141 | 216.60 | 205.0 | 331 | `BEEHOUSE` `GaghsP…28pump` |
-| 3 | `5ZuV8eqkvzYFVEKbLvGBdexL2tFv7E5BCd2HZpjqbdg` | 5 | 103 | 255.00 | 227.0 | 504 | `Oniichan` `BEdwv9…M8pump` |
-| 4 | `fLHBWTFtiGNK3czdLPZQLYyFhs6GWa1PHhs42Y1Kxds` | 6 | 100 | 140.83 | 129.0 | 233 | `CIB` `EXrhHo…uRpump` |
-| 5 | `4QwJ4AXMtSjnCwgM9kiDpsGtXmjEd3hAVRkDg3o3bDQs` | 6 | 95 | 247.83 | 278.0 | 442 | `KATIE` `Eq9ERw…nVpump` |
+*Window end: 2026-08-16T09:08:12Z · SOL/USD: $75.3830 from 100 DLMM swaps*
+
+Mcap histogram bins, left to right: `<$10k`, `$10–25k`, `$25–50k`,
+`$50–100k`, `$100–250k`, `≥$250k`. The numbers in parentheses are the
+token counts in those bins.
+
+| Rank | Creator | Launches | Minimum trades | Average | Median | Maximum | Migrated | Mcap distribution | Weakest launch |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| 1 | `GT5au36AvFTxc4yfRHh1dMWkLtsxDRHz2VW5MmvcKjM7` | 6 | 143 | 289.33 | 249.0 | 537 | 0/6 | `▅█····` (2/4/0/0/0/0) | `Ryabusik` `Db7n5q…gpLHMa` |
+| 2 | `C2TFeiRyzzApUxvjrfaXF1RLfad2SfaHvSqGaEPmmxfv` | 10 | 131 | 241.00 | 217.0 | 408 | 0/10 | `█▃····` (8/2/0/0/0/0) | `WSB` `Eaa4kA…V7pump` |
+| 3 | `EvLqSLCsPYxRP9C1Aj7ATMjrkpWEhYq6PW55c7XMbC6k` | 6 | 106 | 156.17 | 165.0 | 240 | 0/6 | `█▂····` (5/1/0/0/0/0) | `USDC` `3YM3gj…rhpump` |
+| 4 | `B32QbbdDAyhvUQzjcaM5j6ZVKwjCxAwGH5Xgvb9SJqnC` | 7 | 87 | 390.14 | 407.0 | 701 | 0/7 | `▆█····` (3/4/0/0/0/0) | `TOKEN` `EVBGfh…2vpump` |
+| 5 | `DHLRzkf3XUhsdUGshpJGwyJJsHnfzKjZt2dZDt6tX3MF` | 6 | 85 | 167.00 | 197.0 | 216 | 0/6 | `█▂····` (5/1/0/0/0/0) | `Eraser` `5uBeNg…tfpump` |
+
+## Token details
+
+| Creator rank | Token | Symbol / name | First-100-slot trades | Migrated | P95 market cap | Price observations | Sources |
+| ---: | --- | --- | ---: | --- | ---: | ---: | --- |
+| 1 | `CRKcP62YPwVGpAQhL4VDQsBnaipr6vR4s4nz1Z76xVQs` | `relax` / relax | 460 | No | $16,091 | 2,931 | Pump.fun 2,931 |
+| 1 | `2KWCUVi5xmFEpFbzvtfaBR3VAuQbAqTpt2H43DduxweR` | `pipotam` / pipotam | 249 | No | $15,653 | 2,957 | Pump.fun 2,957 |
+| 1 | `3ytZX4BD7cFnh5N4DkFpGJXp8auFNiF6gStJkj7XhU4J` | `コマ` / The 100 Point Expres | 537 | No | $10,984 | 3,924 | Pump.fun 3,924 |
+| 1 | `43FM3Ly1JNmJTvVvoGLB9MZLgn5xHSZU6NuyFC1jEprW` | `Wally` / Wally | 180 | No | $10,926 | 1,726 | Pump.fun 1,726 |
+| 1 | `Db7n5qe6jK5KMo9J4reZDqKNAyqkNTx85Q86HRgpLHMa` | `Ryabusik` / Рябусик | 143 | No | $8,727 | 530 | Pump.fun 530 |
+| 1 | `CL3Cwa7Zo8BTSWGvC6GEuUf8qQzsnePUgN6sbTWSE1ZB` | `inuf` / i&#x27;ve had inuf | 167 | No | $5,387 | 289 | Pump.fun 289 |
+| 2 | `GKh8Dig37sWC2a2KaQbDm8J8rWaanpjPxaS91wnSpump` | `Dawg` / That Dawg In Me | 197 | No | $15,626 | 2,386 | Pump.fun 2,386 |
+| 2 | `1pGdSLAeSStqxe7piVeeZqRRBBEDMRARGM7UiVMpump` | `DIDDYKONG` / The Diddy Kong | 265 | No | $14,289 | 2,818 | Pump.fun 2,818 |
+| 2 | `7XDqGVBdU6Kd869h4EU7cPQmaPdTAm66PchYVGW6pump` | `HBM` / Heart Broken Monkey | 205 | No | $9,275 | 1,202 | Pump.fun 1,202 |
+| 2 | `E9H4eqoo1GfRjDP5qqEMhkoup1z4NP16t5tVwVrPpump` | `Bcat` / The Backpack Cat | 217 | No | $9,082 | 922 | Pump.fun 922 |
+| 2 | `Gk2zvDRTDqVmUF68SxodbGTMWgc57YYjeEFHmq8Apump` | `Wally` / The Pizza Dog | 293 | No | $8,788 | 1,600 | Pump.fun 1,600 |
+| 2 | `GvqhaBETLgEEYDwSyUUXREvXQAWUnStgikPdCNZPpump` | `BDE` / Big Dick Elephant | 408 | No | $7,966 | 687 | Pump.fun 687 |
+| 2 | `2LrgKNT3jXNHcyndzLWKoT7BpiFM6UVg3rY34zDBpump` | `Punched` / Punched | 208 | No | $6,650 | 509 | Pump.fun 509 |
+| 2 | `D6NANnZDCNS7ojXJpYTkhexysG7CEby6QAN9gCx1pump` | `Dcat` / The Dih Cat | 174 | No | $5,202 | 207 | Pump.fun 207 |
+| 2 | `Aet2ZgrL8qZMHrxo9SHnxXp4YueHCp8wYCYaB7tRpump` | `RAT` / Rats And Tongue | 312 | No | $5,138 | 490 | Pump.fun 490 |
+| 2 | `Eaa4kAFdV2ZDpd4hUYZpefLBdXR9ijGcAc3oRPV7pump` | `WSB` / Operation Blue Balls | 131 | No | $4,820 | 181 | Pump.fun 181 |
+| 3 | `Cf3uzZV2iQDg2MHRjrdqGdf94ppAdAPUQCaH5zivpump` | `NICHE` / Niche Coin | 240 | No | $14,385 | 1,014 | Pump.fun 1,014 |
+| 3 | `Fs47a5ugFPHNGj3FNGVeh8Vfv4uPaAsc6CjQuNfepump` | `IDF` / IDF Babes | 166 | No | $9,637 | 1,452 | Pump.fun 1,452 |
+| 3 | `ApekTF2vmSvqj1AqQmp3bb66KmQFDjuyatKwa4SQpump` | `コマ` / The 100 Point Expres | 165 | No | $5,595 | 248 | Pump.fun 248 |
+| 3 | `FbUMQeAQzboWuzgWqckoAHKi687qmn1FB9R3Dn7mpump` | `MOCHI` / mochi | 139 | No | $4,492 | 269 | Pump.fun 269 |
+| 3 | `3YM3gjw9L23cS1P2y8GEx57XrE75wpgBrBPxBRrhpump` | `USDC` / unstable slimed dog | 106 | No | $3,689 | 129 | Pump.fun 129 |
+| 3 | `D6WKmcgD1EjhHS9eGi6jVs1ugZH4Yc8T3nDNoVbfpump` | `GRUG` / Grug | 121 | No | $3,542 | 150 | Pump.fun 150 |
+| 4 | `7E7W74UfsoxasnqvSF2EF7nr4QoG3K64DWkTW1Dqpump` | `Lumbridge` / Lumbridge | 636 | No | $17,991 | 1,450 | Pump.fun 1,450 |
+| 4 | `wZdrXAhNSyV5xc4EhCUKF7B1cJabmhmq9jxo9rhpump` | `Kippah` / The OpenAI Kippah | 701 | No | $17,564 | 4,190 | Pump.fun 4,190 |
+| 4 | `HzFawQSqxD8z1uHmGACjNKnARGvxqUrHDGEim2i4pump` | `Belive` / Can you believe this | 281 | No | $11,298 | 300 | Pump.fun 300 |
+| 4 | `3EQNgfMMUyi3mKMYoWMpd9pX5CLnehbgoJs3KKHBpump` | `WTF` / wtf what happen | 407 | No | $10,873 | 1,004 | Pump.fun 1,004 |
+| 4 | `3VMQqrkNa7s3grSLbLDxY5qjcrwYTUZMpKVtEpjGpump` | `Carp` / The Carp is Back | 521 | No | $7,929 | 813 | Pump.fun 813 |
+| 4 | `EVBGfh1A5mNKQ2xNafAA38S23eWmBtgskcuMpV2vpump` | `TOKEN` / tokencoin | 87 | No | $5,463 | 112 | Pump.fun 112 |
+| 4 | `D2VEdhX5EuLVNNXSBHGFWXqWS4offZetxtpdX5Hwpump` | `SOL3924` / Unidentified Flying | 98 | No | $4,885 | 113 | Pump.fun 113 |
+| 5 | `CpHGd67wY1eEWhEV32uY8ZUcx4VivPx3KmYwdwBPpump` | `niggachud` / niggachud | 203 | No | $10,098 | 963 | Pump.fun 963 |
+| 5 | `44sgfLZPixobbRbMqq76nyLaiNNoHaBFyGgmo1QVpump` | `chillfrog` / chillfrog | 197 | No | $7,942 | 1,129 | Pump.fun 1,129 |
+| 5 | `F8KNmFxrFZcLuREBYmESpGe3HT1wnmwnRnd5N16Ypump` | `Jesters` / Dancing Jesters | 134 | No | $7,827 | 575 | Pump.fun 575 |
+| 5 | `CFoEayuwXkExBk7YEycGQwqjZ5japJACSeMv6Mimpump` | `chillfrog` / chillfrog | 216 | No | $7,579 | 557 | Pump.fun 557 |
+| 5 | `6sAaSjsnMB2MDnh1rTtPFdZ8aJSRA2tA5oDgzMVxpump` | `Boss` / Boss Dog | 167 | No | $5,887 | 318 | Pump.fun 318 |
+| 5 | `5uBeNgMzfheyeRBrt1x2Y2ALbjFmGdNmmtjx7Wtfpump` | `Eraser` / Pump Cat | 85 | No | $5,583 | 130 | Pump.fun 130 |
 
 [View the SQL on GitHub](https://github.com/web3engineering/on-chain-divers/blob/master/examples/research/reliable_pumpfun_creators.sql).
 
+P95 market cap is a robust descriptive high, not an all-time high or a
+guarantee that the displayed valuation was executable at meaningful size.
 This is a mechanical activity screen, not an endorsement of a creator or token.

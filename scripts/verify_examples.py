@@ -406,8 +406,28 @@ def verify_research() -> None:
     if (
         any(int(row["launches"]) < 5 for row in summary["reliable_creators"])
         or creator_floors != sorted(creator_floors, reverse=True)
+        or not 10 < float(summary["sol_usdc_rate"]) < 1_000
+        or int(summary["sol_usdc_sample_count"]) != 100
     ):
         raise AssertionError("reliable-creator ranking violates its launch/trade rules")
+    for creator in summary["reliable_creators"]:
+        if (
+            len(creator["tokens"]) != int(creator["launches"])
+            or sum(creator["mcap_bin_counts"]) != int(creator["launches"])
+            or creator["migrated_launches"]
+            != sum(token["migrated"] for token in creator["tokens"])
+        ):
+            raise AssertionError("creator token/mcap distribution is inconsistent")
+        for token in creator["tokens"]:
+            if (
+                token["p95_mcap_usd"] <= 0
+                or token["price_observations"] < 1
+                or (
+                    token["pumpswap_price_observations"] > 0
+                    and not token["migrated"]
+                )
+            ):
+                raise AssertionError("creator token price research is incomplete")
     groups = summary["migration_comparison"]
     for label in ("migrated", "not_migrated"):
         if (
@@ -419,6 +439,8 @@ def verify_research() -> None:
     migration_page = (pages / "pumpfun-migration-parent-programs.mdx").read_text()
     if "github.com/web3engineering/on-chain-divers" not in reliable_page:
         raise AssertionError("reliable-creator page is missing its GitHub source link")
+    if "Mcap distribution" not in reliable_page or "PumpSwap" not in reliable_page:
+        raise AssertionError("reliable-creator page is missing market-cap details")
     if (
         "github.com/web3engineering/on-chain-divers" not in migration_page
         or "Migrated" not in migration_page

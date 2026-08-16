@@ -44,6 +44,104 @@ def short(value: str) -> str:
     return f"{value[:6]}…{value[-6:]}" if len(value) > 16 else value
 
 
+MCAP_BINS = (10_000, 25_000, 50_000, 100_000, 250_000)
+
+
+def usd(value: float) -> str:
+    """Format a USD value compactly for a generated table."""
+    if value >= 1_000_000:
+        return f"${value / 1_000_000:.2f}m"
+    return f"${value:,.0f}"
+
+
+def mcap_histogram(values: list[float]) -> tuple[str, list[int]]:
+    """Return a compact fixed-bin histogram and its auditable bin counts."""
+    counts = [0] * (len(MCAP_BINS) + 1)
+    for value in values:
+        index = next(
+            (index for index, upper in enumerate(MCAP_BINS) if value < upper),
+            len(MCAP_BINS),
+        )
+        counts[index] += 1
+    tallest = max(counts, default=0)
+    levels = "▁▂▃▄▅▆▇█"
+    bars = "".join(
+        "·" if count == 0 else levels[max(0, round(count / tallest * 7))]
+        for count in counts
+    )
+    return bars, counts
+
+
+def creator_research(rows: list[dict]) -> tuple[list[dict], float, int]:
+    """Group the token-level query into creator summaries and distributions."""
+    creators: dict[str, dict] = {}
+    for row in rows:
+        creator_id = str(row["creator_id"])
+        creator = creators.setdefault(
+            creator_id,
+            {
+                "creator": creator_id,
+                "launches": int(row["launches"]),
+                "minimum_trades_first_100_slots": int(
+                    row["minimum_trades_first_100_slots"]
+                ),
+                "average_trades_first_100_slots": float(
+                    row["average_trades_first_100_slots"]
+                ),
+                "median_trades_first_100_slots": float(
+                    row["median_trades_first_100_slots"]
+                ),
+                "maximum_trades_first_100_slots": int(
+                    row["maximum_trades_first_100_slots"]
+                ),
+                "weakest_mint": str(row["weakest_mint"]),
+                "weakest_symbol": str(row["weakest_symbol"]),
+                "tokens": [],
+            },
+        )
+        p95_mcap = float(row["p95_mcap_usd"] or 0)
+        if p95_mcap <= 0 or int(row["price_observations"] or 0) < 1:
+            raise ValueError(f"token {row['mint']} has no valid market-cap observations")
+        creator["tokens"].append(
+            {
+                "mint": str(row["mint"]),
+                "name": str(row["name"]),
+                "symbol": str(row["symbol"]),
+                "launched_at": utc_text(row["launched_at"]),
+                "trades_first_100_slots": int(row["trades"]),
+                "migrated": bool(int(row["migrated"])),
+                "migrated_at": (
+                    utc_text(row["migrated_at"]) if int(row["migrated"]) else None
+                ),
+                "p95_mcap_usd": p95_mcap,
+                "price_observations": int(row["price_observations"] or 0),
+                "pumpfun_price_observations": int(
+                    row["pumpfun_price_observations"] or 0
+                ),
+                "pumpswap_price_observations": int(
+                    row["pumpswap_price_observations"] or 0
+                ),
+            }
+        )
+    if len(creators) != 5:
+        raise ValueError(f"expected five reliable creators, received {len(creators)}")
+
+    ordered = list(creators.values())
+    for creator in ordered:
+        values = [token["p95_mcap_usd"] for token in creator["tokens"]]
+        histogram, counts = mcap_histogram(values)
+        creator["migrated_launches"] = sum(
+            token["migrated"] for token in creator["tokens"]
+        )
+        creator["mcap_histogram"] = histogram
+        creator["mcap_bin_counts"] = counts
+    sol_usdc_rates = {float(row["sol_usdc_rate"]) for row in rows}
+    sample_counts = {int(row["sol_usdc_sample_count"]) for row in rows}
+    if len(sol_usdc_rates) != 1 or len(sample_counts) != 1:
+        raise ValueError("SOL/USDC calculation was not constant across creator rows")
+    return ordered, sol_usdc_rates.pop(), sample_counts.pop()
+
+
 def utc_text(value: object) -> str:
     if isinstance(value, datetime):
         if value.tzinfo is None:
@@ -111,7 +209,9 @@ def migration_profiles(rows: list[dict]) -> tuple[dict[str, dict], dict[str, dic
     return tokens, groups
 
 
-def reliable_page(creators: list[dict], window_end: object) -> str:
+def reliable_page(
+    creators: list[dict], window_end: object, sol_usdc_rate: float, sample_count: int
+) -> str:
     lines = [
         "# Most reliable Pump.fun token creators",
         "",
@@ -122,10 +222,21 @@ def reliable_page(creators: list[dict], window_end: object) -> str:
         "has the strongest worst-performing launch. Both buys and sells count as trades.",
         "Only launches with a complete 100-slot observation horizon are included.",
         "",
-        f"*Window end: {md(utc_text(window_end))}*",
+        "For every token, robust peak market cap is its p95 swap-implied valuation.",
+        "Pump.fun observations are combined with PumpSwap observations after migration.",
+        "The calculation assumes one billion tokens with six decimals. SOL/USD is the",
+        "median of the 100 most recent WSOL/USDC Meteora DLMM swaps in the window; a",
+        "single rate is used for the day.",
         "",
-        "| Rank | Creator | Launches | Minimum trades | Average | Median | Maximum | Weakest launch |",
-        "| ---: | --- | ---: | ---: | ---: | ---: | ---: | --- |",
+        f"*Window end: {md(utc_text(window_end))} · SOL/USD: ${sol_usdc_rate:,.4f} "
+        f"from {sample_count} DLMM swaps*",
+        "",
+        "Mcap histogram bins, left to right: `<$10k`, `$10–25k`, `$25–50k`,",
+        "`$50–100k`, `$100–250k`, `≥$250k`. The numbers in parentheses are the",
+        "token counts in those bins.",
+        "",
+        "| Rank | Creator | Launches | Minimum trades | Average | Median | Maximum | Migrated | Mcap distribution | Weakest launch |",
+        "| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |",
     ]
     for rank, row in enumerate(creators, 1):
         creator = str(row["creator"])
@@ -140,6 +251,8 @@ def reliable_page(creators: list[dict], window_end: object) -> str:
                     f"{float(row['average_trades_first_100_slots']):,.2f}",
                     f"{float(row['median_trades_first_100_slots']):,.1f}",
                     f"{int(row['maximum_trades_first_100_slots']):,}",
+                    f"{int(row['migrated_launches']):,}/{int(row['launches']):,}",
+                    f"{code(row['mcap_histogram'])} ({'/'.join(map(str, row['mcap_bin_counts']))})",
                     f"{code(row['weakest_symbol'])} {code(short(str(row['weakest_mint'])))}",
                 ]
             )
@@ -148,8 +261,42 @@ def reliable_page(creators: list[dict], window_end: object) -> str:
     lines.extend(
         [
             "",
+            "## Token details",
+            "",
+            "| Creator rank | Token | Symbol / name | First-100-slot trades | Migrated | P95 market cap | Price observations | Sources |",
+            "| ---: | --- | --- | ---: | --- | ---: | ---: | --- |",
+        ]
+    )
+    for rank, creator in enumerate(creators, 1):
+        for token in sorted(
+            creator["tokens"], key=lambda item: (-item["p95_mcap_usd"], item["mint"])
+        ):
+            sources = f"Pump.fun {token['pumpfun_price_observations']:,}"
+            if token["pumpswap_price_observations"]:
+                sources += f" + PumpSwap {token['pumpswap_price_observations']:,}"
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        str(rank),
+                        code(token["mint"]),
+                        f"{code(token['symbol'])} / {md(token['name'])}",
+                        f"{token['trades_first_100_slots']:,}",
+                        "Yes" if token["migrated"] else "No",
+                        usd(token["p95_mcap_usd"]),
+                        f"{token['price_observations']:,}",
+                        sources,
+                    ]
+                )
+                + " |"
+            )
+    lines.extend(
+        [
+            "",
             f"[View the SQL on GitHub]({RELIABLE_SQL_URL}).",
             "",
+            "P95 market cap is a robust descriptive high, not an all-time high or a",
+            "guarantee that the displayed valuation was executable at meaningful size.",
             "This is a mechanical activity screen, not an endorsement of a creator or token.",
         ]
     )
@@ -240,7 +387,7 @@ def run(env_path: Path, pages_dir: Path, public_dir: Path) -> dict:
                 "SELECT max(block_time) AS window_end FROM pumpfun_token_creation",
                 settings={"max_execution_time": 60, "readonly": 1},
             )[0]["window_end"]
-            creators = query_file(client, "reliable_pumpfun_creators.sql")
+            creator_rows = query_file(client, "reliable_pumpfun_creators.sql")
             profile_rows = query_file(client, "pumpfun_parent_program_profiles.sql")
         except RuntimeError:
             raise
@@ -252,14 +399,15 @@ def run(env_path: Path, pages_dir: Path, public_dir: Path) -> dict:
             ) from None
     finally:
         client.disconnect()
-    if len(creators) != 5:
-        raise ValueError(f"expected five reliable creators, received {len(creators)}")
+    creators, sol_usdc_rate, sol_usdc_sample_count = creator_research(creator_rows)
     tokens, groups = migration_profiles(profile_rows)
 
     pages_dir.mkdir(parents=True, exist_ok=True)
     public_dir.mkdir(parents=True, exist_ok=True)
     (pages_dir / "reliable-pumpfun-creators.mdx").write_text(
-        reliable_page(creators, window)
+        reliable_page(
+            creators, window, sol_usdc_rate, sol_usdc_sample_count
+        )
     )
     (pages_dir / "pumpfun-migration-parent-programs.mdx").write_text(
         migration_page(groups, len(tokens), window)
@@ -267,6 +415,8 @@ def run(env_path: Path, pages_dir: Path, public_dir: Path) -> dict:
     summary = {
         "source": "https://onchaindivers.com",
         "window_end": utc_text(window),
+        "sol_usdc_rate": sol_usdc_rate,
+        "sol_usdc_sample_count": sol_usdc_sample_count,
         "reliable_creators": creators,
         "eligible_profile_tokens": len(tokens),
         "migration_comparison": groups,

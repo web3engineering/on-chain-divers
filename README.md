@@ -14,7 +14,8 @@ This repository is a self-contained, executable guide to the
 - a four-panel microprice study relating one- and two-level imbalance to
   Polymarket and HyperLiquid midpoint movement 300 milliseconds later;
 - a live ranking of Pump.fun creators with at least five launches by the
-  first-100-slot trade count of their weakest launch; and
+  first-100-slot trade count of their weakest launch, plus migration-aware p95
+  market-cap distributions valued with a Meteora DLMM SOL/USDC rate; and
 - a comparison of early Pump.fun parent-program composition for migrated and
   non-migrated launches.
 
