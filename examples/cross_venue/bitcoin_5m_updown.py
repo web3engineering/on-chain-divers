@@ -8,7 +8,7 @@ surfaces:
 * the dedicated Polymarket CLOB capture named after the market slug; and
 * HyperLiquid's raw MessagePack checkpoint plus hourly order-level diffs.
 
-It chooses the Bitcoin Up/Down interval nearest UTC now minus 24 hours, obtains
+It chooses the nearest replayable Bitcoin Up/Down interval around UTC now minus 24 hours, obtains
 the outcome CLOB token IDs from metadata (never hard-codes them), replays both
 venues over the same five minutes, and writes a publication-sized PNG plus a
 machine-readable JSON summary.
@@ -73,6 +73,7 @@ def choose_market(
     target: datetime,
     available_captures: set[str],
     capture_source: str,
+    excluded_captures: set[str] | None = None,
 ) -> dict:
     """Find a captured BTC 5m event near the requested historical instant.
 
@@ -80,6 +81,7 @@ def choose_market(
     start. Metadata creation timestamps can precede the actual market window,
     which is why the query derives the time from the slug itself.
     """
+    excluded_captures = excluded_captures or set()
     target_epoch = int(target.timestamp())
     sql = f"""
         WITH toInt64OrZero(substring(slug, 15)) AS interval_start
@@ -110,7 +112,7 @@ def choose_market(
             ),
             None,
         )
-        if dedicated:
+        if dedicated and dedicated not in excluded_captures:
             # The newest archive entry can appear while its recorder is still
             # finalizing. A complete liquid BTC five-minute capture is normally
             # several MiB; rejecting tiny edge files avoids selecting a handful
@@ -473,60 +475,88 @@ def downloaded_market(
         hyper_source, (".zst", ".rmp", ".jsonl", ".log")
     )
 
-    client = PolymarketAccessor(str(env_path))
-    try:
-        event = choose_market(client, target, set(poly_names), poly_source)
-        outcomes = market_outcomes(client, event)
-    finally:
-        client.disconnect()
-
-    checkpoint_name, context = select_checkpoint(hyper_source, hyper_names, event["start"])
-    checkpoint_time = hyper.parse_datetime(str(context["time"]))
-    diff_names = required_diffs(
-        hyper_names, checkpoint_time, event["end"] - timedelta(microseconds=1)
-    )
-    input_names = [event["capture_name"], checkpoint_name, *diff_names]
-    poly_size = int(event["capture_bytes"])
-    checkpoint_size = archive.content_length(hyper_source, checkpoint_name)
-    diff_sizes = [archive.content_length(hyper_source, name) for name in diff_names]
-    input_sizes = [poly_size, checkpoint_size, *diff_sizes]
-    print(
-        f"selected dedicated Polymarket capture {event['capture_name']} and "
-        f"{len(outcomes)} CLOB outcomes ({poly_size:,} bytes)"
-    )
-    print(
-        "HyperLiquid raw anchor: "
-        f"checkpoint {checkpoint_size:,} bytes + {len(diff_names)} hourly diff(s) "
-        f"{sum(diff_sizes):,} bytes"
-    )
-
     with tempfile.TemporaryDirectory(prefix="bitcoin-5m-") as temporary:
         work = Path(temporary)
-        poly_capture = archive.download(
-            poly_source,
-            event["capture_name"],
-            work / "polymarket.log.zst",
-            max_bytes=512 * 1024 * 1024,
-        )
-        start_ms, end_ms = int(event["start"].timestamp() * 1000), int(event["end"].timestamp() * 1000)
-        asset_ids = {str(row["clob_token_id"]) for row in outcomes.values()}
-        # Market windows are half-open: the quote at exactly ``end`` belongs to
-        # resolution, not to the five tradable minutes shown in the plot.
-        poly_points = poly.best_quote_series(poly_capture, asset_ids, start_ms, end_ms - 1)
+        rejected_captures: set[str] = set()
+        client = PolymarketAccessor(str(env_path))
+        try:
+            while len(rejected_captures) < 8:
+                event = choose_market(
+                    client,
+                    target,
+                    set(poly_names),
+                    poly_source,
+                    rejected_captures,
+                )
+                outcomes = market_outcomes(client, event)
+                poly_capture = archive.download(
+                    poly_source,
+                    event["capture_name"],
+                    work / "polymarket.log.zst",
+                    max_bytes=512 * 1024 * 1024,
+                )
+                start_ms = int(event["start"].timestamp() * 1000)
+                end_ms = int(event["end"].timestamp() * 1000)
+                asset_ids = {str(row["clob_token_id"]) for row in outcomes.values()}
+                try:
+                    # Market windows are half-open: the quote at exactly ``end``
+                    # belongs to resolution, not to the tradable plot window.
+                    poly.best_quote_series(
+                        poly_capture, asset_ids, start_ms, end_ms - 1
+                    )
 
-        # Validate the chart stream against two independent full snapshot/delta
-        # reconstructions before settlement. At the exact five-minute boundary
-        # a resolved market may legitimately empty one side, so minute four is
-        # the stronger invariant for a continuously tradable, non-crossed book.
-        validation_ms = start_ms + 4 * 60 * 1000
-        close_books = {
-            outcome: poly.reconstruct_at(
-                poly_capture, validation_ms, str(metadata["clob_token_id"])
-            )
-            for outcome, metadata in outcomes.items()
-        }
-        if any(Decimal(book["best_bid"]) >= Decimal(book["best_ask"]) for book in close_books.values()):
-            raise ValueError("Polymarket full replay produced a crossed book")
+                    # Validate the chart stream against two independent full
+                    # snapshot/delta reconstructions. A recorder can produce a
+                    # correctly named, substantial capture that is nevertheless
+                    # missing one side; skip it before downloading the GiB-scale
+                    # HyperLiquid input and try the next-nearest interval.
+                    validation_ms = start_ms + 4 * 60 * 1000
+                    close_books = {
+                        outcome: poly.reconstruct_at(
+                            poly_capture,
+                            validation_ms,
+                            str(metadata["clob_token_id"]),
+                        )
+                        for outcome, metadata in outcomes.items()
+                    }
+                    if any(
+                        Decimal(book["best_bid"]) >= Decimal(book["best_ask"])
+                        for book in close_books.values()
+                    ):
+                        raise ValueError("Polymarket full replay produced a crossed book")
+                    break
+                except ValueError:
+                    rejected_captures.add(str(event["capture_name"]))
+                    print(
+                        "skipped one unusable dedicated Polymarket capture; "
+                        "trying the next-nearest interval"
+                    )
+            else:
+                raise ValueError("no replayable Bitcoin five-minute capture was found")
+        finally:
+            client.disconnect()
+
+        checkpoint_name, context = select_checkpoint(
+            hyper_source, hyper_names, event["start"]
+        )
+        checkpoint_time = hyper.parse_datetime(str(context["time"]))
+        diff_names = required_diffs(
+            hyper_names, checkpoint_time, event["end"] - timedelta(microseconds=1)
+        )
+        input_names = [event["capture_name"], checkpoint_name, *diff_names]
+        poly_size = int(event["capture_bytes"])
+        checkpoint_size = archive.content_length(hyper_source, checkpoint_name)
+        diff_sizes = [archive.content_length(hyper_source, name) for name in diff_names]
+        input_sizes = [poly_size, checkpoint_size, *diff_sizes]
+        print(
+            f"selected dedicated Polymarket capture {event['capture_name']} and "
+            f"{len(outcomes)} CLOB outcomes ({poly_size:,} bytes)"
+        )
+        print(
+            "HyperLiquid raw anchor: "
+            f"checkpoint {checkpoint_size:,} bytes + {len(diff_names)} hourly diff(s) "
+            f"{sum(diff_sizes):,} bytes"
+        )
 
         # Only start the much larger futures download after the dedicated
         # Polymarket capture has passed both stream and full-replay checks.

@@ -1,20 +1,21 @@
 # Most reliable Pump.fun token creators
 
-A launch qualifies when it has more than five distinct buy transactions in
-every slot of at least one eight-consecutive-slot streak within its first 128
-post-launch slots. The table ranks creators from the latest 24-hour data window
-by qualifying launches, qualification rate, and sustained buy activity. Only
-launches with the full 128-slot observation horizon available enter the table.
+This ranking starts with creators that launched at least five tokens in the
+latest 24-hour data window. For every launch it counts distinct trades during
+slots `launch_slot + 1` through `launch_slot + 100`, then ranks creators by
+the minimum count across their launches. In other words, the leading creator
+has the strongest worst-performing launch. Both buys and sells count as trades.
+Only launches with a complete 100-slot observation horizon are included.
 
-*Window end: 2026-08-15T22:58:41Z*
+*Window end: 2026-08-16T00:04:54Z*
 
-| Rank | Creator | Qualifying launches | All launches | Rate | Lowest buys in a required slot | Earliest streak offset | Example token |
+| Rank | Creator | Launches | Minimum trades | Average | Median | Maximum | Weakest launch |
 | ---: | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| 1 | `AMRsSeU5JpqwQWJGNLMpZzRCZSFEwYQYbMnms3dD4311` | 2 | 2 | 100.00% | 6 | +1 | `memecoin` `7NG9CY…Gppump` |
-| 2 | `4LXAFVZUUTdcqLCmgHq2NZmgLB2arRxp9wuYVa6rnx5C` | 1 | 1 | 100.00% | 6 | +52 | `snowball` `9arFCw…MCpump` |
-| 3 | `95zf8iXyqzYEGmoHyqGocZVERKzAVBboqhjz7JykWsrZ` | 1 | 1 | 100.00% | 6 | +64 | `John` `7bHZ8M…wgpump` |
-| 4 | `DfDvnGu7b6eyqqp5D1PNnLkqaBZGDWywKqAcL9U1VEFL` | 1 | 1 | 100.00% | 6 | +44 | `BREAD` `GJoSrk…ZDpump` |
-| 5 | `8zpBrNGRqUqJfAJwTENj68XrKNzVXh9HWC92zxZFF8Na` | 1 | 1 | 100.00% | 10 | +6 | `Mayhem` `BbNN7Y…Fppump` |
+| 1 | `C2TFeiRyzzApUxvjrfaXF1RLfad2SfaHvSqGaEPmmxfv` | 10 | 166 | 249.90 | 231.0 | 408 | `ほお` `4f66fo…cSpump` |
+| 2 | `54yAKtNUBDi4VPNzcSr6qXxA86ZYKBCiHB2MgzrfMrpK` | 5 | 141 | 216.60 | 205.0 | 331 | `BEEHOUSE` `GaghsP…28pump` |
+| 3 | `5ZuV8eqkvzYFVEKbLvGBdexL2tFv7E5BCd2HZpjqbdg` | 5 | 103 | 255.00 | 227.0 | 504 | `Oniichan` `BEdwv9…M8pump` |
+| 4 | `fLHBWTFtiGNK3czdLPZQLYyFhs6GWa1PHhs42Y1Kxds` | 6 | 100 | 140.83 | 129.0 | 233 | `CIB` `EXrhHo…uRpump` |
+| 5 | `4QwJ4AXMtSjnCwgM9kiDpsGtXmjEd3hAVRkDg3o3bDQs` | 6 | 95 | 247.83 | 278.0 | 442 | `KATIE` `Eq9ERw…nVpump` |
 
 [View the SQL on GitHub](https://github.com/web3engineering/on-chain-divers/blob/master/examples/research/reliable_pumpfun_creators.sql).
 

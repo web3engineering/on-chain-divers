@@ -373,6 +373,15 @@ def verify_research() -> None:
         or summary["eligible_profile_tokens"] < 100
     ):
         raise AssertionError("Pump.fun research output is incomplete")
+    creator_floors = [
+        int(row["minimum_trades_first_100_slots"])
+        for row in summary["reliable_creators"]
+    ]
+    if (
+        any(int(row["launches"]) < 5 for row in summary["reliable_creators"])
+        or creator_floors != sorted(creator_floors, reverse=True)
+    ):
+        raise AssertionError("reliable-creator ranking violates its launch/trade rules")
     groups = summary["migration_comparison"]
     for label in ("migrated", "not_migrated"):
         if (

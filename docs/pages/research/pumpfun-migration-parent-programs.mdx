@@ -1,0 +1,46 @@
+# Pump.fun parent programs: migrated vs not migrated
+
+This study compares Pump.fun launches from the latest 24-hour data window.
+For each token it counts distinct buys by `parent_program` during slots
+`launch_slot + 1` through `launch_slot + 128`, keeps tokens with at least 48
+buys, and labels it migrated when the mint appears in `pfamm_migrations` by
+the cohort cutoff. Launches without a complete 128-slot horizon are excluded.
+
+*Window end: 2026-08-16T00:04:54Z · Eligible tokens: 4,072*
+
+## Cohorts
+
+| Cohort | Tokens | Share of eligible launches | Mean buys in first 128 slots |
+| --- | ---: | ---: | ---: |
+| Migrated | 371 | 9.11% | 146.6 |
+| Not migrated | 3,701 | 90.89% | 109.9 |
+
+## Parent-program composition
+
+Every token is normalized to a distribution before cohort averaging, so a
+high-volume token cannot dominate the result. The difference is migrated minus
+not migrated, in percentage points.
+
+| Parent program | Migrated | Not migrated | Difference |
+| --- | ---: | ---: | ---: |
+| `FLASHX8DrLbgeR8FcfNV1F5krxYcYMUdBkrP1EPBtxB9` | 27.385% | 29.995% | -2.611 pp |
+| `&lt;direct&gt;` | 26.357% | 27.711% | -1.353 pp |
+| `MAyhSmzXzV1pTf7LsNkrNwkWKTo4ougAJ1PPg47MD4e` | 25.731% | 21.028% | +4.703 pp |
+| `6Vo3245eszAb5wuqEMw8mGdbfRUdKbHhDHP5LcaGuTAB` | 5.472% | 3.988% | +1.485 pp |
+| `GMgnVFR8Jb39LoXsEVzb3DvBy3ywCmdmJquHUy1Lrkqb` | 4.575% | 4.627% | -0.052 pp |
+| `term9YPb9mzAsABaqN71A4xdbxHmpBNZavpBiQKZzN3` | 4.309% | 3.610% | +0.699 pp |
+| `JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4` | 1.383% | 1.003% | +0.381 pp |
+| `7bopoA2tnvDYEfp54FhgNDiLR9wSPcEs9J7FaUGURsXj` | 0.545% | 0.283% | +0.262 pp |
+| `9ddjzqYhSTMHaBrrKukRXRfy4WzHUPjdX88uPXZ7MXyn` | 0.528% | 0.122% | +0.406 pp |
+| `FAdo9NCw1ssek6Z6yeWzWjhLVsr8uiCwcWNUnKgzTnHe` | 0.440% | 0.462% | -0.022 pp |
+| `DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH` | 0.381% | 0.330% | +0.051 pp |
+| `proVF4pMXVaYqmy4NjniPh4pqKNfMmsihgd4wdkCX3u` | 0.142% | 0.349% | -0.207 pp |
+| Other (155 programs) | 2.752% | 6.494% | -3.742 pp |
+
+[View the profile SQL on GitHub](https://github.com/web3engineering/on-chain-divers/blob/master/examples/research/pumpfun_parent_program_profiles.sql) and
+[the cohort calculation](https://github.com/web3engineering/on-chain-divers/blob/master/examples/research/generate_pumpfun_research.py).
+
+Migration is observed only through the displayed cutoff. Tokens launched near
+that cutoff have less time to migrate, so the not-migrated cohort is
+right-censored. This descriptive comparison does not establish causality or
+predict future migration.

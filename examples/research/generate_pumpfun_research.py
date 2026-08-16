@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Generate two reproducible Pump.fun research pages from live ClickHouse data.
 
-The outputs rank sustained-activity token creators and compare early parent-
-program composition between launches that did and did not migrate.
+The outputs rank frequently active token creators by their weakest recent launch
+and compare early parent-program composition between migrated and other launches.
 
 Data, access, and indexer documentation: https://onchaindivers.com
 """
@@ -115,16 +115,16 @@ def reliable_page(creators: list[dict], window_end: object) -> str:
     lines = [
         "# Most reliable Pump.fun token creators",
         "",
-        "A launch qualifies when it has more than five distinct buy transactions in",
-        "every slot of at least one eight-consecutive-slot streak within its first 128",
-        "post-launch slots. The table ranks creators from the latest 24-hour",
-        "data window by qualifying launches, qualification rate, and sustained buy activity.",
-        "Only launches with the full 128-slot observation horizon available enter the",
-        "table.",
+        "This ranking starts with creators that launched at least five tokens in the",
+        "latest 24-hour data window. For every launch it counts distinct trades during",
+        "slots `launch_slot + 1` through `launch_slot + 100`, then ranks creators by",
+        "the minimum count across their launches. In other words, the leading creator",
+        "has the strongest worst-performing launch. Both buys and sells count as trades.",
+        "Only launches with a complete 100-slot observation horizon are included.",
         "",
         f"*Window end: {md(utc_text(window_end))}*",
         "",
-        "| Rank | Creator | Qualifying launches | All launches | Rate | Lowest buys in a required slot | Earliest streak offset | Example token |",
+        "| Rank | Creator | Launches | Minimum trades | Average | Median | Maximum | Weakest launch |",
         "| ---: | --- | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for rank, row in enumerate(creators, 1):
@@ -135,12 +135,12 @@ def reliable_page(creators: list[dict], window_end: object) -> str:
                 [
                     str(rank),
                     code(creator),
-                    f"{int(row['qualifying_launches']):,}",
-                    f"{int(row['total_launches']):,}",
-                    f"{float(row['qualification_rate_pct']):.2f}%",
-                    f"{int(row['minimum_buys_in_any_required_slot']):,}",
-                    f"+{int(row['earliest_streak_start_offset'])}",
-                    f"{code(row['example_symbol'])} {code(short(str(row['example_mint'])))}",
+                    f"{int(row['launches']):,}",
+                    f"{int(row['minimum_trades_first_100_slots']):,}",
+                    f"{float(row['average_trades_first_100_slots']):,.2f}",
+                    f"{float(row['median_trades_first_100_slots']):,.1f}",
+                    f"{int(row['maximum_trades_first_100_slots']):,}",
+                    f"{code(row['weakest_symbol'])} {code(short(str(row['weakest_mint'])))}",
                 ]
             )
             + " |"
