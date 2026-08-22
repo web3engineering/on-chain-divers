@@ -485,31 +485,41 @@ def verify_research() -> None:
         or "github.com/web3engineering/on-chain-divers" not in fingerprint_page
     ):
         raise AssertionError("wallet-fingerprint page is missing methodology safeguards")
-    swqos_summary = swqos_research.run(ROOT / ".env", pages, public)
-    if (
-        swqos_summary["candidate_count"] < 1
-        or len(swqos_summary["candidates"]) != swqos_summary["candidate_count"]
-        or swqos_summary["new_provider_count"] > swqos_summary["candidate_count"]
-        or swqos_summary["labeled_provider_count"] < 1
-        or any(
-            row["signers"] <= swqos_summary["min_signers"]
-            or row["p95_lamports"] > swqos_summary["max_p95_lamports"]
-            or sum(row["landed_tip_buckets"]) != row["landed_count"]
-            or sum(row["failed_tip_buckets"]) != row["failed_count"]
-            for row in swqos_summary["candidates"]
-        )
+    swqos_sources = swqos_research.run(ROOT / ".env", pages, public)["sources"]
+    if set(swqos_sources) != {"pumpfun-v2", "pumpswap", "dlmm"}:
+        raise AssertionError("SWQoS research is missing a source DEX page")
+    for key, summary in swqos_sources.items():
+        if (
+            summary["screened_count"] < 1
+            or len(summary["screened"]) != summary["screened_count"]
+            or summary["labeled_provider_count"] < 1
+            or summary["new_provider_count"] > summary["screened_count"]
+            or any(
+                row["signers"] <= summary["min_signers"]
+                or row["median_lamports"] > summary["max_median_lamports"]
+                or sum(row["landed_tip_buckets"]) != row["landed_count"]
+                or sum(row["failed_tip_buckets"]) != row["failed_count"]
+                for row in summary["screened"]
+            )
+        ):
+            raise AssertionError(f"SWQoS research output for {key} is incomplete")
+    for page_name in (
+        "swqos-providers.mdx",
+        "swqos-providers-pumpswap.mdx",
+        "swqos-providers-dlmm.mdx",
     ):
-        raise AssertionError("SWQoS research output is incomplete")
-    swqos_page = (pages / "swqos-providers.mdx").read_text()
-    if (
-        "github.com/web3engineering/on-chain-divers" not in swqos_page
-        or "SWQoS" not in swqos_page
-        or "tpu.onchaindivers.com" not in swqos_page
-    ):
-        raise AssertionError("SWQoS page is missing its source link, heading, or TPU reference")
+        page_text = (pages / page_name).read_text()
+        if (
+            "github.com/web3engineering/on-chain-divers" not in page_text
+            or "SWQoS" not in page_text
+        ):
+            raise AssertionError(f"SWQoS page {page_name} is missing its source link or heading")
+    # OnchainDivers TPU must always be surfaced somewhere in the Pump.fun page.
+    if "tpu.onchaindivers.com" not in (pages / "swqos-providers.mdx").read_text():
+        raise AssertionError("SWQoS Pump.fun page is missing the OnchainDivers TPU reference")
     print(
         "verified research: creators, migrations, wallet fingerprint changes, "
-        "and SWQoS endpoints"
+        "and SWQoS endpoints (Pump.fun v2, PumpSwap, Meteora DLMM)"
     )
 
 
