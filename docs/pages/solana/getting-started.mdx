@@ -46,5 +46,33 @@ finally:
     client.disconnect()
 ```
 
+## DBeaver (GUI)
+
+Prefer a graphical client? [DBeaver](https://dbeaver.io) is a free, cross-platform
+SQL tool with a built-in ClickHouse driver — useful for browsing tables and
+prototyping queries before moving them into code.
+
+1. Download and install the latest [DBeaver Community Edition](https://dbeaver.io/download/).
+2. Create a new connection (**Database → New Database Connection**).
+3. Choose **ClickHouse** as the connection type. DBeaver will download the driver
+   the first time you use it.
+4. Fill in the connection settings from your OnchainDivers credentials:
+
+   | Setting | Value |
+   |---------|-------|
+   | Host | `CLICKHOUSE_HOST` (e.g. `clickhouse.example.com`) |
+   | Port | `8123` (ClickHouse HTTP port) |
+   | Username | `CLICKHOUSE_USERNAME` |
+   | Password | `CLICKHOUSE_PASSWORD` |
+
+5. Click **Test Connection** to verify the settings, then **Finish** to save.
+
+### Inspect a table's structure
+
+Understanding the schema is key to writing effective queries. To view a table's
+definition, right-click it in the **Database Navigator**, choose **Generate SQL →
+DDL**, and review the generated `CREATE TABLE` statement. From there you can write
+queries that select, filter, and aggregate the columns you need.
+
 Continue with the [verified Solana examples](/solana/examples) or inspect the
 [generated table reference](/solana/tables).

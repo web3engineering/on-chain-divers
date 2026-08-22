@@ -1,0 +1,2073 @@
+{
+  "source": "https://onchaindivers.com",
+  "window_end": "2026-08-22T14:27:03Z",
+  "recent_window_days": 4,
+  "reference_lag_days": 30,
+  "min_signers": 3000,
+  "max_p95_lamports": 10000000,
+  "tip_bucket_edges_lamports": [
+    100000,
+    500000,
+    1000000,
+    2000000,
+    5000000,
+    10000000
+  ],
+  "tip_bucket_labels_sol": [
+    "<0.0001",
+    "0.0001\u20130.0005",
+    "0.0005\u20130.001",
+    "0.001\u20130.002",
+    "0.002\u20130.005",
+    "0.005\u20130.01",
+    "\u22650.01"
+  ],
+  "candidate_count": 73,
+  "new_provider_count": 0,
+  "candidates": [
+    {
+      "address": "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh",
+      "signers": 37507,
+      "transfers": 216956,
+      "landed_count": 200110,
+      "failed_count": 16846,
+      "median_lamports": 218238,
+      "p95_lamports": 3263600,
+      "landed_tip_buckets": [
+        70152,
+        38581,
+        28143,
+        50250,
+        3654,
+        5114,
+        4216
+      ],
+      "failed_tip_buckets": [
+        5067,
+        2858,
+        1920,
+        4434,
+        2008,
+        114,
+        445
+      ],
+      "is_new": false
+    },
+    {
+      "address": "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5",
+      "signers": 33727,
+      "transfers": 182073,
+      "landed_count": 166542,
+      "failed_count": 15531,
+      "median_lamports": 100000,
+      "p95_lamports": 4229622,
+      "landed_tip_buckets": [
+        72676,
+        43214,
+        13122,
+        25401,
+        3555,
+        5393,
+        3181
+      ],
+      "failed_tip_buckets": [
+        5193,
+        3001,
+        1284,
+        3689,
+        1905,
+        146,
+        313
+      ],
+      "is_new": false
+    },
+    {
+      "address": "3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT",
+      "signers": 33652,
+      "transfers": 175955,
+      "landed_count": 160304,
+      "failed_count": 15651,
+      "median_lamports": 100000,
+      "p95_lamports": 5000000,
+      "landed_tip_buckets": [
+        68934,
+        39511,
+        12842,
+        25440,
+        3548,
+        5235,
+        4794
+      ],
+      "failed_tip_buckets": [
+        4866,
+        3663,
+        1321,
+        3389,
+        1874,
+        147,
+        391
+      ],
+      "is_new": false
+    },
+    {
+      "address": "Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY",
+      "signers": 33510,
+      "transfers": 178562,
+      "landed_count": 160839,
+      "failed_count": 17723,
+      "median_lamports": 101173,
+      "p95_lamports": 4000000,
+      "landed_tip_buckets": [
+        67918,
+        43396,
+        12540,
+        25703,
+        3252,
+        5317,
+        2713
+      ],
+      "failed_tip_buckets": [
+        7203,
+        2982,
+        1390,
+        3543,
+        2016,
+        200,
+        389
+      ],
+      "is_new": false
+    },
+    {
+      "address": "HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe",
+      "signers": 33499,
+      "transfers": 169418,
+      "landed_count": 154790,
+      "failed_count": 14628,
+      "median_lamports": 100000,
+      "p95_lamports": 5000000,
+      "landed_tip_buckets": [
+        67048,
+        38758,
+        12595,
+        24679,
+        3087,
+        5590,
+        3033
+      ],
+      "failed_tip_buckets": [
+        4636,
+        2856,
+        1165,
+        3375,
+        1909,
+        257,
+        430
+      ],
+      "is_new": false
+    },
+    {
+      "address": "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL",
+      "signers": 33237,
+      "transfers": 185866,
+      "landed_count": 169519,
+      "failed_count": 16347,
+      "median_lamports": 100000,
+      "p95_lamports": 5000000,
+      "landed_tip_buckets": [
+        74038,
+        40535,
+        13536,
+        26403,
+        4935,
+        5397,
+        4675
+      ],
+      "failed_tip_buckets": [
+        5195,
+        3760,
+        1407,
+        3421,
+        2066,
+        116,
+        382
+      ],
+      "is_new": false
+    },
+    {
+      "address": "ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt",
+      "signers": 33202,
+      "transfers": 188283,
+      "landed_count": 167129,
+      "failed_count": 21154,
+      "median_lamports": 100000,
+      "p95_lamports": 4000000,
+      "landed_tip_buckets": [
+        77087,
+        39840,
+        12815,
+        25536,
+        3349,
+        5379,
+        3123
+      ],
+      "failed_tip_buckets": [
+        5667,
+        8031,
+        1266,
+        3449,
+        2017,
+        326,
+        398
+      ],
+      "is_new": false
+    },
+    {
+      "address": "ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49",
+      "signers": 33191,
+      "transfers": 174701,
+      "landed_count": 157822,
+      "failed_count": 16879,
+      "median_lamports": 102745,
+      "p95_lamports": 10000000,
+      "landed_tip_buckets": [
+        68012,
+        38049,
+        12443,
+        24583,
+        3084,
+        5297,
+        6354
+      ],
+      "failed_tip_buckets": [
+        4583,
+        2865,
+        1244,
+        3255,
+        1947,
+        147,
+        2838
+      ],
+      "is_new": false
+    },
+    {
+      "address": "Sp1x2AqpQckPLaWnWCJUNg8k6qQexfaEWcSRKf5JcDV",
+      "signers": 22670,
+      "transfers": 3346770,
+      "landed_count": 6791,
+      "failed_count": 3339979,
+      "median_lamports": 10000000,
+      "p95_lamports": 10000000,
+      "landed_tip_buckets": [
+        0,
+        3921,
+        184,
+        1692,
+        385,
+        102,
+        507
+      ],
+      "failed_tip_buckets": [
+        0,
+        26397,
+        9,
+        1775,
+        622861,
+        981,
+        2687956
+      ],
+      "is_new": false
+    },
+    {
+      "address": "SpWrza9E63MQuHeGnnfzmtLVCs3pBdjyKPXUABPo9nq",
+      "signers": 22491,
+      "transfers": 678787,
+      "landed_count": 6627,
+      "failed_count": 672160,
+      "median_lamports": 2010101,
+      "p95_lamports": 3000000,
+      "landed_tip_buckets": [
+        1,
+        4166,
+        173,
+        1366,
+        315,
+        89,
+        517
+      ],
+      "failed_tip_buckets": [
+        0,
+        25525,
+        4,
+        987,
+        620862,
+        997,
+        23785
+      ],
+      "is_new": false
+    },
+    {
+      "address": "SpagSJmnh8E9cGT5Y431xPPaS2c1xLREGGCWN9yDeUf",
+      "signers": 22419,
+      "transfers": 679145,
+      "landed_count": 7451,
+      "failed_count": 671694,
+      "median_lamports": 2010101,
+      "p95_lamports": 3000000,
+      "landed_tip_buckets": [
+        1,
+        4163,
+        165,
+        2255,
+        301,
+        80,
+        486
+      ],
+      "failed_tip_buckets": [
+        0,
+        25497,
+        3,
+        1176,
+        620263,
+        994,
+        23761
+      ],
+      "is_new": false
+    },
+    {
+      "address": "Sp4JHSh9cksfzXbgK7Pq2ovtn8LirLQydaJKTsiNT77",
+      "signers": 22400,
+      "transfers": 679254,
+      "landed_count": 6899,
+      "failed_count": 672355,
+      "median_lamports": 2010101,
+      "p95_lamports": 3000000,
+      "landed_tip_buckets": [
+        0,
+        4122,
+        176,
+        1635,
+        335,
+        85,
+        546
+      ],
+      "failed_tip_buckets": [
+        0,
+        25460,
+        5,
+        1262,
+        620919,
+        975,
+        23734
+      ],
+      "is_new": false
+    },
+    {
+      "address": "Sp1xMS2cbw83SZDNr4AGqkBYYLjb3LvVnmDSrTMaHkr",
+      "signers": 22267,
+      "transfers": 678259,
+      "landed_count": 6618,
+      "failed_count": 671641,
+      "median_lamports": 2010101,
+      "p95_lamports": 3000000,
+      "landed_tip_buckets": [
+        0,
+        4104,
+        174,
+        1463,
+        293,
+        100,
+        484
+      ],
+      "failed_tip_buckets": [
+        0,
+        25459,
+        7,
+        1173,
+        620260,
+        1000,
+        23742
+      ],
+      "is_new": false
+    },
+    {
+      "address": "EDi4rSy2LZgKJX74mbLTFk4mxoTgT6F7HxxzG2HBAFyK",
+      "signers": 19542,
+      "transfers": 27991,
+      "landed_count": 12263,
+      "failed_count": 15728,
+      "median_lamports": 100000,
+      "p95_lamports": 1000000,
+      "landed_tip_buckets": [
+        0,
+        11463,
+        50,
+        556,
+        100,
+        62,
+        32
+      ],
+      "failed_tip_buckets": [
+        0,
+        14558,
+        10,
+        435,
+        126,
+        82,
+        517
+      ],
+      "is_new": false
+    },
+    {
+      "address": "Dd7K2Fp7AtoN8xCghKDRmyqr5U169t48Tw5fEd3wT9mq",
+      "signers": 19508,
+      "transfers": 28013,
+      "landed_count": 12398,
+      "failed_count": 15615,
+      "median_lamports": 100000,
+      "p95_lamports": 1000000,
+      "landed_tip_buckets": [
+        0,
+        11480,
+        54,
+        568,
+        208,
+        58,
+        30
+      ],
+      "failed_tip_buckets": [
+        0,
+        14460,
+        16,
+        432,
+        142,
+        69,
+        496
+      ],
+      "is_new": false
+    },
+    {
+      "address": "A9cWowVAiHe9pJfKAj3TJiN9VpbzMUq6E4kEvf5mUT22",
+      "signers": 19387,
+      "transfers": 28082,
+      "landed_count": 12311,
+      "failed_count": 15771,
+      "median_lamports": 100000,
+      "p95_lamports": 1000000,
+      "landed_tip_buckets": [
+        0,
+        11449,
+        48,
+        582,
+        134,
+        68,
+        30
+      ],
+      "failed_tip_buckets": [
+        0,
+        14635,
+        6,
+        466,
+        117,
+        77,
+        470
+      ],
+      "is_new": false
+    },
+    {
+      "address": "5YktoWygr1Bp9wiS1xtMtUki1PeYuuzuCF98tqwYxf61",
+      "signers": 19332,
+      "transfers": 27481,
+      "landed_count": 11753,
+      "failed_count": 15728,
+      "median_lamports": 100000,
+      "p95_lamports": 1000000,
+      "landed_tip_buckets": [
+        0,
+        10940,
+        48,
+        534,
+        144,
+        64,
+        23
+      ],
+      "failed_tip_buckets": [
+        0,
+        14615,
+        13,
+        422,
+        139,
+        81,
+        458
+      ],
+      "is_new": false
+    },
+    {
+      "address": "B2M4NG5eyZp5SBQrSdtemzk5TqVuaWGQnowGaCBt8GyM",
+      "signers": 19215,
+      "transfers": 28489,
+      "landed_count": 12838,
+      "failed_count": 15651,
+      "median_lamports": 100000,
+      "p95_lamports": 1304272,
+      "landed_tip_buckets": [
+        0,
+        11440,
+        49,
+        697,
+        548,
+        77,
+        27
+      ],
+      "failed_tip_buckets": [
+        0,
+        14437,
+        16,
+        471,
+        131,
+        86,
+        510
+      ],
+      "is_new": false
+    },
+    {
+      "address": "68Pwb4jS7eZATjDfhmTXgRJjCiZmw1L7Huy4HNpnxJ3o",
+      "signers": 19001,
+      "transfers": 27674,
+      "landed_count": 12143,
+      "failed_count": 15531,
+      "median_lamports": 100000,
+      "p95_lamports": 1000000,
+      "landed_tip_buckets": [
+        0,
+        11194,
+        59,
+        654,
+        136,
+        74,
+        26
+      ],
+      "failed_tip_buckets": [
+        0,
+        14313,
+        17,
+        528,
+        120,
+        77,
+        476
+      ],
+      "is_new": false
+    },
+    {
+      "address": "Cix2bHfqPcKcM233mzxbLk14kSggUUiz2A87fJtGivXr",
+      "signers": 15711,
+      "transfers": 77422,
+      "landed_count": 52234,
+      "failed_count": 25188,
+      "median_lamports": 100000,
+      "p95_lamports": 5000000,
+      "landed_tip_buckets": [
+        0,
+        44202,
+        3343,
+        3196,
+        798,
+        439,
+        256
+      ],
+      "failed_tip_buckets": [
+        0,
+        16739,
+        128,
+        1867,
+        2889,
+        1058,
+        2507
+      ],
+      "is_new": false
+    },
+    {
+      "address": "ENxTEjSQ1YabmUpXAdCgevnHQ9MHdLv8tzFiuiYJqa13",
+      "signers": 15575,
+      "transfers": 73557,
+      "landed_count": 48815,
+      "failed_count": 24742,
+      "median_lamports": 100000,
+      "p95_lamports": 5000000,
+      "landed_tip_buckets": [
+        0,
+        40766,
+        2938,
+        3690,
+        794,
+        416,
+        211
+      ],
+      "failed_tip_buckets": [
+        0,
+        16130,
+        143,
+        1897,
+        2970,
+        1035,
+        2567
+      ],
+      "is_new": false
+    },
+    {
+      "address": "FCjUJZ1qozm1e8romw216qyfQMaaWKxWsuySnumVCCNe",
+      "signers": 15348,
+      "transfers": 75628,
+      "landed_count": 49015,
+      "failed_count": 26613,
+      "median_lamports": 100000,
+      "p95_lamports": 5000000,
+      "landed_tip_buckets": [
+        0,
+        41438,
+        2874,
+        3254,
+        822,
+        399,
+        228
+      ],
+      "failed_tip_buckets": [
+        0,
+        17928,
+        147,
+        2071,
+        2929,
+        1012,
+        2526
+      ],
+      "is_new": false
+    },
+    {
+      "address": "6rYLG55Q9RpsPGvqdPNJs4z5WTxJVatMB8zV3WJhs5EK",
+      "signers": 15296,
+      "transfers": 97627,
+      "landed_count": 70350,
+      "failed_count": 27277,
+      "median_lamports": 200000,
+      "p95_lamports": 3071845,
+      "landed_tip_buckets": [
+        0,
+        62993,
+        2924,
+        2912,
+        849,
+        442,
+        230
+      ],
+      "failed_tip_buckets": [
+        0,
+        17645,
+        157,
+        1841,
+        4009,
+        1087,
+        2538
+      ],
+      "is_new": false
+    },
+    {
+      "address": "DiTmWENJsHQdawVUUKnUXkconcpW4Jv52TnMWhkncF6t",
+      "signers": 14140,
+      "transfers": 53677,
+      "landed_count": 41810,
+      "failed_count": 11867,
+      "median_lamports": 100037,
+      "p95_lamports": 1201063,
+      "landed_tip_buckets": [
+        0,
+        34973,
+        245,
+        5330,
+        768,
+        372,
+        122
+      ],
+      "failed_tip_buckets": [
+        0,
+        10109,
+        9,
+        434,
+        323,
+        173,
+        819
+      ],
+      "is_new": false
+    },
+    {
+      "address": "7y4whZmw388w1ggjToDLSBLv47drw5SUXcLk6jtmwixd",
+      "signers": 13841,
+      "transfers": 19118,
+      "landed_count": 8014,
+      "failed_count": 11104,
+      "median_lamports": 100000,
+      "p95_lamports": 1900000,
+      "landed_tip_buckets": [
+        0,
+        6932,
+        21,
+        819,
+        79,
+        124,
+        39
+      ],
+      "failed_tip_buckets": [
+        0,
+        10212,
+        7,
+        172,
+        196,
+        115,
+        402
+      ],
+      "is_new": false
+    },
+    {
+      "address": "HRyRhQ86t3H4aAtgvHVpUJmw64BDrb61gRiKcdKUXs5c",
+      "signers": 13569,
+      "transfers": 18849,
+      "landed_count": 8099,
+      "failed_count": 10750,
+      "median_lamports": 100000,
+      "p95_lamports": 2261028,
+      "landed_tip_buckets": [
+        0,
+        6931,
+        31,
+        828,
+        130,
+        135,
+        44
+      ],
+      "failed_tip_buckets": [
+        0,
+        9896,
+        9,
+        128,
+        185,
+        131,
+        401
+      ],
+      "is_new": false
+    },
+    {
+      "address": "8U1JPQh3mVQ4F5jwRdFTBzvNRQaYFQppHQYoH38DJGSQ",
+      "signers": 13522,
+      "transfers": 18622,
+      "landed_count": 7670,
+      "failed_count": 10952,
+      "median_lamports": 100000,
+      "p95_lamports": 2000000,
+      "landed_tip_buckets": [
+        0,
+        6567,
+        21,
+        810,
+        88,
+        135,
+        49
+      ],
+      "failed_tip_buckets": [
+        0,
+        10098,
+        11,
+        169,
+        169,
+        111,
+        394
+      ],
+      "is_new": false
+    },
+    {
+      "address": "J9BMEWFbCBEjtQ1fG5Lo9kouX1HfrKQxeUxetwXrifBw",
+      "signers": 13288,
+      "transfers": 18447,
+      "landed_count": 7714,
+      "failed_count": 10733,
+      "median_lamports": 100000,
+      "p95_lamports": 2100000,
+      "landed_tip_buckets": [
+        0,
+        6629,
+        17,
+        816,
+        68,
+        136,
+        48
+      ],
+      "failed_tip_buckets": [
+        0,
+        9859,
+        7,
+        165,
+        163,
+        129,
+        410
+      ],
+      "is_new": false
+    },
+    {
+      "address": "6HRgJMRmjaj2svP9GpRbUU5TPzLAHnBW3sHgYVbirWYE",
+      "signers": 6605,
+      "transfers": 27992,
+      "landed_count": 26649,
+      "failed_count": 1343,
+      "median_lamports": 6000,
+      "p95_lamports": 14926,
+      "landed_tip_buckets": [
+        26451,
+        64,
+        1,
+        125,
+        3,
+        2,
+        3
+      ],
+      "failed_tip_buckets": [
+        1323,
+        4,
+        0,
+        16,
+        0,
+        0,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "4gQT88rvHr6ay8XvmUUriL5FTjsSuvkvH8ybz3etVLBb",
+      "signers": 6595,
+      "transfers": 28376,
+      "landed_count": 27130,
+      "failed_count": 1246,
+      "median_lamports": 6000,
+      "p95_lamports": 14807,
+      "landed_tip_buckets": [
+        26914,
+        73,
+        4,
+        125,
+        7,
+        4,
+        3
+      ],
+      "failed_tip_buckets": [
+        1226,
+        3,
+        2,
+        15,
+        0,
+        0,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "CcTNKBhQKYu7nB4eRrRFQoXEvpd6H5QnGKh93pwniBtp",
+      "signers": 6537,
+      "transfers": 28110,
+      "landed_count": 26805,
+      "failed_count": 1305,
+      "median_lamports": 6000,
+      "p95_lamports": 14807,
+      "landed_tip_buckets": [
+        26587,
+        63,
+        11,
+        138,
+        4,
+        0,
+        2
+      ],
+      "failed_tip_buckets": [
+        1285,
+        3,
+        0,
+        16,
+        0,
+        0,
+        1
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gmgnpkxVcSYnREsFamJygtcqo5QLbZCYNSJJVP7e2XW",
+      "signers": 6145,
+      "transfers": 29247,
+      "landed_count": 28244,
+      "failed_count": 1003,
+      "median_lamports": 1000000,
+      "p95_lamports": 4500000,
+      "landed_tip_buckets": [
+        5035,
+        5845,
+        1296,
+        13688,
+        1006,
+        1099,
+        275
+      ],
+      "failed_tip_buckets": [
+        247,
+        217,
+        25,
+        408,
+        34,
+        47,
+        25
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnaZXdkjJq26auzzFKeQm7YKphuNCdDGcJVqqb6awr",
+      "signers": 6021,
+      "transfers": 16004,
+      "landed_count": 14650,
+      "failed_count": 1354,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        888,
+        13647,
+        115,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        99,
+        1250,
+        5,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnTcJ1i4mRYzbqGduF71RsooUCFkPSpk8UE7drCkjh",
+      "signers": 5979,
+      "transfers": 15713,
+      "landed_count": 14346,
+      "failed_count": 1367,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        864,
+        13382,
+        100,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        96,
+        1261,
+        10,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnP85qobXv2wETniKjXBhxKvgivpfT8EGAcS8sb3bq",
+      "signers": 5961,
+      "transfers": 15742,
+      "landed_count": 14440,
+      "failed_count": 1302,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        928,
+        13390,
+        122,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        88,
+        1203,
+        11,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnUxCuZcfP6yidkG3EsqyR5DTbyie3R74fGoA5oB3J",
+      "signers": 5960,
+      "transfers": 15958,
+      "landed_count": 14600,
+      "failed_count": 1358,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        919,
+        13569,
+        112,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        94,
+        1244,
+        20,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnSAoQWtJCDKnjmR8oduqbZYXr69Q4cFQ6VhgFkvgT",
+      "signers": 5954,
+      "transfers": 15784,
+      "landed_count": 14443,
+      "failed_count": 1341,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        894,
+        13438,
+        111,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        78,
+        1250,
+        13,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfn9b35be4L7xh7G8P2jUzWsJAigrKDSoBeRMiyg75p",
+      "signers": 5951,
+      "transfers": 15786,
+      "landed_count": 14506,
+      "failed_count": 1280,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        912,
+        13443,
+        151,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        81,
+        1185,
+        14,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnKWwarhjuKKg3WV3nw3wAE8zuymigT3vuJHwZeL4s",
+      "signers": 5950,
+      "transfers": 15732,
+      "landed_count": 14393,
+      "failed_count": 1339,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        977,
+        13297,
+        119,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        99,
+        1224,
+        16,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnaxrmMoemfvbhXek6offTNXas11GtepGQMN9UF3gk",
+      "signers": 5947,
+      "transfers": 15771,
+      "landed_count": 14465,
+      "failed_count": 1306,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        828,
+        13518,
+        119,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        90,
+        1206,
+        10,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfn6dyanKiTTinHs887D7qe2S4727wzK7xi7ERGaizC",
+      "signers": 5927,
+      "transfers": 15952,
+      "landed_count": 14571,
+      "failed_count": 1381,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        935,
+        13523,
+        113,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        103,
+        1259,
+        19,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnntQ8jDjE6aP9uPVYBsTEnzwFZuQqBx9XZ7wpzXNC",
+      "signers": 5912,
+      "transfers": 15782,
+      "landed_count": 14443,
+      "failed_count": 1339,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        917,
+        13401,
+        125,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        93,
+        1237,
+        9,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnEJvqLGddJxQTA9DcYLTbVwiFdT3KmLXo6UcnmcgC",
+      "signers": 5911,
+      "transfers": 15783,
+      "landed_count": 14431,
+      "failed_count": 1352,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        882,
+        13430,
+        119,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        88,
+        1249,
+        15,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfngGVVQLiVRFbLWw3Ektiv17ef9NiRZbcgdAhh4ZEW",
+      "signers": 5909,
+      "transfers": 15908,
+      "landed_count": 14547,
+      "failed_count": 1361,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        905,
+        13525,
+        117,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        82,
+        1266,
+        13,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnXi2FdpFUUn6VyoxUohNyWk2Nup3ruguTgK8jaZaF",
+      "signers": 5898,
+      "transfers": 15746,
+      "landed_count": 14407,
+      "failed_count": 1339,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        917,
+        13388,
+        102,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        92,
+        1233,
+        14,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfn2d1g6xkwhykkyjtoccFbC7r19ADf5dGB2YnT1Hgw",
+      "signers": 5881,
+      "transfers": 15662,
+      "landed_count": 14277,
+      "failed_count": 1385,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        883,
+        13292,
+        102,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        91,
+        1285,
+        9,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnSbziLrSSVNqPBD9tpx3Ud4VtbxwsXjdfYv9SmBDx",
+      "signers": 5879,
+      "transfers": 15765,
+      "landed_count": 14448,
+      "failed_count": 1317,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        884,
+        13428,
+        136,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        94,
+        1210,
+        13,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gmgnfGwFvnqZm4MtaunuVjErQNHdAC7H4wZYjBQkvKW",
+      "signers": 5857,
+      "transfers": 29268,
+      "landed_count": 28323,
+      "failed_count": 945,
+      "median_lamports": 1000000,
+      "p95_lamports": 3500000,
+      "landed_tip_buckets": [
+        4932,
+        6067,
+        1345,
+        13716,
+        1023,
+        1013,
+        227
+      ],
+      "failed_tip_buckets": [
+        229,
+        242,
+        27,
+        382,
+        17,
+        28,
+        20
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gmgnoTSayiTuRfcC3giZ9J4NbyrvyWEUToE5nbL5S1S",
+      "signers": 5856,
+      "transfers": 28780,
+      "landed_count": 27813,
+      "failed_count": 967,
+      "median_lamports": 1000000,
+      "p95_lamports": 4158694,
+      "landed_tip_buckets": [
+        4812,
+        5826,
+        1267,
+        13500,
+        1059,
+        1096,
+        253
+      ],
+      "failed_tip_buckets": [
+        200,
+        261,
+        38,
+        380,
+        34,
+        37,
+        17
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gmgn9Mu1YGUmBihL8ujWAq1HunqoFHh9f2zSnbJ4DBp",
+      "signers": 5854,
+      "transfers": 28900,
+      "landed_count": 27911,
+      "failed_count": 989,
+      "median_lamports": 1000000,
+      "p95_lamports": 4264615,
+      "landed_tip_buckets": [
+        4858,
+        5930,
+        1291,
+        13437,
+        1028,
+        1124,
+        243
+      ],
+      "failed_tip_buckets": [
+        223,
+        264,
+        34,
+        393,
+        24,
+        26,
+        25
+      ],
+      "is_new": false
+    },
+    {
+      "address": "pfnSbG36fCGpT8WsB1NEbQ2BH11iog6qjFqMEVCZZgV",
+      "signers": 5851,
+      "transfers": 15813,
+      "landed_count": 14551,
+      "failed_count": 1262,
+      "median_lamports": 3570495,
+      "p95_lamports": 3570495,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        896,
+        13543,
+        112,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        84,
+        1162,
+        16,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gmgn6MwAHaswqrRshYkpt1YXq8Y81XF6oZQgwt7X2aR",
+      "signers": 5842,
+      "transfers": 28802,
+      "landed_count": 27827,
+      "failed_count": 975,
+      "median_lamports": 1000000,
+      "p95_lamports": 3500000,
+      "landed_tip_buckets": [
+        4805,
+        5925,
+        1300,
+        13492,
+        1051,
+        1025,
+        229
+      ],
+      "failed_tip_buckets": [
+        195,
+        245,
+        20,
+        431,
+        24,
+        39,
+        21
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gmgnUA4v4i7GcVm3FqFV6us9stcfgDQKYDLARsz8wU1",
+      "signers": 5822,
+      "transfers": 28693,
+      "landed_count": 27762,
+      "failed_count": 931,
+      "median_lamports": 1000000,
+      "p95_lamports": 3500000,
+      "landed_tip_buckets": [
+        4773,
+        5870,
+        1314,
+        13499,
+        1045,
+        1020,
+        241
+      ],
+      "failed_tip_buckets": [
+        218,
+        255,
+        26,
+        352,
+        27,
+        36,
+        17
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gmgnuPqrfXG2HJTFXLWF2mcp214ZyjsofL1uBNhpoGK",
+      "signers": 5810,
+      "transfers": 28752,
+      "landed_count": 27782,
+      "failed_count": 970,
+      "median_lamports": 1000000,
+      "p95_lamports": 3904230,
+      "landed_tip_buckets": [
+        4803,
+        5955,
+        1307,
+        13335,
+        1096,
+        1049,
+        237
+      ],
+      "failed_tip_buckets": [
+        228,
+        233,
+        23,
+        393,
+        27,
+        45,
+        21
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gmgnC6MFUDAUPzqPeHB7JC6oB49Kv3tHHbQQiMzPuSY",
+      "signers": 5805,
+      "transfers": 28652,
+      "landed_count": 27658,
+      "failed_count": 994,
+      "median_lamports": 1000000,
+      "p95_lamports": 3500000,
+      "landed_tip_buckets": [
+        4727,
+        5877,
+        1274,
+        13460,
+        1048,
+        1014,
+        258
+      ],
+      "failed_tip_buckets": [
+        208,
+        258,
+        20,
+        426,
+        32,
+        31,
+        19
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gmgnKdu5P2ZbU5MooAQsgh38zExN6o3hWMTtiUMyec8",
+      "signers": 5796,
+      "transfers": 28803,
+      "landed_count": 27820,
+      "failed_count": 983,
+      "median_lamports": 1000000,
+      "p95_lamports": 3500000,
+      "landed_tip_buckets": [
+        4680,
+        5942,
+        1267,
+        13587,
+        1081,
+        1017,
+        246
+      ],
+      "failed_tip_buckets": [
+        216,
+        268,
+        23,
+        408,
+        25,
+        29,
+        14
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gmgniQix2Fa9HX5giNoKPmNtxL4o2NTCavq5gZKjqN6",
+      "signers": 5769,
+      "transfers": 28849,
+      "landed_count": 27874,
+      "failed_count": 975,
+      "median_lamports": 1000000,
+      "p95_lamports": 3502907,
+      "landed_tip_buckets": [
+        4984,
+        5957,
+        1342,
+        13235,
+        1045,
+        1050,
+        261
+      ],
+      "failed_tip_buckets": [
+        208,
+        264,
+        20,
+        418,
+        21,
+        30,
+        14
+      ],
+      "is_new": false
+    },
+    {
+      "address": "8m5GkL7nVy95G4YVUbs79z873oVKqg2afgKRmqxsiiRm",
+      "signers": 5705,
+      "transfers": 24243,
+      "landed_count": 21843,
+      "failed_count": 2400,
+      "median_lamports": 100,
+      "p95_lamports": 1000000,
+      "landed_tip_buckets": [
+        15259,
+        3956,
+        0,
+        2625,
+        0,
+        0,
+        3
+      ],
+      "failed_tip_buckets": [
+        1072,
+        651,
+        0,
+        677,
+        0,
+        0,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "AgmLJBMDCqWynYnQiPCuj9ewsNNsBJXyzoUhD9LJzN51",
+      "signers": 4973,
+      "transfers": 13474,
+      "landed_count": 13389,
+      "failed_count": 85,
+      "median_lamports": 2039280,
+      "p95_lamports": 2039280,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        0,
+        13389,
+        0,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        0,
+        85,
+        0,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "DAbjWBKNUs3MCNYNS7tsyyosBzZtjHLpGWA9GbTjX9cq",
+      "signers": 4117,
+      "transfers": 15699,
+      "landed_count": 15279,
+      "failed_count": 420,
+      "median_lamports": 1000000,
+      "p95_lamports": 5000000,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        13491,
+        836,
+        773,
+        179
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        367,
+        27,
+        18,
+        8
+      ],
+      "is_new": false
+    },
+    {
+      "address": "6GZVKMaoWry4UFiydjeQU9nmAxj3hEARAStQ7Hc2z6TB",
+      "signers": 4061,
+      "transfers": 15308,
+      "landed_count": 14947,
+      "failed_count": 361,
+      "median_lamports": 1000000,
+      "p95_lamports": 5000000,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        13254,
+        803,
+        725,
+        165
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        323,
+        19,
+        12,
+        7
+      ],
+      "is_new": false
+    },
+    {
+      "address": "8ovyrAo1f3jBmq5F1njewpcgfUB12GpSiB2heWRUFS9T",
+      "signers": 4044,
+      "transfers": 15524,
+      "landed_count": 15108,
+      "failed_count": 416,
+      "median_lamports": 1000000,
+      "p95_lamports": 5000000,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        13382,
+        804,
+        739,
+        183
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        370,
+        27,
+        12,
+        7
+      ],
+      "is_new": false
+    },
+    {
+      "address": "4dyRtsAdkiHsiXFku5peCgCpTyUBGrjgeXWb79MTdZYN",
+      "signers": 3813,
+      "transfers": 14643,
+      "landed_count": 14124,
+      "failed_count": 519,
+      "median_lamports": 50000,
+      "p95_lamports": 2000000,
+      "landed_tip_buckets": [
+        7792,
+        1444,
+        207,
+        3954,
+        326,
+        342,
+        59
+      ],
+      "failed_tip_buckets": [
+        331,
+        62,
+        9,
+        90,
+        12,
+        8,
+        7
+      ],
+      "is_new": false
+    },
+    {
+      "address": "BvH5CteddzPsNquinN4NKTHqcUtAnxDjVtFeGrx9E8jQ",
+      "signers": 3779,
+      "transfers": 14855,
+      "landed_count": 14325,
+      "failed_count": 530,
+      "median_lamports": 50000,
+      "p95_lamports": 1901131,
+      "landed_tip_buckets": [
+        7917,
+        1425,
+        187,
+        4093,
+        279,
+        365,
+        59
+      ],
+      "failed_tip_buckets": [
+        332,
+        67,
+        7,
+        102,
+        11,
+        8,
+        3
+      ],
+      "is_new": false
+    },
+    {
+      "address": "6YZATebZosXkNFdfGuvHydf5EHiWyG1f1rAgWED2dwA7",
+      "signers": 3777,
+      "transfers": 14762,
+      "landed_count": 14268,
+      "failed_count": 494,
+      "median_lamports": 50000,
+      "p95_lamports": 2000000,
+      "landed_tip_buckets": [
+        7819,
+        1473,
+        216,
+        3980,
+        335,
+        386,
+        59
+      ],
+      "failed_tip_buckets": [
+        313,
+        55,
+        8,
+        90,
+        15,
+        5,
+        8
+      ],
+      "is_new": false
+    },
+    {
+      "address": "4QkrBeRLQy75AiYcaiTsVKJpZw9tzfCJbvmHHNAaDbDe",
+      "signers": 3776,
+      "transfers": 14596,
+      "landed_count": 14066,
+      "failed_count": 530,
+      "median_lamports": 50000,
+      "p95_lamports": 1925000,
+      "landed_tip_buckets": [
+        7759,
+        1435,
+        210,
+        3965,
+        325,
+        318,
+        54
+      ],
+      "failed_tip_buckets": [
+        331,
+        53,
+        11,
+        113,
+        13,
+        3,
+        6
+      ],
+      "is_new": false
+    },
+    {
+      "address": "EeCSgSgNE1dTX5vbyJN5Mgz3eVUW9ZJfLP8QGYzKWDrH",
+      "signers": 3757,
+      "transfers": 14770,
+      "landed_count": 14294,
+      "failed_count": 476,
+      "median_lamports": 40000,
+      "p95_lamports": 2000000,
+      "landed_tip_buckets": [
+        7915,
+        1466,
+        215,
+        3940,
+        317,
+        373,
+        68
+      ],
+      "failed_tip_buckets": [
+        313,
+        51,
+        9,
+        87,
+        5,
+        3,
+        8
+      ],
+      "is_new": false
+    },
+    {
+      "address": "Euznbr2WLEqm3j5V7ZHtuRGkARD32wBpDe4ofUns5DAQ",
+      "signers": 3741,
+      "transfers": 14651,
+      "landed_count": 14125,
+      "failed_count": 526,
+      "median_lamports": 50000,
+      "p95_lamports": 2000000,
+      "landed_tip_buckets": [
+        7808,
+        1450,
+        171,
+        3945,
+        302,
+        378,
+        71
+      ],
+      "failed_tip_buckets": [
+        337,
+        53,
+        10,
+        97,
+        17,
+        6,
+        6
+      ],
+      "is_new": false
+    },
+    {
+      "address": "HQMPUYfpngKv7k3DvD4MEjNmHvf287DzaXi3SgZNBTEU",
+      "signers": 3731,
+      "transfers": 14622,
+      "landed_count": 14124,
+      "failed_count": 498,
+      "median_lamports": 36776,
+      "p95_lamports": 1901938,
+      "landed_tip_buckets": [
+        7891,
+        1481,
+        206,
+        3855,
+        285,
+        343,
+        63
+      ],
+      "failed_tip_buckets": [
+        312,
+        57,
+        9,
+        91,
+        15,
+        9,
+        5
+      ],
+      "is_new": false
+    },
+    {
+      "address": "uXYxbbhcD9kHU1KzZM6ZNzPvieEvRcJCPHpqcnpwdcR",
+      "signers": 3729,
+      "transfers": 14690,
+      "landed_count": 14185,
+      "failed_count": 505,
+      "median_lamports": 50000,
+      "p95_lamports": 1947011,
+      "landed_tip_buckets": [
+        7857,
+        1485,
+        180,
+        3949,
+        312,
+        329,
+        73
+      ],
+      "failed_tip_buckets": [
+        333,
+        51,
+        7,
+        99,
+        7,
+        1,
+        7
+      ],
+      "is_new": false
+    },
+    {
+      "address": "4kuG6NsAFJNwqEkac8GFDMMheCGKUPEbaRVHHyFHSwWz",
+      "signers": 3538,
+      "transfers": 45627,
+      "landed_count": 42730,
+      "failed_count": 2897,
+      "median_lamports": 1,
+      "p95_lamports": 204728,
+      "landed_tip_buckets": [
+        34468,
+        8254,
+        0,
+        2,
+        0,
+        0,
+        6
+      ],
+      "failed_tip_buckets": [
+        2447,
+        450,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "gasTzr94Pmp4Gf8vknQnqxeYxdgwFjbgdJa4msYRpnB",
+      "signers": 3326,
+      "transfers": 20961,
+      "landed_count": 17145,
+      "failed_count": 3816,
+      "median_lamports": 2039280,
+      "p95_lamports": 2039280,
+      "landed_tip_buckets": [
+        0,
+        0,
+        0,
+        0,
+        17145,
+        0,
+        0
+      ],
+      "failed_tip_buckets": [
+        0,
+        0,
+        0,
+        0,
+        3816,
+        0,
+        0
+      ],
+      "is_new": false
+    },
+    {
+      "address": "86Vh4XGLW2b6nvWbRyDs4ScgMXbuvRCHT7WbUT3RFxKG",
+      "signers": 3309,
+      "transfers": 15581,
+      "landed_count": 14526,
+      "failed_count": 1055,
+      "median_lamports": 0,
+      "p95_lamports": 1000,
+      "landed_tip_buckets": [
+        14092,
+        38,
+        0,
+        0,
+        396,
+        0,
+        0
+      ],
+      "failed_tip_buckets": [
+        1055,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "is_new": false
+    }
+  ]
+}

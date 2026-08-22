@@ -368,6 +368,7 @@ def get_table_metadata(accessor: ClickHouseAccessor, table_name: str, db_name: s
         SELECT
             total_rows,
             total_bytes,
+            engine,
             engine_full,
             partition_key
         FROM system.tables
@@ -377,7 +378,13 @@ def get_table_metadata(accessor: ClickHouseAccessor, table_name: str, db_name: s
 
     if result:
         row = result[0]
+        engine = row.get("engine", "") or ""
         engine_full = row.get("engine_full", "") or ""
+
+        # Views (and materialized views without a target table) have no stored
+        # rows or bytes; ClickHouse reports NULL, which must not be rendered as
+        # a misleading "0 B".
+        is_view = engine in ("View", "MaterializedView", "LiveView")
 
         # Extract TTL from engine_full (e.g., "MergeTree ... TTL block_time + INTERVAL 30 DAY")
         ttl = None
@@ -397,8 +404,17 @@ def get_table_metadata(accessor: ClickHouseAccessor, table_name: str, db_name: s
             "total_bytes": row.get("total_bytes", 0) or 0,
             "ttl": ttl,
             "partition_key": row.get("partition_key", "") or "",
+            "engine": engine,
+            "is_view": is_view,
         }
-    return {"total_rows": 0, "total_bytes": 0, "ttl": None, "partition_key": ""}
+    return {
+        "total_rows": 0,
+        "total_bytes": 0,
+        "ttl": None,
+        "partition_key": "",
+        "engine": "",
+        "is_view": False,
+    }
 
 
 def get_column_info(accessor: ClickHouseAccessor, table_name: str, db_name: str = "default") -> List[Dict[str, Any]]:
@@ -531,6 +547,35 @@ def get_date_range_by_slot(
     return None
 
 
+def get_date_range_by_slot_expr(
+    accessor: ClickHouseAccessor, table_name: str, expr: str, db_name: str = "default"
+) -> Optional[Dict[str, Any]]:
+    """Get date range using a timestamp expression, ordered by slot.
+
+    For Solana-style tables that carry a ``slot`` index but no ``block_time``
+    column (e.g. ``tx_timestamps`` stores a unix ``entry_timestamp``).
+    """
+    full_table_name = f"{db_name}.{table_name}"
+    try:
+        first_result = accessor.query(
+            f"SELECT {expr} as first_record FROM {full_table_name} ORDER BY slot ASC LIMIT 1"
+        )
+        last_result = accessor.query(
+            f"SELECT {expr} as last_record FROM {full_table_name} ORDER BY slot DESC LIMIT 1"
+        )
+        if first_result and last_result:
+            return {
+                "first_record": first_result[0]["first_record"],
+                "last_record": last_result[0]["last_record"],
+            }
+    except Exception as e:
+        print(
+            f"    Warning: Could not get date range for {table_name}: "
+            f"{exception_label(e)}"
+        )
+    return None
+
+
 def get_date_range_generic(
     accessor: ClickHouseAccessor, table_name: str, timestamp_columns: List[str], db_name: str = "default"
 ) -> Optional[Dict[str, Any]]:
@@ -544,7 +589,8 @@ def get_date_range_generic(
                     MIN({col}) as first_record,
                     MAX({col}) as last_record
                 FROM {full_table_name}
-                """
+                """,
+                settings={"max_execution_time": 120},
             )
             if result and result[0].get("first_record"):
                 return {
@@ -553,6 +599,66 @@ def get_date_range_generic(
                 }
         except Exception:
             continue
+    return None
+
+
+def _is_temporal_type(col_type: str) -> bool:
+    """True for Date/DateTime/DateTime64 columns (including Nullable variants)."""
+    return "Date" in col_type
+
+
+def _is_numeric_type(col_type: str) -> bool:
+    """True for integer/float columns that may hold a unix timestamp."""
+    return any(t in col_type for t in ("Int", "Float", "UInt", "Decimal"))
+
+
+def find_time_column(columns: List[Dict[str, Any]]) -> Optional[tuple[str, bool]]:
+    """Pick the best column to represent a record's timestamp.
+
+    Returns ``(column_name, is_numeric_unix)`` or ``None`` when no usable
+    timestamp column exists. ``is_numeric_unix`` marks numeric columns that hold
+    a unix timestamp and must be wrapped in ``toDateTime`` before comparison.
+
+    Detection is schema-driven so every table with any temporal column gets a
+    First/Last Record, rather than relying on a fixed name list.
+    """
+    by_name = {col["name"]: col["type"] for col in columns}
+
+    # Preferred event-time column names, in priority order. These represent when
+    # the underlying on-chain / market event happened.
+    preferred = [
+        "block_time",
+        "block_timestamp",
+        "timestamp",
+        "event_time",
+        "time",
+        "utc_fill_dttm",
+        "utc_first_fill_dttm",
+        # Ingest / creation time — the best "first record" proxy for metadata
+        # tables that only carry descriptive datetime columns.
+        "inserted_at",
+        "created_at",
+        "creation_dttm",
+        "created_dttm",
+    ]
+    for name in preferred:
+        if name in by_name and _is_temporal_type(by_name[name]):
+            return name, False
+
+    # Any temporal column, preferring non-Nullable ones, in schema order.
+    for col in columns:
+        if _is_temporal_type(col["type"]) and "Nullable" not in col["type"]:
+            return col["name"], False
+    for col in columns:
+        if _is_temporal_type(col["type"]):
+            return col["name"], False
+
+    # Numeric unix-timestamp fallback (e.g. tx_timestamps.entry_timestamp).
+    for col in columns:
+        lname = col["name"].lower()
+        if ("timestamp" in lname or lname.endswith("_time") or lname == "time") and _is_numeric_type(col["type"]):
+            return col["name"], True
+
     return None
 
 
@@ -572,16 +678,19 @@ def get_date_range(
     if use_slot_optimization and has_block_time and has_slot:
         return get_date_range_by_slot(accessor, table_name, db_name)
 
-    # Fallback to generic timestamp columns
-    timestamp_columns = [
-        "block_time",
-        "block_timestamp",
-        "timestamp",
-        "time",
-        "created_at",
-        "event_time",
-    ]
-    return get_date_range_generic(accessor, table_name, timestamp_columns, db_name)
+    # Schema-driven detection of a usable timestamp column.
+    time_col = find_time_column(columns)
+    if not time_col:
+        return None
+    col_name, is_numeric = time_col
+    expr = f"toDateTime({col_name})" if is_numeric else col_name
+
+    # Solana-style tables with a slot index but no block_time (e.g. tx_timestamps)
+    # can still order cheaply by slot.
+    if use_slot_optimization and has_slot:
+        return get_date_range_by_slot_expr(accessor, table_name, expr, db_name)
+
+    return get_date_range_generic(accessor, table_name, [expr], db_name)
 
 
 def generate_table_mdx(
@@ -605,8 +714,13 @@ def generate_table_mdx(
     # Stats
     lines.append("| Statistic | Value |")
     lines.append("|-----------|-------|")
-    lines.append(f"| **Rows** | {format_number(metadata['total_rows'])} |")
-    lines.append(f"| **Size** | {format_bytes(metadata['total_bytes'])} |")
+    if metadata.get("is_view"):
+        # Views compute their result at query time and have no stored data.
+        engine = metadata.get("engine") or "View"
+        lines.append(f"| **Type** | {engine} (computed at query time) |")
+    else:
+        lines.append(f"| **Rows** | {format_number(metadata['total_rows'])} |")
+        lines.append(f"| **Size** | {format_bytes(metadata['total_bytes'])} |")
 
     if date_range:
         first = date_range["first_record"]
@@ -785,12 +899,18 @@ def generate_database_mdx(
         print(f"    Getting metadata for {table_name}...")
         metadata = get_table_metadata(accessor, table_name, db_name)
         table_data.append((table_name, metadata))
+        if metadata.get("is_view"):
+            rows_cell = "—"
+            size_cell = metadata.get("engine") or "View"
+        else:
+            rows_cell = format_number(metadata["total_rows"])
+            size_cell = format_bytes(metadata["total_bytes"])
         lines.append(
             # Vocs preserves underscores in heading IDs. Keep the fragment
             # byte-for-byte aligned with the generated ``### table_name``.
             f"| [{table_name}](#{table_name.lower()}) | "
-            f"{format_number(metadata['total_rows'])} | "
-            f"{format_bytes(metadata['total_bytes'])} |"
+            f"{rows_cell} | "
+            f"{size_cell} |"
         )
 
     lines.append("")
@@ -801,7 +921,12 @@ def generate_database_mdx(
     for table_name, metadata in table_data:
         print(f"    Documenting {table_name}...")
         columns = columns_by_table[table_name]
-        date_range = get_date_range(accessor, table_name, columns, use_slot_optimization, db_name)
+        # Views have no stored rows, and empty tables would otherwise report a
+        # meaningless epoch (1970-01-01) from MIN() over no data. Skip both.
+        if metadata.get("is_view") or metadata.get("total_rows", 0) == 0:
+            date_range = None
+        else:
+            date_range = get_date_range(accessor, table_name, columns, use_slot_optimization, db_name)
         merged_descriptions = descriptions_by_table[table_name]
 
         # Get sample data (only for Solana tables with RPC access)

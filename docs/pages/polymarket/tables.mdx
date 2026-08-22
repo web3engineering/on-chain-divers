@@ -2,7 +2,7 @@
 
 Tables containing Polymarket prediction market data including order books, trades, and market information.
 
-*Last updated: 2026-05-23 21:01 UTC*
+*Last updated: 2026-08-19 21:07 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
@@ -10,9 +10,9 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Table | Rows | Size |
 |-------|------|------|
-| [polymarket_order_filled_v3](#polymarket_order_filled_v3) | 1,348,948,406 | 217.49 GB |
-| [raw_event_meta](#raw_event_meta) | 42,322 | 428.9 MB |
-| [raw_market_meta](#raw_market_meta) | 2,330,697 | 2.09 GB |
+| [polymarket_order_filled_v3](#polymarket_order_filled_v3) | 1,837,051,333 | 301.45 GB |
+| [raw_event_meta](#raw_event_meta) | 2,552,808 | 11.69 GB |
+| [raw_market_meta](#raw_market_meta) | 10,935,666 | 11.93 GB |
 
 ---
 
@@ -20,8 +20,10 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 1,348,948,406 |
-| **Size** | 217.49 GB |
+| **Rows** | 1,837,051,333 |
+| **Size** | 301.45 GB |
+| **First Record** | 2022-11-21 |
+| **Last Record** | 2026-08-19 |
 | **Partition Key** | `toYYYYMMDD(block_timestamp)` |
 
 **Columns:**
@@ -61,7 +63,7 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 **Example Query:**
 
 <ClickHouseSqlExample database="polymarket">
-SELECT * FROM polymarket_order_filled_v3 LIMIT 10
+SELECT * FROM polymarket.polymarket_order_filled_v3 LIMIT 10
 </ClickHouseSqlExample>
 
 ---
@@ -70,8 +72,10 @@ SELECT * FROM polymarket_order_filled_v3 LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 42,322 |
-| **Size** | 428.9 MB |
+| **Rows** | 2,552,808 |
+| **Size** | 11.69 GB |
+| **First Record** | 2026-05-17 |
+| **Last Record** | 2026-08-19 |
 
 **Columns:**
 
@@ -173,7 +177,7 @@ SELECT * FROM polymarket_order_filled_v3 LIMIT 10
 **Example Query:**
 
 <ClickHouseSqlExample database="polymarket">
-SELECT * FROM raw_event_meta LIMIT 10
+SELECT * FROM polymarket.raw_event_meta LIMIT 10
 </ClickHouseSqlExample>
 
 ---
@@ -182,8 +186,10 @@ SELECT * FROM raw_event_meta LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 2,330,697 |
-| **Size** | 2.09 GB |
+| **Rows** | 10,935,666 |
+| **Size** | 11.93 GB |
+| **First Record** | 2026-04-08 |
+| **Last Record** | 2026-08-19 |
 
 **Columns:**
 
@@ -333,7 +339,7 @@ SELECT * FROM raw_event_meta LIMIT 10
 **Example Query:**
 
 <ClickHouseSqlExample database="polymarket">
-SELECT * FROM raw_market_meta LIMIT 10
+SELECT * FROM polymarket.raw_market_meta LIMIT 10
 </ClickHouseSqlExample>
 
 ---

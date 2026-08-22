@@ -2,7 +2,7 @@
 
 Tables containing Robinhood Chain token metadata and decoded Uniswap v3 and v4 pool and swap events.
 
-*Last updated: 2026-08-15 21:21 UTC*
+*Last updated: 2026-08-19 21:07 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
@@ -10,11 +10,11 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Table | Rows | Size |
 |-------|------|------|
-| [tokens](#tokens) | 51,016 | 24.4 MB |
-| [uniswap_v3_pools](#uniswap_v3_pools) | 449,012 | 158.8 MB |
-| [uniswap_v3_trades](#uniswap_v3_trades) | 93,646,638 | 24.96 GB |
-| [uniswap_v4_pools](#uniswap_v4_pools) | 382,494 | 147.9 MB |
-| [uniswap_v4_trades](#uniswap_v4_trades) | 36,091,891 | 8.67 GB |
+| [tokens](#tokens) | 56,111 | 27.4 MB |
+| [uniswap_v3_pools](#uniswap_v3_pools) | 469,718 | 166.8 MB |
+| [uniswap_v3_trades](#uniswap_v3_trades) | 99,006,775 | 26.37 GB |
+| [uniswap_v4_pools](#uniswap_v4_pools) | 410,248 | 158.6 MB |
+| [uniswap_v4_trades](#uniswap_v4_trades) | 40,047,954 | 9.68 GB |
 
 ---
 
@@ -22,10 +22,10 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 51,016 |
-| **Size** | 24.4 MB |
+| **Rows** | 56,111 |
+| **Size** | 27.4 MB |
 | **First Record** | 2026-07-08 |
-| **Last Record** | 2026-08-15 |
+| **Last Record** | 2026-08-19 |
 
 **Columns:**
 
@@ -72,10 +72,10 @@ SELECT * FROM robinhood.tokens LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 449,012 |
-| **Size** | 158.8 MB |
+| **Rows** | 469,718 |
+| **Size** | 166.8 MB |
 | **First Record** | 2026-06-18 |
-| **Last Record** | 2026-08-15 |
+| **Last Record** | 2026-08-19 |
 
 **Columns:**
 
@@ -118,10 +118,10 @@ SELECT * FROM robinhood.uniswap_v3_pools LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 93,646,638 |
-| **Size** | 24.96 GB |
+| **Rows** | 99,006,775 |
+| **Size** | 26.37 GB |
 | **First Record** | 2026-05-22 |
-| **Last Record** | 2026-08-15 |
+| **Last Record** | 2026-08-19 |
 | **Partition Key** | `toYYYYMMDD(block_timestamp)` |
 
 **Columns:**
@@ -168,10 +168,10 @@ SELECT * FROM robinhood.uniswap_v3_trades LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 382,494 |
-| **Size** | 147.9 MB |
+| **Rows** | 410,248 |
+| **Size** | 158.6 MB |
 | **First Record** | 2026-05-22 |
-| **Last Record** | 2026-08-15 |
+| **Last Record** | 2026-08-19 |
 
 **Columns:**
 
@@ -217,10 +217,10 @@ SELECT * FROM robinhood.uniswap_v4_pools LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 36,091,891 |
-| **Size** | 8.67 GB |
+| **Rows** | 40,047,954 |
+| **Size** | 9.68 GB |
 | **First Record** | 2026-05-22 |
-| **Last Record** | 2026-08-15 |
+| **Last Record** | 2026-08-19 |
 | **Partition Key** | `toYYYYMMDD(block_timestamp)` |
 
 **Columns:**
@@ -262,4 +262,3 @@ SELECT * FROM robinhood.uniswap_v4_trades LIMIT 10
 </ClickHouseSqlExample>
 
 ---
-

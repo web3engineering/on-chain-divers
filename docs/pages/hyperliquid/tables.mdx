@@ -2,7 +2,7 @@
 
 Tables containing HyperLiquid perpetual exchange data including trades, orders, and funding rates.
 
-*Last updated: 2026-05-23 21:01 UTC*
+*Last updated: 2026-08-19 21:07 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
@@ -10,10 +10,10 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Table | Rows | Size |
 |-------|------|------|
-| [agg_fulfilled_order](#agg_fulfilled_order) | 425,720,908 | 10.15 GB |
-| [raw_node_fills_by_block](#raw_node_fills_by_block) | 2,175,505,136 | 152.84 GB |
-| [view_perpetual_wallet](#view_perpetual_wallet) | 0 | 0 B |
-| [view_wallet_position](#view_wallet_position) | 0 | 0 B |
+| [agg_fulfilled_order](#agg_fulfilled_order) | 0 | 0 B |
+| [raw_node_fills_by_block](#raw_node_fills_by_block) | 2,973,715,601 | 213.70 GB |
+| [view_perpetual_wallet](#view_perpetual_wallet) | — | View |
+| [view_wallet_position](#view_wallet_position) | — | View |
 
 ---
 
@@ -21,8 +21,8 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 425,720,908 |
-| **Size** | 10.15 GB |
+| **Rows** | 0 |
+| **Size** | 0 B |
 | **Partition Key** | `toYYYYMM(utc_first_fill_dt)` |
 | **TTL** | `utc_first_fill_dt + toIntervalDay(90)` |
 
@@ -44,7 +44,7 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 **Example Query:**
 
 <ClickHouseSqlExample database="hyperliquid">
-SELECT * FROM agg_fulfilled_order LIMIT 10
+SELECT * FROM hyperliquid.agg_fulfilled_order LIMIT 10
 </ClickHouseSqlExample>
 
 ---
@@ -53,8 +53,10 @@ SELECT * FROM agg_fulfilled_order LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 2,175,505,136 |
-| **Size** | 152.84 GB |
+| **Rows** | 2,973,715,601 |
+| **Size** | 213.70 GB |
+| **First Record** | 2025-07-27 |
+| **Last Record** | 2026-08-19 |
 | **Partition Key** | `utc_fill_dt` |
 
 **Columns:**
@@ -93,7 +95,7 @@ SELECT * FROM agg_fulfilled_order LIMIT 10
 **Example Query:**
 
 <ClickHouseSqlExample database="hyperliquid">
-SELECT * FROM raw_node_fills_by_block LIMIT 10
+SELECT * FROM hyperliquid.raw_node_fills_by_block LIMIT 10
 </ClickHouseSqlExample>
 
 ---
@@ -102,8 +104,7 @@ SELECT * FROM raw_node_fills_by_block LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 0 |
-| **Size** | 0 B |
+| **Type** | View (computed at query time) |
 
 **Columns:**
 
@@ -128,7 +129,7 @@ SELECT * FROM raw_node_fills_by_block LIMIT 10
 **Example Query:**
 
 <ClickHouseSqlExample database="hyperliquid">
-SELECT * FROM view_perpetual_wallet LIMIT 10
+SELECT * FROM hyperliquid.view_perpetual_wallet LIMIT 10
 </ClickHouseSqlExample>
 
 ---
@@ -137,8 +138,7 @@ SELECT * FROM view_perpetual_wallet LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 0 |
-| **Size** | 0 B |
+| **Type** | View (computed at query time) |
 
 **Columns:**
 
@@ -152,7 +152,7 @@ SELECT * FROM view_perpetual_wallet LIMIT 10
 **Example Query:**
 
 <ClickHouseSqlExample database="hyperliquid">
-SELECT * FROM view_wallet_position LIMIT 10
+SELECT * FROM hyperliquid.view_wallet_position LIMIT 10
 </ClickHouseSqlExample>
 
 ---
