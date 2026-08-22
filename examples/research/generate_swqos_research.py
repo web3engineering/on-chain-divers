@@ -94,106 +94,140 @@ SOURCES = (
 )
 
 # --- Known-provider registry -------------------------------------------------
-# Explicit tip accounts (non-vanity or canonical sets), keyed to a provider.
-_JITO = {"name": "Jito", "url": "https://docs.jito.wtf/"}
-_BLOCKSPRINT = {"name": "BlockSprint", "url": "https://blocksprint.io/"}
-_ZEROSLOT = {"name": "0slot", "url": "https://0slot.trade/"}
+# A single source of truth, reused across every page:
+#   PROVIDERS         provider name -> extra info (endpoint URL, ...)
+#   ACCOUNT_PROVIDER  tip account address -> provider name (explicit, non-vanity)
+#   PREFIX_PROVIDER   lowercased vanity prefix -> provider name
+# provider_for(address) resolves an address to {"name", "url"} via these maps.
 
-EXPLICIT_PROVIDERS: dict[str, dict[str, str]] = {}
-EXPLICIT_PROVIDERS.update(
-    {
-        a: _JITO
-        for a in (
-            "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5",
-            "HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe",
-            "Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY",
-            "ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49",
-            "ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt",
-            "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh",
-            "3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT",
-            "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL",
-        )
-    }
+ONCHAINDIVERS_TPU_ADDRESS = "GxkB4oYYLsoeAoxAdXjDEBSrP7JGCy3re7mqozFYyiYW"
+CORVUS_ADDRESS = "CorvuSSoLxPKLoXWXSfn8pFSMhCRHhe7Uwqe874cmwvg"
+
+PROVIDERS: dict[str, dict[str, Any]] = {
+    "Jito": {"url": "https://docs.jito.wtf/"},
+    "BlockSprint": {"url": "https://blocksprint.io/"},
+    "0slot": {"url": "https://0slot.trade/"},
+    "BlockRazor": {"url": "https://blockrazor.io/"},
+    "GMGN": {"url": "https://gmgn.ai/"},
+    "Astralane": {"url": "https://astralane.io/"},
+    "Nozomi": {"url": "https://temporal.xyz/"},
+    "NextBlock": {"url": "https://nextblock.io/"},
+    "LandX": {"url": None},
+    "Corvus": {"url": None},
+    "OnchainDivers TPU": {"url": "https://tpu.onchaindivers.com/"},
+}
+
+# Explicit (non-vanity) tip accounts -> provider name.
+ACCOUNT_PROVIDER: dict[str, str] = {}
+
+
+def _register_accounts(provider: str, addresses: tuple[str, ...]) -> None:
+    for address in addresses:
+        ACCOUNT_PROVIDER[address] = provider
+
+
+_register_accounts(
+    "Jito",
+    (
+        "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5",
+        "HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe",
+        "Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY",
+        "ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49",
+        "ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt",
+        "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh",
+        "3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT",
+        "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL",
+    ),
 )
-EXPLICIT_PROVIDERS.update(
-    {
-        a: _BLOCKSPRINT
-        for a in (
-            "Sp1x2AqpQckPLaWnWCJUNg8k6qQexfaEWcSRKf5JcDV",
-            "SpWrza9E63MQuHeGnnfzmtLVCs3pBdjyKPXUABPo9nq",
-            "SpagSJmnh8E9cGT5Y431xPPaS2c1xLREGGCWN9yDeUf",
-            "Sp4JHSh9cksfzXbgK7Pq2ovtn8LirLQydaJKTsiNT77",
-            "Sp1xMS2cbw83SZDNr4AGqkBYYLjb3LvVnmDSrTMaHkr",
-        )
-    }
+_register_accounts(
+    "BlockSprint",
+    (
+        "Sp1x2AqpQckPLaWnWCJUNg8k6qQexfaEWcSRKf5JcDV",
+        "SpWrza9E63MQuHeGnnfzmtLVCs3pBdjyKPXUABPo9nq",
+        "SpagSJmnh8E9cGT5Y431xPPaS2c1xLREGGCWN9yDeUf",
+        "Sp4JHSh9cksfzXbgK7Pq2ovtn8LirLQydaJKTsiNT77",
+        "Sp1xMS2cbw83SZDNr4AGqkBYYLjb3LvVnmDSrTMaHkr",
+    ),
 )
-EXPLICIT_PROVIDERS.update(
-    {
-        a: _ZEROSLOT
-        for a in (
-            "6fQaVhYZA4w3MBSXjJ81Vf6W1EDYeUPXpgVQ6UQyU1Av",
-            "DiTmWENJsHQdawVUUKnUXkconcpW4Jv52TnMWhkncF6t",
-            "HRyRhQ86t3H4aAtgvHVpUJmw64BDrb61gRiKcdKUXs5c",
-            "Eb2KpSC8uMt9GmzyAEm5Eb1AAAgTjRaXWFjKyFXHZxF3",
-            "FCjUJZ1qozm1e8romw216qyfQMaaWKxWsuySnumVCCNe",
-            "7y4whZmw388w1ggjToDLSBLv47drw5SUXcLk6jtmwixd",
-            "J9BMEWFbCBEjtQ1fG5Lo9kouX1HfrKQxeUxetwXrifBw",
-            "8U1JPQh3mVQ4F5jwRdFTBzvNRQaYFQppHQYoH38DJGSQ",
-            "ENxTEjSQ1YabmUpXAdCgevnHQ9MHdLv8tzFiuiYJqa13",
-            "6rYLG55Q9RpsPGvqdPNJs4z5WTxJVatMB8zV3WJhs5EK",
-            "Cix2bHfqPcKcM233mzxbLk14kSggUUiz2A87fJtGivXr",
-            "4HiwLEP2Bzqj3hM2ENxJuzhcPCdsafwiet3oGkMkuQY4",
-            "7toBU3inhmrARGngC7z6SjyP85HgGMmCTEwGNRAcYnEK",
-            "8mR3wB1nh4D6J9RUCugxUpc6ya8w38LPxZ3ZjcBhgzws",
-            "6SiVU5WEwqfFapRuYCndomztEwDjvS5xgtEof3PLEGm9",
-            "TpdxgNJBWZRL8UXF5mrEsyWxDWx9HQexA9P1eTWQ42p",
-            "D8f3WkQu6dCF33cZxuAsrKHrGsqGP2yvAHf8mX6RXnwf",
-            "GQPFicsy3P3NXxB5piJohoxACqTvWE9fKpLgdsMduoHE",
-            "Ey2JEr8hDkgN8qKJGrLf2yFjRhW7rab99HVxwi5rcvJE",
-            "4iUgjMT8q2hNZnLuhpqZ1QtiV8deFPy2ajvvjEpKKgsS",
-            "3Rz8uD83QsU8wKvZbgWAPvCNDU6Fy8TSZTMcPm3RB6zt",
-        )
-    }
+_register_accounts(
+    "0slot",
+    (
+        "6fQaVhYZA4w3MBSXjJ81Vf6W1EDYeUPXpgVQ6UQyU1Av",
+        "DiTmWENJsHQdawVUUKnUXkconcpW4Jv52TnMWhkncF6t",
+        "HRyRhQ86t3H4aAtgvHVpUJmw64BDrb61gRiKcdKUXs5c",
+        "Eb2KpSC8uMt9GmzyAEm5Eb1AAAgTjRaXWFjKyFXHZxF3",
+        "FCjUJZ1qozm1e8romw216qyfQMaaWKxWsuySnumVCCNe",
+        "7y4whZmw388w1ggjToDLSBLv47drw5SUXcLk6jtmwixd",
+        "J9BMEWFbCBEjtQ1fG5Lo9kouX1HfrKQxeUxetwXrifBw",
+        "8U1JPQh3mVQ4F5jwRdFTBzvNRQaYFQppHQYoH38DJGSQ",
+        "ENxTEjSQ1YabmUpXAdCgevnHQ9MHdLv8tzFiuiYJqa13",
+        "6rYLG55Q9RpsPGvqdPNJs4z5WTxJVatMB8zV3WJhs5EK",
+        "Cix2bHfqPcKcM233mzxbLk14kSggUUiz2A87fJtGivXr",
+        "4HiwLEP2Bzqj3hM2ENxJuzhcPCdsafwiet3oGkMkuQY4",
+        "7toBU3inhmrARGngC7z6SjyP85HgGMmCTEwGNRAcYnEK",
+        "8mR3wB1nh4D6J9RUCugxUpc6ya8w38LPxZ3ZjcBhgzws",
+        "6SiVU5WEwqfFapRuYCndomztEwDjvS5xgtEof3PLEGm9",
+        "TpdxgNJBWZRL8UXF5mrEsyWxDWx9HQexA9P1eTWQ42p",
+        "D8f3WkQu6dCF33cZxuAsrKHrGsqGP2yvAHf8mX6RXnwf",
+        "GQPFicsy3P3NXxB5piJohoxACqTvWE9fKpLgdsMduoHE",
+        "Ey2JEr8hDkgN8qKJGrLf2yFjRhW7rab99HVxwi5rcvJE",
+        "4iUgjMT8q2hNZnLuhpqZ1QtiV8deFPy2ajvvjEpKKgsS",
+        "3Rz8uD83QsU8wKvZbgWAPvCNDU6Fy8TSZTMcPm3RB6zt",
+    ),
 )
+_register_accounts(
+    "BlockRazor",
+    (
+        "Gywj98ophM7GmkDdaWs4isqZnDdFCW7B46TXmKfvyqSm",
+        "FjmZZrFvhnqqb9ThCuMVnENaM3JGVuGWNyCAxRJcFpg9",
+        "6No2i3aawzHsjtThw81iq1EXPJN6rh8eSJCLaYZfKDTG",
+        "A9cWowVAiHe9pJfKAj3TJiN9VpbzMUq6E4kEvf5mUT22",
+        "68Pwb4jS7eZATjDfhmTXgRJjCiZmw1L7Huy4HNpnxJ3o",
+        "4ABhJh5rZPjv63RBJBuyWzBK3g9gWMUQdTZP2kiW31V9",
+        "B2M4NG5eyZp5SBQrSdtemzk5TqVuaWGQnowGaCBt8GyM",
+        "5jA59cXMKQqZAVdtopv8q3yyw9SYfiE3vUCbt7p8MfVf",
+        "5YktoWygr1Bp9wiS1xtMtUki1PeYuuzuCF98tqwYxf61",
+        "295Avbam4qGShBYK7E9H5Ldew4B3WyJGmgmXfiWdeeyV",
+        "EDi4rSy2LZgKJX74mbLTFk4mxoTgT6F7HxxzG2HBAFyK",
+        "BnGKHAC386n4Qmv9xtpBVbRaUTKixjBe3oagkPFKtoy6",
+        "Dd7K2Fp7AtoN8xCghKDRmyqr5U169t48Tw5fEd3wT9mq",
+        "AP6qExwrbRgBAVaehg4b5xHENX815sMabtBzUzVB4v8S",
+    ),
+)
+_register_accounts("OnchainDivers TPU", (ONCHAINDIVERS_TPU_ADDRESS,))
 
 # Distinctive lowercased vanity prefixes that identify a provider across all of
 # its rotating accounts.
-PREFIX_PROVIDERS: tuple[tuple[str, dict[str, str]], ...] = (
-    ("nextblock", {"name": "NextBlock", "url": "https://nextblock.io/"}),
-    ("astra", {"name": "Astralane", "url": "https://astralane.io/"}),
-    ("noz", {"name": "Nozomi", "url": "https://temporal.xyz/"}),
-    ("corvu", {"name": "Corvus", "url": None}),
-    ("gmgn", {"name": "GMGN", "url": "https://gmgn.ai/"}),
+PREFIX_PROVIDER: tuple[tuple[str, str], ...] = (
+    ("nextblock", "NextBlock"),
+    ("landx", "LandX"),
+    ("astra", "Astralane"),
+    ("noz", "Nozomi"),
+    ("corvu", "Corvus"),
+    ("gmgn", "GMGN"),
 )
-
-ONCHAINDIVERS_TPU = {
-    "name": "OnchainDivers TPU",
-    "url": "https://tpu.onchaindivers.com/",
-    "address": "GxkB4oYYLsoeAoxAdXjDEBSrP7JGCy3re7mqozFYyiYW",
-}
-EXPLICIT_PROVIDERS[ONCHAINDIVERS_TPU["address"]] = {
-    "name": ONCHAINDIVERS_TPU["name"],
-    "url": ONCHAINDIVERS_TPU["url"],
-}
 
 # Providers we guarantee a row for even when they never clear the screen. Corvus
 # and OnchainDivers TPU often have no activity at all on a given DEX, so a synthetic
 # placeholder row is injected when the query returns nothing for them.
 PLACEHOLDER_PROVIDERS = (
-    {"name": "Corvus", "url": None, "address": "CorvuSSoLxPKLoXWXSfn8pFSMhCRHhe7Uwqe874cmwvg"},
-    ONCHAINDIVERS_TPU,
+    {"name": "Corvus", "address": CORVUS_ADDRESS},
+    {"name": "OnchainDivers TPU", "address": ONCHAINDIVERS_TPU_ADDRESS},
 )
 
 
 def provider_for(address: str) -> Optional[dict[str, Any]]:
-    """Return the known provider for an address, or None when it is unlabeled."""
-    if address in EXPLICIT_PROVIDERS:
-        return EXPLICIT_PROVIDERS[address]
-    lowered = address.lower()
-    for prefix, provider in PREFIX_PROVIDERS:
-        if lowered.startswith(prefix):
-            return provider
-    return None
+    """Return {"name", "url"} for a known provider, or None when unlabeled."""
+    name = ACCOUNT_PROVIDER.get(address)
+    if name is None:
+        lowered = address.lower()
+        for prefix, prefix_name in PREFIX_PROVIDER:
+            if lowered.startswith(prefix):
+                name = prefix_name
+                break
+    if name is None:
+        return None
+    return {"name": name, "url": PROVIDERS[name]["url"]}
 
 
 # --- formatting helpers ------------------------------------------------------
@@ -343,7 +377,7 @@ def build_records(
             {
                 "address": provider["address"],
                 "provider": provider["name"],
-                "provider_url": provider.get("url"),
+                "provider_url": PROVIDERS[provider["name"]]["url"],
                 "signers": None,
                 "transfers": None,
                 "landed_count": None,
@@ -540,7 +574,7 @@ def run_source(client: ClickHouseAccessor, source: dict, pages_dir: Path, public
         "__LANDED__": source["landed_expr"],
         "__MIN_SIGNERS__": str(source["min_signers"]),
         "__MAX_MEDIAN__": str(MAX_MEDIAN_LAMPORTS),
-        "__ONCHAINDIVERS__": ONCHAINDIVERS_TPU["address"],
+        "__ONCHAINDIVERS__": ONCHAINDIVERS_TPU_ADDRESS,
     }
     window_end = client.query(
         f"SELECT max(block_time) AS window_end FROM default.{table}",

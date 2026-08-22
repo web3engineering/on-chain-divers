@@ -18,7 +18,7 @@
 --
 -- Screen: more than __MIN_SIGNERS__ distinct signers in the last 4 days and a
 -- median tip of at most __MAX_MEDIAN__ lamports. Additionally, known-provider
--- vanity accounts (NextBlock, Corvus) and the OnchainDivers TPU account are
+-- vanity accounts (NextBlock, LandX, Corvus) and the OnchainDivers TPU account are
 -- force-included even when below the screen, so the page never looks like it
 -- silently dropped a well-known provider; the generator flags those rows.
 --
@@ -80,5 +80,6 @@ GROUP BY dest
 HAVING (signers > __MIN_SIGNERS__ AND median_lamports <= __MAX_MEDIAN__)
     OR lower(dest) LIKE 'nextblock%'
     OR lower(dest) LIKE 'corvu%'
+    OR lower(dest) LIKE 'landx%'
     OR dest = '__ONCHAINDIVERS__'
 ORDER BY signers DESC

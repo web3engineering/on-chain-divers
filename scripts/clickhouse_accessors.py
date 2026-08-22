@@ -53,6 +53,11 @@ class ClickHouseAccessor:
             port=self.port,
             username=self.username,
             password=self.password,
+            # Disable HTTP response compression. clickhouse-connect's compressed
+            # block streaming can raise "IndexError: list index out of range" on
+            # large result sets (e.g. the 250k-row wallet-fingerprint query);
+            # plain responses are slightly larger but decode reliably.
+            compress=False,
         )
 
     def disconnect(self) -> None:
