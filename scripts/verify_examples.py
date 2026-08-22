@@ -61,6 +61,10 @@ wallet_fingerprints = module(
     "wallet_fingerprint_research",
     ROOT / "examples" / "research" / "generate_wallet_fingerprint_research.py",
 )
+swqos_research = module(
+    "swqos_research",
+    ROOT / "examples" / "research" / "generate_swqos_research.py",
+)
 
 
 def env_value(key: str) -> str | None:
@@ -452,10 +456,13 @@ def verify_research() -> None:
     ):
         raise AssertionError("migration comparison page is incomplete")
     wallet_summary = wallet_fingerprints.run(ROOT / ".env", pages, public)
+    # The changed tier can legitimately be empty in a quiet window; only the
+    # stable control group is required to be fully populated.
+    changed_examples = wallet_summary["changed_examples"]
     if (
         wallet_summary["eligible_wallets"] < 10
         or len(wallet_summary["stable_examples"]) != 5
-        or len(wallet_summary["changed_examples"]) != 5
+        or len(changed_examples) > 5
         or wallet_summary["tier_counts"]["stable"]
         < wallet_summary["eligible_wallets"] * 0.70
         or wallet_summary["tier_counts"]["changed"]
@@ -464,12 +471,12 @@ def verify_research() -> None:
             row["tier"] != "stable"
             for row in wallet_summary["stable_examples"]
         )
-        or any(
-            row["tier"] != "changed"
-            for row in wallet_summary["changed_examples"]
+        or any(row["tier"] != "changed" for row in changed_examples)
+        or (
+            changed_examples
+            and changed_examples[0]["change_score"]
+            < wallet_summary["stable_examples"][-1]["change_score"]
         )
-        or wallet_summary["changed_examples"][0]["change_score"]
-        < wallet_summary["stable_examples"][-1]["change_score"]
     ):
         raise AssertionError("wallet-fingerprint research output is incomplete")
     fingerprint_page = (pages / "wallet-fingerprint-changes.mdx").read_text()
@@ -478,7 +485,32 @@ def verify_research() -> None:
         or "github.com/web3engineering/on-chain-divers" not in fingerprint_page
     ):
         raise AssertionError("wallet-fingerprint page is missing methodology safeguards")
-    print("verified research: creators, migrations, and wallet fingerprint changes")
+    swqos_summary = swqos_research.run(ROOT / ".env", pages, public)
+    if (
+        swqos_summary["candidate_count"] < 1
+        or len(swqos_summary["candidates"]) != swqos_summary["candidate_count"]
+        or swqos_summary["new_provider_count"] > swqos_summary["candidate_count"]
+        or swqos_summary["labeled_provider_count"] < 1
+        or any(
+            row["signers"] <= swqos_summary["min_signers"]
+            or row["p95_lamports"] > swqos_summary["max_p95_lamports"]
+            or sum(row["landed_tip_buckets"]) != row["landed_count"]
+            or sum(row["failed_tip_buckets"]) != row["failed_count"]
+            for row in swqos_summary["candidates"]
+        )
+    ):
+        raise AssertionError("SWQoS research output is incomplete")
+    swqos_page = (pages / "swqos-providers.mdx").read_text()
+    if (
+        "github.com/web3engineering/on-chain-divers" not in swqos_page
+        or "SWQoS" not in swqos_page
+        or "tpu.onchaindivers.com" not in swqos_page
+    ):
+        raise AssertionError("SWQoS page is missing its source link, heading, or TPU reference")
+    print(
+        "verified research: creators, migrations, wallet fingerprint changes, "
+        "and SWQoS endpoints"
+    )
 
 
 def main() -> None:

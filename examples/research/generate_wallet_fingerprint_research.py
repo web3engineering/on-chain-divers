@@ -319,23 +319,33 @@ def research_page(
         "behavior. A bot upgrade, routing change, RPC change, or strategy change can create",
         "the same signal.",
         "",
-        "| Wallet | Transactions, old → recent | Fingerprint, old → recent | Change score | Within-window stability | Main changes |",
-        "| --- | ---: | --- | ---: | ---: | --- |",
     ]
-    for row in changed:
-        lines.append(
-            "| "
-            + " | ".join(
-                [
-                    code(short(row["wallet"])),
-                    f"{row['previous_transactions']:,} → {row['recent_transactions']:,}",
-                    f"{code(row['previous']['fingerprint'])} → {code(row['recent']['fingerprint'])}",
-                    f"{row['change_score']:.1f}",
-                    f"{row['minimum_internal_stability']:.1f}%",
-                    md(", ".join(row["change_drivers"])),
-                ]
+    if changed:
+        lines.extend(
+            [
+                "| Wallet | Transactions, old → recent | Fingerprint, old → recent | Change score | Within-window stability | Main changes |",
+                "| --- | ---: | --- | ---: | ---: | --- |",
+            ]
+        )
+        for row in changed:
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        code(short(row["wallet"])),
+                        f"{row['previous_transactions']:,} → {row['recent_transactions']:,}",
+                        f"{code(row['previous']['fingerprint'])} → {code(row['recent']['fingerprint'])}",
+                        f"{row['change_score']:.1f}",
+                        f"{row['minimum_internal_stability']:.1f}%",
+                        md(", ".join(row["change_drivers"])),
+                    ]
+                )
+                + " |"
             )
-            + " |"
+    else:
+        lines.append(
+            "*No wallets crossed the changed threshold in this window — a quiet result "
+            "meaning every comparable wallet kept a recognizable transaction fingerprint.*"
         )
     lines.extend(
         [
@@ -407,8 +417,8 @@ def run(env_path: Path, pages_dir: Path, public_dir: Path) -> dict:
     changed_tier = [row for row in comparisons if row["tier"] == "changed"]
     if len(stable_tier) < len(comparisons) * 0.70:
         raise ValueError("wallet fingerprint calibration left fewer than 70% stable")
-    if len(changed_tier) < 5:
-        raise ValueError("wallet fingerprint calibration produced fewer than five changes")
+    # A quiet window can leave no wallets in the changed tier; that is a valid
+    # result to publish, not a failure. Show up to five when they exist.
     changed = sorted(
         changed_tier,
         key=lambda row: (-row["change_score"], -row["minimum_internal_stability"], row["wallet"]),

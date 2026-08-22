@@ -55,6 +55,65 @@ BUCKET_LABELS = (
     "≥0.01",
 )
 
+# Curated registry of publicly identifiable transaction-landing / SWQoS providers,
+# keyed by their on-chain tip account. Anything not matched here is published as an
+# unlabeled lead, so the table is a mix of known and unknown providers.
+#
+# EXPLICIT_PROVIDERS maps a specific tip account to a provider; PROVIDER_PREFIXES
+# matches distinctive vanity prefixes (e.g. every `gmgn…` account is GMGN).
+EXPLICIT_PROVIDERS: dict[str, dict[str, str]] = {
+    # Jito tip payment accounts (canonical, publicly documented set of eight).
+    **{
+        address: {"name": "Jito", "url": "https://docs.jito.wtf/"}
+        for address in (
+            "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5",
+            "HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe",
+            "Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY",
+            "ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49",
+            "ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt",
+            "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh",
+            "3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT",
+            "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL",
+        )
+    },
+    # BlockSprint tip-wallet rotation (Sp… vanity prefix).
+    **{
+        address: {"name": "BlockSprint", "url": "https://blocksprint.io/"}
+        for address in (
+            "Sp1x2AqpQckPLaWnWCJUNg8k6qQexfaEWcSRKf5JcDV",
+            "SpWrza9E63MQuHeGnnfzmtLVCs3pBdjyKPXUABPo9nq",
+            "SpagSJmnh8E9cGT5Y431xPPaS2c1xLREGGCWN9yDeUf",
+            "Sp4JHSh9cksfzXbgK7Pq2ovtn8LirLQydaJKTsiNT77",
+            "Sp1xMS2cbw83SZDNr4AGqkBYYLjb3LvVnmDSrTMaHkr",
+        )
+    },
+}
+
+# Distinctive vanity prefixes that identify a provider across all of its accounts.
+PROVIDER_PREFIXES: tuple[tuple[str, dict[str, str]], ...] = (
+    ("gmgn", {"name": "GMGN", "url": "https://gmgn.ai/"}),
+)
+
+# A known endpoint supplied out of band. It does not always clear the Pump.fun v2
+# screen, so it is surfaced in the Known providers section rather than the table.
+ONCHAINDIVERS_TPU = {
+    "name": "OnchainDivers TPU",
+    "url": "https://tpu.onchaindivers.com/",
+    "address": "GxkB4oYYLsoeAoxAdXjDEBSrP7JGCy3re7mqozFYyiYW",
+}
+
+
+def provider_for(address: str) -> Optional[dict[str, str]]:
+    """Return the known provider for an address, or None when it is unlabeled."""
+    if address in EXPLICIT_PROVIDERS:
+        return EXPLICIT_PROVIDERS[address]
+    for prefix, provider in PROVIDER_PREFIXES:
+        if address.startswith(prefix):
+            return provider
+    if address == ONCHAINDIVERS_TPU["address"]:
+        return {"name": ONCHAINDIVERS_TPU["name"], "url": ONCHAINDIVERS_TPU["url"]}
+    return None
+
 
 def md(value: object) -> str:
     """Escape database-controlled text before inserting it into MDX tables."""
@@ -125,9 +184,12 @@ def build_records(candidate_rows: list[dict], seen_30d: set[str]) -> list[dict]:
         # the histogram and the headline numbers would disagree.
         if sum(success_hist) != success_count or sum(failed_hist) != failed_count:
             raise ValueError(f"histogram totals do not reconcile for {dest}")
+        provider = provider_for(dest)
         records.append(
             {
                 "address": dest,
+                "provider": provider["name"] if provider else None,
+                "provider_url": provider["url"] if provider else None,
                 "signers": int(row["signers"]),
                 "transfers": int(row["transfers"]),
                 "landed_count": success_count,
@@ -150,6 +212,47 @@ def histogram_cell(counts: list[int]) -> str:
     return f"{code(sparkline(counts))} ({'/'.join(str(c) for c in counts)})"
 
 
+def known_providers_section(records: list[dict]) -> list[str]:
+    """A short reference of the labeled providers, plus curated known endpoints."""
+    counts: dict[str, dict[str, object]] = {}
+    for record in records:
+        if record["provider"]:
+            entry = counts.setdefault(
+                record["provider"],
+                {"url": record["provider_url"], "rows": 0},
+            )
+            entry["rows"] = int(entry["rows"]) + 1
+
+    lines = [
+        "",
+        "## Known providers",
+        "",
+        "A subset of the destinations above map to publicly identifiable",
+        "transaction-landing services; the remaining rows are unlabeled leads.",
+        "",
+        "| Provider | Endpoint | Labeled rows |",
+        "| --- | --- | ---: |",
+    ]
+    for name in sorted(counts, key=lambda item: (-int(counts[item]["rows"]), item)):
+        url = str(counts[name]["url"])
+        lines.append(f"| [{md(name)}]({url}) | {md(url)} | {int(counts[name]['rows'])} |")
+
+    # Always surface the OnchainDivers TPU endpoint, even when its tip account did
+    # not clear the screen in the current window.
+    if ONCHAINDIVERS_TPU["name"] not in counts:
+        lines.extend(
+            [
+                "",
+                f"[{md(ONCHAINDIVERS_TPU['name'])}]({ONCHAINDIVERS_TPU['url']}) "
+                f"({code(short(ONCHAINDIVERS_TPU['address']))}) is a known low-latency "
+                "endpoint that did not clear this window's screen and so is not listed "
+                "in the table above; its tip account is published here as a labeled "
+                "reference.",
+            ]
+        )
+    return lines
+
+
 def research_page(records: list[dict], window_end: object) -> str:
     new_count = sum(1 for record in records if record["is_new"])
     lines = [
@@ -170,9 +273,11 @@ def research_page(records: list[dict], window_end: object) -> str:
         "transfers. Entries lower in the table — fewer signers, and the flagged new",
         "endpoints — are the less-popular relays this study is meant to surface.",
         "",
-        "**We do not resolve which RPC provider or endpoint each address belongs to.**",
-        "The address is published as-is to make that lookup easier; treat every row as",
-        "a lead to investigate, not a confirmed provider.",
+        "Some destinations map to a publicly identifiable landing service and are",
+        "labeled in the *Provider* column; the rest are unlabeled leads. **For the",
+        "unlabeled rows we do not resolve which RPC provider or endpoint the address",
+        "belongs to** — the address is published as-is to make that lookup easier.",
+        "Treat every unlabeled row as a lead to investigate, not a confirmed provider.",
         "",
         f"A **!** in the *New* column marks an address that qualifies now but received",
         f"no top-level transfers in the 4-day window ending {REFERENCE_LAG_DAYS} days",
@@ -187,16 +292,21 @@ def research_page(records: list[dict], window_end: object) -> str:
         "Landed and failed transactions are bucketed separately; a relay can have no",
         "failures, shown as `—`.",
         "",
-        "| Rank | Address | New | Signers | Landed | Failed | Landed tip sizes | Failed tip sizes | Median tip (SOL) | P95 tip (SOL) |",
-        "| ---: | --- | :---: | ---: | ---: | ---: | --- | --- | ---: | ---: |",
+        "| Rank | Address | Provider | New | Signers | Landed | Failed | Landed tip sizes | Failed tip sizes | Median tip (SOL) | P95 tip (SOL) |",
+        "| ---: | --- | --- | :---: | ---: | ---: | ---: | --- | --- | ---: | ---: |",
     ]
     for rank, record in enumerate(records, 1):
+        if record["provider"]:
+            provider_cell = f"[{md(record['provider'])}]({record['provider_url']})"
+        else:
+            provider_cell = "—"
         lines.append(
             "| "
             + " | ".join(
                 [
                     str(rank),
                     code(record["address"]),
+                    provider_cell,
                     "!" if record["is_new"] else "",
                     f"{record['signers']:,}",
                     f"{record['landed_count']:,}",
@@ -209,6 +319,7 @@ def research_page(records: list[dict], window_end: object) -> str:
             )
             + " |"
         )
+    lines.extend(known_providers_section(records))
     lines.extend(
         [
             "",
@@ -270,6 +381,8 @@ def run(env_path: Path, pages_dir: Path, public_dir: Path) -> dict:
         "tip_bucket_labels_sol": list(BUCKET_LABELS),
         "candidate_count": len(records),
         "new_provider_count": sum(1 for record in records if record["is_new"]),
+        "labeled_provider_count": sum(1 for record in records if record["provider"]),
+        "onchaindivers_tpu": ONCHAINDIVERS_TPU,
         "candidates": records,
     }
     (public_dir / "swqos-research.json").write_text(
