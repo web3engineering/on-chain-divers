@@ -108,9 +108,12 @@ PROVIDERS: dict[str, dict[str, Any]] = {
     "BlockSprint": {"url": "https://blocksprint.io/"},
     "0slot": {"url": "https://0slot.trade/"},
     "BlockRazor": {"url": "https://blockrazor.io/"},
+    "bloXroute": {"url": "https://bloxroute.com/"},
     "Astralane": {"url": "https://astralane.io/"},
     "Nozomi": {"url": "https://temporal.xyz/"},
     "NextBlock": {"url": "https://nextblock.io/"},
+    "Node1": {"url": None},
+    "FlashBlock": {"url": None},
     "Hello Moon": {"url": "https://www.hellomoon.io/"},
     "Falcon": {"url": "https://docs.corvus-labs.io/falcon/"},
     "LandX": {"url": None},
@@ -202,12 +205,15 @@ _register_accounts(
         "AP6qExwrbRgBAVaehg4b5xHENX815sMabtBzUzVB4v8S",
     ),
 )
+_register_accounts("bloXroute", ("HWEoBxYs7ssKuudEjzjmpfJVX7Dvi7wescFsVx2L5yoY",))
 _register_accounts("OnchainDivers TPU", (ONCHAINDIVERS_TPU_ADDRESS,))
 
 # Distinctive lowercased vanity prefixes that identify a provider across all of
 # its rotating accounts.
 PREFIX_PROVIDER: tuple[tuple[str, str], ...] = (
     ("nextblock", "NextBlock"),
+    ("node1", "Node1"),
+    ("flash", "FlashBlock"),
     ("landx", "LandX"),
     ("moon", "Hello Moon"),
     ("fa1con", "Falcon"),

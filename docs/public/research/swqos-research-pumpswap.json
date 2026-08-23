@@ -26,7 +26,7 @@
     "\u22650.01"
   ],
   "screened_count": 298,
-  "labeled_provider_count": 47,
+  "labeled_provider_count": 50,
   "force_included_count": 5,
   "new_provider_count": 54,
   "screened": [
@@ -8160,7 +8160,7 @@
     },
     {
       "address": "FLASHRzANfcAKDuQ3RXv9hbkBy4WVEKDzoAgxJ56DiE4",
-      "provider": null,
+      "provider": "FlashBlock",
       "provider_url": null,
       "signers": 1598,
       "transfers": 18621,
@@ -8672,8 +8672,8 @@
     },
     {
       "address": "HWEoBxYs7ssKuudEjzjmpfJVX7Dvi7wescFsVx2L5yoY",
-      "provider": null,
-      "provider_url": null,
+      "provider": "bloXroute",
+      "provider_url": "https://bloxroute.com/",
       "signers": 1247,
       "transfers": 7476,
       "landed_count": 7476,
@@ -9312,7 +9312,7 @@
     },
     {
       "address": "node1PqAa3BWWzUnTHVbw8NJHC874zn9ngAkXjgWEej",
-      "provider": null,
+      "provider": "Node1",
       "provider_url": null,
       "signers": 1096,
       "transfers": 13388,

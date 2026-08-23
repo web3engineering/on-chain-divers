@@ -10,6 +10,8 @@ import argparse
 import io
 import json
 import os
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -64,8 +66,23 @@ def remote_snapshot_context(source: str, relative_path: str) -> dict:
     encoded = "/".join(urllib.parse.quote(part) for part in relative_path.split("/"))
     url = urllib.parse.urljoin(source.rstrip("/") + "/", encoded)
     request = urllib.request.Request(url, headers={"User-Agent": "onchaindivers-examples/1"})
-    with urllib.request.urlopen(request, timeout=60) as response:
-        return read_snapshot_context(response)
+    # The archive occasionally returns a truncated or empty body; feeding that
+    # straight to msgpack raises OutOfData. Buffer the response, require enough
+    # bytes to hold the snapshot header, and retry transient short reads.
+    last_error: Exception | None = None
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                payload = response.read()
+            if len(payload) >= 16:
+                return read_snapshot_context(io.BytesIO(payload))
+            last_error = ValueError(
+                f"snapshot response too short ({len(payload)} bytes)"
+            )
+        except (urllib.error.URLError, OSError, msgpack.exceptions.OutOfData) as error:
+            last_error = error
+        time.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"could not read snapshot {relative_path}: {last_error}")
 
 
 def asset_location(asset: int) -> tuple[str, int, int | None]:

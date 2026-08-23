@@ -26,7 +26,7 @@
     "\u22650.01"
   ],
   "screened_count": 103,
-  "labeled_provider_count": 40,
+  "labeled_provider_count": 41,
   "force_included_count": 5,
   "new_provider_count": 0,
   "screened": [
@@ -2720,8 +2720,8 @@
     },
     {
       "address": "HWEoBxYs7ssKuudEjzjmpfJVX7Dvi7wescFsVx2L5yoY",
-      "provider": null,
-      "provider_url": null,
+      "provider": "bloXroute",
+      "provider_url": "https://bloxroute.com/",
       "signers": 240,
       "transfers": 648,
       "landed_count": 648,
