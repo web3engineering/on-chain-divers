@@ -108,14 +108,22 @@ PROVIDERS: dict[str, dict[str, Any]] = {
     "BlockSprint": {"url": "https://blocksprint.io/"},
     "0slot": {"url": "https://0slot.trade/"},
     "BlockRazor": {"url": "https://blockrazor.io/"},
-    "GMGN": {"url": "https://gmgn.ai/"},
     "Astralane": {"url": "https://astralane.io/"},
     "Nozomi": {"url": "https://temporal.xyz/"},
     "NextBlock": {"url": "https://nextblock.io/"},
+    "Hello Moon": {"url": "https://www.hellomoon.io/"},
+    "Falcon": {"url": "https://docs.corvus-labs.io/falcon/"},
     "LandX": {"url": None},
     "Corvus": {"url": None},
     "OnchainDivers TPU": {"url": "https://tpu.onchaindivers.com/"},
 }
+
+# Some high-fan-out, modest-tip destinations are trading-terminal fee vaults, not
+# SWQoS relays (e.g. GMGN). Drop any address with these vanity prefixes from every
+# page. Compare EXCLUDED_ACCOUNTS for one-off addresses (e.g. Padre's fee vault).
+EXCLUDED_PREFIXES: tuple[tuple[str, str], ...] = (
+    ("gmgn", "GMGN terminal fee account (not a SWQoS relay)"),
+)
 
 # Explicit (non-vanity) tip accounts -> provider name.
 ACCOUNT_PROVIDER: dict[str, str] = {}
@@ -201,19 +209,28 @@ _register_accounts("OnchainDivers TPU", (ONCHAINDIVERS_TPU_ADDRESS,))
 PREFIX_PROVIDER: tuple[tuple[str, str], ...] = (
     ("nextblock", "NextBlock"),
     ("landx", "LandX"),
+    ("moon", "Hello Moon"),
+    ("fa1con", "Falcon"),
     ("astra", "Astralane"),
     ("noz", "Nozomi"),
     ("corvu", "Corvus"),
-    ("gmgn", "GMGN"),
 )
 
 # Providers we guarantee a row for even when they never clear the screen. Corvus
 # and OnchainDivers TPU often have no activity at all on a given DEX, so a synthetic
 # placeholder row is injected when the query returns nothing for them.
 PLACEHOLDER_PROVIDERS = (
+    {"name": "Falcon", "address": "Fa1con11xLjPddfzRwRUB16sbFZggp2JeJkCeWREyR8X"},
     {"name": "Corvus", "address": CORVUS_ADDRESS},
     {"name": "OnchainDivers TPU", "address": ONCHAINDIVERS_TPU_ADDRESS},
 )
+
+# Addresses that match the screen's shape (high fan-out, modest tips) but are
+# known NOT to be SWQoS relays — e.g. trading-terminal fee vaults. Dropped from
+# every page.
+EXCLUDED_ACCOUNTS: dict[str, str] = {
+    "J5XGHmzrRmnYWbmw45DbYkdZAU2bwERFZ11qCDXPvFB5": "Padre terminal fee account",
+}
 
 
 def provider_for(address: str) -> Optional[dict[str, Any]]:
@@ -317,6 +334,11 @@ def build_records(
     records: list[dict] = []
     for row in candidate_rows:
         dest = str(row["dest"])
+        lowered_dest = dest.lower()
+        if dest in EXCLUDED_ACCOUNTS or any(
+            lowered_dest.startswith(prefix) for prefix, _ in EXCLUDED_PREFIXES
+        ):
+            continue
         success_hist = [int(x) for x in row["success_histogram"]]
         failed_hist = [int(x) for x in row["failed_histogram"]]
         success_count = int(row["success_count"])
@@ -567,7 +589,12 @@ def research_page(
     return "\n".join(lines) + "\n"
 
 
-def run_source(client: ClickHouseAccessor, source: dict, pages_dir: Path, public_dir: Path) -> dict:
+def fetch_source(client: ClickHouseAccessor, source: dict) -> dict:
+    """Run the two live queries for one DEX and return the raw rows.
+
+    Separated from rendering so the expensive scans can be cached and the pages
+    re-rendered offline when only the provider registry or exclusions change.
+    """
     table = source["table"]
     replacements = {
         "__TABLE__": table,
@@ -588,18 +615,31 @@ def run_source(client: ClickHouseAccessor, source: dict, pages_dir: Path, public
         {"__TABLE__": table},
         parameters={"destinations": destinations},
     )
-    seen_30d = {str(row["dest"]) for row in reference_rows}
+    return {
+        "window_end": window_end,
+        "candidate_rows": candidate_rows,
+        "seen_30d": sorted({str(row["dest"]) for row in reference_rows}),
+    }
+
+
+def render_source(source: dict, fetched: dict, pages_dir: Path, public_dir: Path) -> dict:
+    """Build the page and JSON for one DEX from fetched rows and the registry."""
+    window_end = fetched["window_end"]
+    seen_30d = set(fetched["seen_30d"])
     # If nothing was seen 30 days ago the reference is unusable — most often the
     # DEX did not record top-level transfers back then — so suppress the flag
     # rather than marking every relay "new".
     reference_available = bool(seen_30d)
-    screened, below = build_records(candidate_rows, seen_30d, source, reference_available)
+    screened, below = build_records(
+        fetched["candidate_rows"], seen_30d, source, reference_available
+    )
 
     pages_dir.mkdir(parents=True, exist_ok=True)
     public_dir.mkdir(parents=True, exist_ok=True)
     (pages_dir / source["page"]).write_text(
         research_page(source, screened, below, window_end, reference_available)
     )
+    table = source["table"]
 
     summary = {
         "source": "https://onchaindivers.com",
@@ -633,7 +673,8 @@ def run(env_path: Path, pages_dir: Path, public_dir: Path) -> dict:
     summaries: dict[str, dict] = {}
     try:
         for source in SOURCES:
-            summaries[source["key"]] = run_source(client, source, pages_dir, public_dir)
+            fetched = fetch_source(client, source)
+            summaries[source["key"]] = render_source(source, fetched, pages_dir, public_dir)
     finally:
         client.disconnect()
     return {"sources": summaries}
