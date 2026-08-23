@@ -3,11 +3,54 @@
 Project and indexer documentation: https://onchaindivers.com
 """
 
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import clickhouse_connect
+from clickhouse_connect.driver.exceptions import DatabaseError, OperationalError
 from dotenv import dotenv_values
+
+
+# The shared read-only users are capped at a small number of simultaneous
+# queries, so a documentation build that fires many queries against a busy
+# cluster hits transient failures (ClickHouse code 202) or network blips. These
+# are safe to retry with backoff; permanent errors (bad SQL, missing table,
+# access denied) are not and surface immediately.
+_TRANSIENT_CODES = {159, 201, 202, 209, 210}  # timeout / quota / too-many / network
+_MAX_RETRIES = 6
+
+
+def _is_transient(error: Exception) -> bool:
+    if isinstance(error, OperationalError):
+        return True
+    if getattr(error, "code", None) in _TRANSIENT_CODES:
+        return True
+    message = str(error)
+    return any(
+        marker in message
+        for marker in (
+            "TOO_MANY_SIMULTANEOUS_QUERIES",
+            "Too many simultaneous",
+            "TIMEOUT_EXCEEDED",
+            "SOCKET_TIMEOUT",
+        )
+    )
+
+
+def _retry(operation):
+    """Run ``operation`` with exponential backoff on transient ClickHouse errors."""
+    last_error: Optional[Exception] = None
+    for attempt in range(_MAX_RETRIES):
+        try:
+            return operation()
+        except (DatabaseError, OperationalError) as error:
+            last_error = error
+            if not _is_transient(error) or attempt == _MAX_RETRIES - 1:
+                raise
+            time.sleep(min(30.0, 2.0 * (2 ** attempt)))
+    assert last_error is not None
+    raise last_error
 
 
 class ClickHouseAccessor:
@@ -48,16 +91,20 @@ class ClickHouseAccessor:
         return host, int(port)
 
     def connect(self) -> None:
-        self.client = clickhouse_connect.get_client(
-            host=self.host,
-            port=self.port,
-            username=self.username,
-            password=self.password,
-            # Disable HTTP response compression. clickhouse-connect's compressed
-            # block streaming can raise "IndexError: list index out of range" on
-            # large result sets (e.g. the 250k-row wallet-fingerprint query);
-            # plain responses are slightly larger but decode reliably.
-            compress=False,
+        # get_client issues a "SELECT version()" probe that can itself hit the
+        # concurrency cap, so retry the connect too.
+        self.client = _retry(
+            lambda: clickhouse_connect.get_client(
+                host=self.host,
+                port=self.port,
+                username=self.username,
+                password=self.password,
+                # Disable HTTP response compression. clickhouse-connect's compressed
+                # block streaming can raise "IndexError: list index out of range" on
+                # large result sets (e.g. the 250k-row wallet-fingerprint query);
+                # plain responses are slightly larger but decode reliably.
+                compress=False,
+            )
         )
 
     def disconnect(self) -> None:
@@ -71,10 +118,22 @@ class ClickHouseAccessor:
         parameters: Optional[Union[List[Any], Dict[str, Any]]] = None,
         settings: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
-        if not self.client:
-            self.connect()
-        result = self.client.query(sql, parameters=parameters, settings=settings)
-        return [dict(zip(result.column_names, row)) for row in result.result_rows]
+        def run() -> List[Dict[str, Any]]:
+            if not self.client:
+                self.connect()
+            result = self.client.query(sql, parameters=parameters, settings=settings)
+            return [dict(zip(result.column_names, row)) for row in result.result_rows]
+
+        def attempt() -> List[Dict[str, Any]]:
+            try:
+                return run()
+            except (DatabaseError, OperationalError) as error:
+                # Drop a poisoned connection so the retry reconnects cleanly.
+                if _is_transient(error):
+                    self.disconnect()
+                raise
+
+        return _retry(attempt)
 
 
 class HyperLiquidAccessor(ClickHouseAccessor):
