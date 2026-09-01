@@ -1,89 +1,270 @@
-# OnchainDivers data and examples
+---
+title: OnchainDivers — blockchain trading data in ClickHouse
+description: Direct read-only ClickHouse access to decoded Solana, HyperLiquid, Polymarket and Robinhood Chain trading data. No API, no rate limits. $200/month per chain.
+---
 
-OnchainDivers provides read-only ClickHouse access to structured blockchain and
-exchange data. We collect raw activity, parse protocol-specific transactions and
-events, and expose analysis-ready tables with consistent timestamps, asset and
-wallet identifiers, amounts, fees, and execution context.
+# Blockchain trading data, straight from the database
 
-The datasets cover the main Solana DEXes and launchpads, HyperLiquid,
-Polymarket, and Robinhood Chain. They are designed for quantitative research,
-strategy backtesting, market and wallet analysis, execution-quality studies,
-dashboards, alerts, and production data pipelines. Researchers can work directly
-in SQL without operating archive nodes or maintaining a separate parser for
-every protocol revision.
+**16B+ rows · since Jan 2024 · 4 chains · direct ClickHouse access**
 
-This site is an executable guide to those datasets. Every published example has
-a corresponding source file in the repository and is rerun against live data
-during the documentation build.
+Read-only ClickHouse credentials for decoded trading data across every major Solana
+venue — Pump.fun, PumpSwap, Raydium, Meteora — plus HyperLiquid, Polymarket and
+Robinhood Chain. Connect with DBeaver, DataGrip, Python, or anything else that
+speaks ClickHouse. No API layer, no rate limits, no credits.
 
-## Data products
+**$200/month per chain · one-week free trial**
 
-| Product | Structured data | Raw workflows |
+[Start free trial](https://forms.gle/b5Fuuns7jcA3nHKv5) · [See a query](#a-query-not-a-download)
+
+We also offer fast Solana nodes — gRPC, shreds and preconfirmations, from $200/month. [Jump to nodes →](#then-trade-it)
+
+<div style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--vocs-color_border)' }}>
+  <div style={{ fontSize: '12px', opacity: 0.6, marginBottom: '14px' }}>Covered protocols</div>
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px 32px', alignItems: 'center', opacity: 0.75 }}>
+    <span style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+      <img src="/logos/pumpfun.png" alt="Pump.fun" style={{ height: '22px', width: 'auto' }} />
+      <span style={{ fontFamily: 'var(--vocs-fontFamily_mono, monospace)', fontSize: '12.5px' }}>Pump.fun</span>
+    </span>
+    <span style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+      <img src="/logos/raydium.png" alt="Raydium" style={{ height: '22px', width: 'auto' }} />
+      <span style={{ fontFamily: 'var(--vocs-fontFamily_mono, monospace)', fontSize: '12.5px' }}>Raydium</span>
+    </span>
+    <span style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+      <img src="/logos/meteora.svg" alt="Meteora" style={{ height: '22px', width: 'auto' }} />
+      <span style={{ fontFamily: 'var(--vocs-fontFamily_mono, monospace)', fontSize: '12.5px' }}>Meteora</span>
+    </span>
+    <span style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+      <img src="/logos/hyperliquid.svg" alt="HyperLiquid" style={{ height: '22px', width: 'auto' }} />
+      <span style={{ fontFamily: 'var(--vocs-fontFamily_mono, monospace)', fontSize: '12.5px' }}>HyperLiquid</span>
+    </span>
+    <span style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+      <img src="/logos/polymarket.png" alt="Polymarket" style={{ height: '22px', width: 'auto' }} />
+      <span style={{ fontFamily: 'var(--vocs-fontFamily_mono, monospace)', fontSize: '12.5px' }}>Polymarket</span>
+    </span>
+    <span style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+      <img src="/logos/uniswap.png" alt="Uniswap" style={{ height: '22px', width: 'auto' }} />
+      <span style={{ fontFamily: 'var(--vocs-fontFamily_mono, monospace)', fontSize: '12.5px' }}>Uniswap</span>
+    </span>
+  </div>
+</div>
+
+---
+
+## A query, not a download
+
+You get a hostname, a user and a password. That's the entire onboarding.
+
+The ten most prolific Pump.fun creators of the last 30 days, and how much of
+each token's supply they bought into their own launch:
+
+```sql
+SELECT
+    creator,
+    count()                                                       AS launches,
+    round(avg(bundled_buys_count), 1)                             AS avg_bundled_buys,
+    round(avg(bundled_buys / if(mayhem_mode = 1, 2e13, 1e13)), 1) AS avg_bundle_pct_supply,
+    toTimeZone(max(block_time), 'UTC')                            AS last_launch_utc
+FROM pumpfun_token_creation
+WHERE block_time > now() - INTERVAL 30 DAY
+GROUP BY creator
+ORDER BY launches DESC
+LIMIT 10
+```
+
+| creator | launches | avg_bundled_buys | avg_bundle_pct_supply | last_launch_utc |
+| --- | ---: | ---: | ---: | --- |
+| `bwamJ…NfSXa` | 17,229 | 1.3 | 21.5 | 2026-09-01 04:36 |
+| `7naFF…AMidP` | 5,264 | 4.0 | 30.2 | 2026-09-01 00:37 |
+| `DmH2D…ygwcW` | 4,520 | 1.0 | 15.1 | 2026-08-28 06:46 |
+| `EBx24…VwrcD` | 3,972 | 3.4 | 30.4 | 2026-09-01 03:11 |
+| `AJNaS…fqvQ2` | 3,699 | 0.0 | 0.0 | 2026-08-31 23:07 |
+| `2bRoa…ZzueC` | 3,524 | 2.7 | 9.3 | 2026-09-01 05:32 |
+| `FCUPh…BYhm9` | 3,478 | 1.1 | 17.9 | 2026-09-01 00:58 |
+| `whamN…2oLbx` | 3,269 | 3.1 | 31.1 | 2026-09-01 00:05 |
+| `6ePbE…3tHHw` | 3,229 | 3.6 | 25.7 | 2026-09-01 04:42 |
+| `dtrzJ…MedXy` | 3,020 | 2.0 | 24.0 | 2026-09-01 04:47 |
+
+Run against the live database on 1 September 2026, 08:49 UTC. Addresses
+shortened for display.
+
+The aggregation runs on our server. You get ten rows back, not ten million.
+
+[Setup takes about five minutes →](/solana/getting-started)
+
+---
+
+## Why this is hard to get elsewhere
+
+### Depth
+
+Pump.fun activity back to January 2024, across launches, bonding-curve trades,
+migrations and creator fees. Nothing sampled, nothing rolled up into hourly
+candles before it reaches you.
+
+### Resolution
+
+Every swap carries the execution context you need to model it properly: pool
+reserves before and after, priority fees and compute units, the parent program
+that invoked the instruction, the fee payer, and slippage against the requested
+amount. Most providers hand you a price and a size.
+
+### Direct access
+
+It's a ClickHouse database, not an API. Run a full table scan. Pull two years of
+swaps into a dataframe. JOIN across tables. Aggregate server-side and take back
+only the result. No rate limits, no row caps, no credits, no pagination. If a
+query gets heavy, we help you make it faster — we don't throttle you.
+
+---
+
+## Coverage
+
+### Solana
+
+`Pump.fun · PumpSwap · Raydium · Meteora · since January 2024`
+
+Pump.fun and Pump.fun v2, PumpSwap, Raydium (AMM, CPMM, Launchpad), Meteora DLMM
+and Dynamic Bonding Curve. Plus token creation events, AMM migrations, Jito tips,
+SOL and SPL transfers, and block data.
+
+[Solana data →](/solana)
+
+### HyperLiquid
+
+`Perpetual fills · order-book archives · since July 2025`
+
+Fills at the block level with millisecond fill times: price, size, side, position
+before the fill, realized PnL, fees, builder fees, liquidation detail and TWAP
+identifiers. Wallet and position views are computed at query time. Raw order-book
+archives support historical book reconstruction.
+
+[HyperLiquid data →](/hyperliquid)
+
+### Polymarket
+
+`On-chain fills · market metadata · CLOB archives · since 2024`
+
+CTF Exchange fills with maker/taker side, fees and full EVM transaction context,
+joined to event and market metadata — questions, resolution sources, categories,
+liquidity and volume across AMM and CLOB. Raw snapshot and delta archives support
+book replay at a specific moment.
+
+[Polymarket data →](/polymarket)
+
+### Robinhood Chain
+
+`Uniswap v3 and v4 · since May 2026`
+
+Decoded pools and swaps: signed balance deltas, square-root price and tick after
+each swap, in-range liquidity, pool fees and hooks, plus token metadata.
+
+[Robinhood Chain data →](/robinhood)
+
+---
+
+## What people build on it
+
+Train models, backtest strategies, analyze wallets, measure your own execution.
+
+**Research and modeling.** Build features from decoded trade flow. Study trader
+and creator behavior, token launches, migrations and cross-venue activity.
+
+**Backtesting.** Test signals against decoded trades and the order book as it
+actually was at that moment, not as it looks today.
+
+**Production.** Dashboards, alerts, scheduled reports, notebooks and data
+pipelines on documented schemas that don't change under you.
+
+More specifically:
+
+- Research token launches, migrations, swaps, transfers, creator fees and trader
+  behavior across the main Solana venues.
+- Backtest signals against decoded trades and reconstructed order books, using
+  the market state as it was at that moment.
+- Analyze wallets, positions, fills, fees, slippage, pool state and protocol
+  activity in plain ClickHouse SQL.
+- Build reproducible notebooks, scheduled reports, dashboards and monitoring jobs
+  on the same documented schemas.
+
+[Query examples →](/solana/examples) · [Table reference →](/solana/tables)
+
+---
+
+## We use this data ourselves
+
+We built it for our own trading, then opened it up. Everything published on this
+site — every chart, every research table — is regenerated from the live database
+on each build. Nothing here is hand-drawn.
+
+See our work on execution routing, token launches and wallet behavior in
+[Research](/research/swqos-providers).
+
+---
+
+## Then trade it
+
+Trading has two phases. Research — you need the data. Execution — you need the
+nodes.
+
+| Service | Price | Best for |
 | --- | --- | --- |
-| [Solana](/solana/) | Pump.fun, PumpSwap, Raydium, Meteora, Jito and helper tables | Transfers, top-ups, reserve accounting and creator migration analysis |
-| [Polymarket](/polymarket/) | On-chain fills plus event and market metadata | Capture discovery, download and CLOB snapshot/delta replay |
-| [HyperLiquid](/hyperliquid/) | Fills, fulfilled orders, wallets and positions | Recovery-file discovery, download and order-level book replay |
-| [Robinhood Chain](/robinhood/) | Tokens plus Uniswap v3/v4 pools and swaps | Pool discovery, protocol comparison and EVM transaction context |
-| [Fees API](/fees-api) | Aggregate transaction, priority, tip and trading fees | Validated JSON client |
+| Basic gRPC | $200/month | Real-time transaction feeds, account monitoring, dashboards |
+| Very-fast gRPC | $700/month | Latency-sensitive production consumers |
+| Ultra-low-latency gRPC | $1,200/month | Trading systems where ~1 ms matters |
+| Dedicated custom gRPC | $3,300/month | Isolated node, custom configuration |
+| Shreds | $500/month | Raw block propagation before RPC assembly |
+| Preconfirmations | $1,600/month | Execution status before shreds and RPC commitment |
 
-The ClickHouse datasets are complemented by high-precision raw order-book
-archives for Polymarket and HyperLiquid. These archives support historical book
-reconstruction, spread and liquidity analysis, cross-venue comparisons, and
-backtests that require the market state visible at a specific moment rather than
-trades alone.
+Same infrastructure the data comes from.
 
-## What you can build
+[Nodes and low-latency feeds →](/solana-nodes)
 
-- Research token launches, migrations, swaps, transfers, creator fees, and
-  trader behavior across the main Solana venues.
-- Backtest signals against decoded trades and historically reconstructed order
-  books without relying on today's market state.
-- Compare Polymarket probability markets with HyperLiquid perpetual futures at
-  sub-market time ranges.
-- Analyze wallets, positions, fills, fees, slippage, pool state, and protocol
-  activity using regular ClickHouse SQL.
-- Build reproducible notebooks, scheduled reports, dashboards, and monitoring
-  jobs on top of the same documented schemas.
+---
 
-The flagship [Bitcoin five-minute cross-venue reconstruction](/bitcoin-5m-cross-venue)
-combines the Polymarket metadata and CLOB archives with HyperLiquid's raw BTC
-perpetual book in one reproducible analysis. Its companion
-[simple microprice study](/microprice-research) reuses the same raw download to
-measure how one- and two-level book imbalance relates to midpoint movement 300
-milliseconds later on both venues.
+## Getting access
 
-The Solana research pages apply the same approach to Pump.fun launches. The
-[reliable-creator screen](/research/reliable-pumpfun-creators) looks for
-creators with at least five recent launches and ranks them by the trade count of
-their least-active launch during its first 100 slots. It also reports each
-token's migration status and p95 swap-implied market cap using a median Meteora
-DLMM SOL/USDC rate, while the
-[migration parent-program study](/research/pumpfun-migration-parent-programs)
-compares the early transaction composition of tokens that migrated with those
-that had not migrated by the 24-hour cohort cutoff.
+**$200/month per chain.** Full access to that database, plus a direct support
+channel with the people who built the schemas.
 
-The [wallet fingerprint study](/research/wallet-fingerprint-changes) shows how
-stable transaction-construction features can complement PnL when monitoring a
-public wallet for a possible operator or automation change.
+**One-week free trial.** Same access as a paid account — no reduced tables, no
+row limits.
 
-## Why the examples stay current
+[Start free trial](https://forms.gle/b5Fuuns7jcA3nHKv5) ·
+[Talk to us on Telegram](https://t.me/inventandchill)
 
-The static site has a strict build gate. Before the pages are compiled, Python:
+### Questions
 
-1. compares each live database with its published table whitelist;
-2. requires a description for every published column;
-3. executes all ClickHouse examples with bounded time windows;
-4. checks PumpSwap reserve and fee identities;
-5. regenerates the live Pump.fun creator and parent-program research tables;
-6. scans, copies and reconstructs deterministic raw order-book captures;
-7. downloads a Bitcoin five-minute market around UTC now minus 24 hours,
-   assembles both raw books, and renders the synchronized analysis chart; and
-8. validates the configured fees service.
+**What exactly do I get?**
+A hostname, a username and a password for a read-only ClickHouse database. Use
+DBeaver, DataGrip, Python, curl, or anything else that speaks ClickHouse.
 
-If any of those checks fails, no site image is produced.
+**How fast do I get credentials?**
+Message us on Telegram and we'll usually set you up right away. Through the form,
+within 24 hours — normally sooner.
 
-Start with [Solana connection setup](/solana/getting-started), or go directly to
-the example pages for [Solana](/solana/examples),
-[Polymarket](/polymarket/examples), and
-[HyperLiquid](/hyperliquid/examples), or explore the
-[Robinhood Chain examples](/robinhood/examples).
+**Are there query limits?**
+No rate limits, row caps, credits or pagination. You can scan whole tables.
+
+**What if my queries are too heavy?**
+We'll reach out and help you optimize the query or the workflow. Our default is
+to make the workload fit, not to cut you off — and the people who wrote the
+schemas usually know the fast way to write it.
+
+**How fresh is the data?**
+Tables update continuously, with a short delay behind the chain.
+
+**Can I export the data?**
+Yes. It's a database — pull whatever you need, however you need it.
+
+**Do you cover a protocol that isn't listed?**
+Ask. We add coverage regularly.
+
+---
+
+## Start
+
+[Get trial credentials](https://forms.gle/b5Fuuns7jcA3nHKv5)
+
+[Telegram](https://t.me/inventandchill) ·
+[Blog](https://onchaindivers.substack.com/) ·
+[Solana setup guide](/solana/getting-started)
