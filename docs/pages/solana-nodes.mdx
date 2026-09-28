@@ -1,8 +1,7 @@
 # Solana Nodes and Low-Latency Feeds
 
 OnchainDivers provides managed Solana data infrastructure for applications that
-need anything from a standard filtered gRPC stream to the earliest available
-transaction-execution signals. All prices below are monthly in USD.
+need anything from a standard filtered gRPC stream to raw block data before RPC delivery. All prices below are monthly in USD.
 
 ## Node access
 
@@ -39,12 +38,11 @@ with customer-specific configuration. Capacity is not shared with unrelated
 customers, making this the right choice for sustained high-volume ingestion and
 production trading systems that need predictable resources and custom tuning.
 
-## Earliest-data feeds
+## Shreds
 
 | Feed | Price | What it exposes |
 | --- | ---: | --- |
 | Shreds | **$500/month** | Raw Turbine data and coding packets for reconstructing entries, transactions, and blocks before conventional RPC delivery |
-| Preconfirmations | **$1,600/month** | Transaction execution-status signals emitted before shred propagation and standard RPC commitment levels |
 
 ### Shreds — $500/month
 
@@ -55,21 +53,6 @@ the shred stream removes the wait for an RPC node to assemble and expose the
 complete block, which is useful for low-latency indexing, market-data pipelines,
 and trading infrastructure.
 
-### What are preconfirmations? — $1,600/month
-
-A **preconfirmation**, or **preconf**, is an early signal emitted when a Solana
-leader has executed a transaction and knows its local execution result, but
-before that result has been packaged into entries, converted into shreds, and
-propagated through Turbine. It can therefore arrive earlier than a shred-derived
-stream and earlier than the RPC `processed`, `confirmed`, or `finalized`
-commitment levels.
-
-Preconfirmations are valuable when a system needs to react to a likely landing
-or failure as soon as the leader knows the outcome. They are not the same as
-cluster finality: clients must reconcile the signal with the later shred,
-processed, confirmed, or finalized record, and availability depends on leader
-coverage. Exact fields, coverage, and delivery semantics are documented during
-onboarding.
 
 ## Choosing a service
 
