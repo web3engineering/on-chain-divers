@@ -1,0 +1,63 @@
+{
+ "example": "examples/education/sol_flows/many_to_many.sql",
+ "sha256": "79795c2907866e14945f1cf27843b9b8387402e72018761e3108026440b3494d",
+ "ran_at": "2026-11-18 01:10 UTC",
+ "columns": [
+  "src_wallet",
+  "dst_wallet",
+  "src_decrease",
+  "dst_increase",
+  "n_src",
+  "n_dst"
+ ],
+ "rows": [
+  [
+   "3DBDztY1HGeb26pTNGzc5FLXuMN38GfZP2zrmrBZGAiA",
+   "9LGqbs3kfBapkSLDoRFzYDHRhnnjQT99hTkoqenAzaqQ",
+   1157831911,
+   1003462243,
+   3,
+   2
+  ],
+  [
+   "6dwoP3UimwZRciJK21VkZfTmFmqCEwXFaYSxE1yRrmFR",
+   "9LGqbs3kfBapkSLDoRFzYDHRhnnjQT99hTkoqenAzaqQ",
+   1003482062,
+   1003462243,
+   3,
+   2
+  ],
+  [
+   "Ft8dWUccy6a6iq1cHtVpKegeroZ22yP13MCcBcJemtaa",
+   "9LGqbs3kfBapkSLDoRFzYDHRhnnjQT99hTkoqenAzaqQ",
+   1597976808,
+   1003462243,
+   3,
+   2
+  ],
+  [
+   "3DBDztY1HGeb26pTNGzc5FLXuMN38GfZP2zrmrBZGAiA",
+   "wYKbspsmuP618JHt2DBgmiVbFEw73fsUDkHKTRRsano",
+   1157831911,
+   1026864789,
+   3,
+   2
+  ],
+  [
+   "6dwoP3UimwZRciJK21VkZfTmFmqCEwXFaYSxE1yRrmFR",
+   "wYKbspsmuP618JHt2DBgmiVbFEw73fsUDkHKTRRsano",
+   1003482062,
+   1026864789,
+   3,
+   2
+  ],
+  [
+   "Ft8dWUccy6a6iq1cHtVpKegeroZ22yP13MCcBcJemtaa",
+   "wYKbspsmuP618JHt2DBgmiVbFEw73fsUDkHKTRRsano",
+   1597976808,
+   1026864789,
+   3,
+   2
+  ]
+ ]
+}

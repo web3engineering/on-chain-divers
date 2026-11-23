@@ -16,8 +16,11 @@ FROM checker-base AS checker
 # Database credentials are available only for this command and are not stored
 # in this stage or in the final image.
 RUN --mount=type=secret,id=docs_env,target=/app/.env,required=true \
-    DOCS_STRICT_GENERATION=1 python3 -u scripts/generate_table_docs.py \
-    && python3 -u scripts/verify_examples.py --strict-live
+    python3 scripts/test_generate_table_docs.py \
+    && python3 scripts/test_pumpswap_reserve_checks.py \
+    && DOCS_STRICT_GENERATION=1 python3 -u scripts/generate_table_docs.py \
+    && python3 -u scripts/verify_examples.py --strict-live \
+    && python3 -u scripts/render_articles.py
 
 FROM node:22-bookworm-slim AS builder
 

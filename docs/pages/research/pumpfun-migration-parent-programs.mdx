@@ -6,14 +6,14 @@ For each token it counts distinct buys by `parent_program` during slots
 buys, and labels it migrated when the mint appears in `pfamm_migrations` by
 the cohort cutoff. Launches without a complete 128-slot horizon are excluded.
 
-*Window end: 2026-08-22T23:42:52Z · Eligible tokens: 3,133*
+*Window end: 2026-11-18T01:12:33Z · Eligible tokens: 2,822*
 
 ## Cohorts
 
 | Cohort | Tokens | Share of eligible launches | Mean buys in first 128 slots |
 | --- | ---: | ---: | ---: |
-| Migrated | 286 | 9.13% | 136.3 |
-| Not migrated | 2,847 | 90.87% | 114.8 |
+| Migrated | 232 | 8.22% | 117.1 |
+| Not migrated | 2,590 | 91.78% | 83.7 |
 
 ## Parent-program composition
 
@@ -23,19 +23,19 @@ not migrated, in percentage points.
 
 | Parent program | Migrated | Not migrated | Difference |
 | --- | ---: | ---: | ---: |
-| `FLASHX8DrLbgeR8FcfNV1F5krxYcYMUdBkrP1EPBtxB9` | 35.961% | 35.271% | +0.691 pp |
-| `&lt;direct&gt;` | 25.518% | 31.455% | -5.936 pp |
-| `MAyhSmzXzV1pTf7LsNkrNwkWKTo4ougAJ1PPg47MD4e` | 18.279% | 10.306% | +7.972 pp |
-| `6Vo3245eszAb5wuqEMw8mGdbfRUdKbHhDHP5LcaGuTAB` | 5.469% | 3.715% | +1.754 pp |
-| `term9YPb9mzAsABaqN71A4xdbxHmpBNZavpBiQKZzN3` | 4.568% | 4.221% | +0.347 pp |
-| `GMgnVFR8Jb39LoXsEVzb3DvBy3ywCmdmJquHUy1Lrkqb` | 3.771% | 3.863% | -0.092 pp |
-| `9ddjzqYhSTMHaBrrKukRXRfy4WzHUPjdX88uPXZ7MXyn` | 1.182% | 0.286% | +0.897 pp |
-| `J7pourVwqP1VtRNBiFNqbdGxwkx7ta2LHAURURRRJqmd` | 0.770% | 0.595% | +0.175 pp |
-| `7bopoA2tnvDYEfp54FhgNDiLR9wSPcEs9J7FaUGURsXj` | 0.665% | 0.358% | +0.307 pp |
-| `proVF4pMXVaYqmy4NjniPh4pqKNfMmsihgd4wdkCX3u` | 0.066% | 0.550% | -0.484 pp |
-| `JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4` | 0.543% | 0.509% | +0.034 pp |
-| `DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH` | 0.478% | 0.462% | +0.015 pp |
-| Other (177 programs) | 2.729% | 8.409% | -5.680 pp |
+| `&lt;direct&gt;` | 44.195% | 37.740% | +6.454 pp |
+| `FLASHX8DrLbgeR8FcfNV1F5krxYcYMUdBkrP1EPBtxB9` | 17.531% | 21.091% | -3.560 pp |
+| `MAyhSmzXzV1pTf7LsNkrNwkWKTo4ougAJ1PPg47MD4e` | 9.776% | 16.009% | -6.234 pp |
+| `6Vo3245eszAb5wuqEMw8mGdbfRUdKbHhDHP5LcaGuTAB` | 7.826% | 10.841% | -3.015 pp |
+| `GMgnVFR8Jb39LoXsEVzb3DvBy3ywCmdmJquHUy1Lrkqb` | 6.040% | 2.696% | +3.345 pp |
+| `haqqqMGN35ehCftXca3KWxJFXTBcWTWeNHNtUHLGQdh` | 2.858% | 2.685% | +0.174 pp |
+| `term9YPb9mzAsABaqN71A4xdbxHmpBNZavpBiQKZzN3` | 2.532% | 2.484% | +0.049 pp |
+| `2agpzdq6VRR6efsWqAYP3eCRAGPqQCqbAxXZpG6UeQ45` | 0.498% | 0.819% | -0.321 pp |
+| `q2ps11PLEw7EareiJ728NYP4qf893rcFBPejfVgCdp1` | 0.628% | 0.452% | +0.176 pp |
+| `41Pr4XqEcmgV1PqZF9yccpuFvxF7PpKLGfTD9jWJBn1q` | 0.383% | 0.606% | -0.223 pp |
+| `JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4` | 0.534% | 0.458% | +0.075 pp |
+| `m9obQHAPyZeZ88w7XUY8Te6a8rBmhXsfKco7u8G8tnB` | 0.351% | 0.394% | -0.043 pp |
+| Other (270 programs) | 6.848% | 3.727% | +3.122 pp |
 
 [View the profile SQL on GitHub](https://github.com/web3engineering/on-chain-divers/blob/master/examples/research/pumpfun_parent_program_profiles.sql) and
 [the cohort calculation](https://github.com/web3engineering/on-chain-divers/blob/master/examples/research/generate_pumpfun_research.py).

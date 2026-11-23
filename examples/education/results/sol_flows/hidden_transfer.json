@@ -1,0 +1,21 @@
+{
+ "example": "examples/education/sol_flows/hidden_transfer.sql",
+ "sha256": "f2a245822e50ac9b097163fdd03cc38d46bd63c437935af5a0d814becc340b34",
+ "ran_at": "2026-11-18 01:10 UTC",
+ "columns": [
+  "src_wallet",
+  "dst_wallet",
+  "sol_lost",
+  "sol_gained",
+  "only_transfer_goes_to"
+ ],
+ "rows": [
+  [
+   "BiEHvFqAHu1Z7RqE6tXgpLgsZcAEABq7FqKJZuUKpy1r",
+   "CV4gafozgDfZohWLb6b4rZEEVfiRMo4Z3CfzkXngZPR9",
+   9.678255034,
+   9.65,
+   "4FpYTLt6c3vJFzFj7xsa3TX5VfPtQZYLTWcMSAV8Au2Z"
+  ]
+ ]
+}

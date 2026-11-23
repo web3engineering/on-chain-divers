@@ -62,8 +62,13 @@ export default defineConfig({
         { text: 'Best SWQoS for Pump.fun', link: '/research/swqos-providers' },
         { text: 'Best SWQoS for PumpSwap', link: '/research/swqos-providers-pumpswap' },
         { text: 'Best SWQoS for Meteora DLMM', link: '/research/swqos-providers-dlmm' },
-        { text: 'Bitcoin 5m Cross-Venue', link: '/bitcoin-5m-cross-venue' },
-        { text: 'Simple Microprice', link: '/microprice-research' },
+      ],
+    },
+    {
+      text: 'Education',
+      collapsed: false,
+      items: [
+        { text: 'Funds transfers in indexer', link: '/education/sol-topups-vs-funding-vs-transfers' },
       ],
     },
     { text: 'Fees API', link: '/fees-api' },

@@ -9,10 +9,6 @@ This repository is a self-contained, executable guide to the
 - structured ClickHouse data for Robinhood Chain tokens and Uniswap v3/v4 activity;
 - the aggregate fees API;
 - raw Polymarket and HyperLiquid order-book archive discovery, download and replay;
-- a synchronized Bitcoin five-minute Polymarket/HyperLiquid market reconstruction
-  with a publication-sized diagnostic plot;
-- a four-panel microprice study relating one- and two-level imbalance to
-  Polymarket and HyperLiquid midpoint movement 300 milliseconds later;
 - a live ranking of Pump.fun creators with at least five launches by the
   first-100-slot trade count of their weakest launch, plus migration-aware p95
   market-cap distributions valued with a Meteora DLMM SOL/USDC rate; and
@@ -31,15 +27,28 @@ build.
 
 | Network | DEX or domain tables | Helper tables |
 | --- | --- | --- |
-| Solana | Pump.fun, PumpSwap, Raydium AMM/CPMM/Launchpad, Meteora DLMM/Dynamic Bonding, Jito | token transfers, SOL top-ups, blocks, transaction timestamps, token creation, migrations, creator fees, caps |
+| Solana | Pump.fun, PumpSwap, Raydium AMM/CPMM/CLMM/Launchpad, Meteora DLMM/DAMM v2/Dynamic Bonding, Jito | pools, liquidity events, limit orders, transfers, first funding, landing services, quote prices, enriched swaps, supply and token statistics |
 | Polymarket | order fills | event and market metadata |
-| HyperLiquid | raw fills and fulfilled orders | perpetual wallets and wallet positions |
-| Robinhood Chain | Uniswap v3 and v4 pools and swaps | token metadata and EVM transaction context |
+| HyperLiquid | raw fills and fulfilled orders | perpetual wallets, positions, DEX metadata and outcome market/question/deployer metadata |
+| Robinhood Chain | Uniswap v3/v4 and launchpad creation/trading datasets, unified swaps | token metadata, launch parameters, quote prices, wallet funding relationships and transfer schema |
 
 The exact live schemas and row counts are generated into the table-reference
 pages. The generator intentionally uses a whitelist: a newly appearing table or
 an undescribed published column stops the build until the documentation is
 updated.
+
+Column descriptions and per-table notes live in
+`scripts/column_descriptions.yaml`; enriched views inherit their source-column
+descriptions through YAML merges. Ordinary views are labeled as computed at
+query time and do not report stored row counts. An empty published table
+documents the schema without promising a historical backfill.
+
+Generation includes storage engines and sorting keys so replacement and
+aggregate-table behavior is visible. Optional first-non-default column dates
+require historical scans and are disabled by default; set
+`DOCS_INCLUDE_COLUMN_HISTORY=1` when running the generator to include them.
+Query-time views omit optional record samples and their swap examples use a
+date filter to bound the source scan.
 
 ## Configuration
 
@@ -59,19 +68,13 @@ docker build \
   .
 ```
 
-This includes the intentionally heavy 24-hour cross-venue example. It finds a
-recent Bitcoin Up/Down five-minute interval, resolves its CLOB IDs from
-Polymarket metadata, downloads the dedicated market capture and the matching
-HyperLiquid checkpoint/diffs, rebuilds both books, and renders the chart used by
-the docs.
-
 ## Build the static site
 
 The Dockerfile is deliberately multi-stage:
 
 1. The Python `checker` stage queries all four ClickHouse databases, generates
    schema pages, downloads the configured raw samples, and executes every
-   published example, including the 24-hour historical cross-venue chart.
+   published example.
 2. Node.js builds the static Vocs site from that verified content.
 3. The final `scratch` image contains only the static files.
 

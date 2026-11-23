@@ -1,18 +1,18 @@
 # Polymarket Tables
 
-Tables containing Polymarket prediction market data including order books, trades, and market information.
+Polymarket tables covering on-chain order fills, events and market metadata.
 
-*Last updated: 2026-08-19 21:07 UTC*
+*Last updated: 2026-11-23 11:11 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
-## Tables (3)
+## Tables and views (3)
 
 | Table | Rows | Size |
 |-------|------|------|
-| [polymarket_order_filled_v3](#polymarket_order_filled_v3) | 1,837,051,333 | 301.45 GB |
-| [raw_event_meta](#raw_event_meta) | 2,552,808 | 11.69 GB |
-| [raw_market_meta](#raw_market_meta) | 10,935,666 | 11.93 GB |
+| [polymarket_order_filled_v3](#polymarket_order_filled_v3) | 2,199,828,311 | 365.25 GB |
+| [raw_event_meta](#raw_event_meta) | 5,272,615 | 31.79 GB |
+| [raw_market_meta](#raw_market_meta) | 34,619,730 | 35.33 GB |
 
 ---
 
@@ -20,11 +20,13 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 1,837,051,333 |
-| **Size** | 301.45 GB |
+| **Engine** | MergeTree |
+| **Rows** | 2,199,828,311 |
+| **Size** | 365.25 GB |
 | **First Record** | 2022-11-21 |
-| **Last Record** | 2026-08-19 |
+| **Last Record** | 2026-11-23 |
 | **Partition Key** | `toYYYYMMDD(block_timestamp)` |
+| **Sorting Key** | `block_number, transaction_index, log_index, is_maker` |
 
 **Columns:**
 
@@ -72,10 +74,12 @@ SELECT * FROM polymarket.polymarket_order_filled_v3 LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 2,552,808 |
-| **Size** | 11.69 GB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 5,272,615 |
+| **Size** | 31.79 GB |
 | **First Record** | 2026-05-17 |
-| **Last Record** | 2026-08-19 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `event_id` |
 
 **Columns:**
 
@@ -186,10 +190,12 @@ SELECT * FROM polymarket.raw_event_meta LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 10,935,666 |
-| **Size** | 11.93 GB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 34,619,730 |
+| **Size** | 35.33 GB |
 | **First Record** | 2026-04-08 |
-| **Last Record** | 2026-08-19 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `market_id, clob_token_id` |
 
 **Columns:**
 

@@ -1,0 +1,179 @@
+{
+ "example": "examples/education/sol_flows/same_builder_top_ups.sql",
+ "sha256": "561ceea278ae375e2e5b82abbcd4a35383065ed1e1ed50964fd7ddb92bc69069",
+ "ran_at": "2026-11-18 01:12 UTC",
+ "columns": [
+  "hour_utc",
+  "provided_gas_limit",
+  "provided_gas_fee",
+  "cu_limit_ix_index",
+  "cu_price_ix_index",
+  "min_sol",
+  "max_sol",
+  "creators",
+  "senders",
+  "sample_creators"
+ ],
+ "rows": [
+  [
+   "2026-11-17 11:00:00",
+   1450,
+   0,
+   0,
+   -1,
+   0.1766,
+   0.1776,
+   9,
+   9,
+   [
+    "35e3Nhr9yTWKPxn7dQ1zhfMDA8i4RtSRkRA77f8LuzZG",
+    "8scrSVk3HUHJMBruP5uxXqrWbszsnxhy4kVP1GfVzwt5",
+    "EJWtRmvk2mvNNHAixg3ucz62Neme84grUgZX2QNpkz38"
+   ]
+  ],
+  [
+   "2026-11-17 01:00:00",
+   50000,
+   200000,
+   0,
+   1,
+   0.5,
+   0.5001,
+   9,
+   9,
+   [
+    "5ptiFSmcRhrqnrca8Ss8kYKfeSUDWsPotQcD4KJJMokf",
+    "6qVH1rbYg1WUQVmKEVMQv7rLxEAosKpS3NmPQ1u6sCTD",
+    "DF1bnzPxokksQ4t6WBEFi4bfwLFEB73nsXvNWEB2BWUj"
+   ]
+  ],
+  [
+   "2026-11-17 04:00:00",
+   1450,
+   20000,
+   0,
+   1,
+   65.5537,
+   66.7569,
+   9,
+   9,
+   [
+    "GUqZGiNiMaCD5edbFG5A9voTdFNYxczwBMdie1CEAUyM",
+    "Feeeww3s6aQC2U96XXUDRxUuMSPbGZBprx8DXWWqiKrT",
+    "8yXX19yMJfoWJh9u77PdeKnnB1GcAT2z1DGKmPULQyCU"
+   ]
+  ],
+  [
+   "2026-11-17 08:00:00",
+   50000,
+   200000,
+   0,
+   1,
+   0.5,
+   0.5001,
+   8,
+   8,
+   [
+    "6swS5ZdgeDkpfDsVoVmUszU1G6s9CD4ce9Sib9rGGqXu",
+    "Aqkrc3omSJX1trCt9Hv36oRKQcsEp6U5wL3YP196XchF",
+    "2sQhZ3LVLjDVkbNP2jP2WYCJ26z2sDiGgyPiU3XgPLpd"
+   ]
+  ],
+  [
+   "2026-11-18 00:00:00",
+   50000,
+   200000,
+   0,
+   1,
+   0.5,
+   0.5001,
+   8,
+   8,
+   [
+    "HJgrLUY53LUf5jkJyiNhdu2oDemRFVUaU7ZFhJL4JCKn",
+    "7JoDrZucbdozMX5qwsan1ZTauQuipGDYiKZ9ukpLLvoK",
+    "B4gem2GVK4TL3jvDG8RhBNso8tqXxr1VTk2cEV76RRKZ"
+   ]
+  ],
+  [
+   "2026-11-17 02:00:00",
+   1450,
+   0,
+   0,
+   -1,
+   0.113,
+   0.118,
+   7,
+   7,
+   [
+    "35e3Nhr9yTWKPxn7dQ1zhfMDA8i4RtSRkRA77f8LuzZG",
+    "ADtJx5ipjbjdoKc5WbcNwW19MxrNBbFdYay7yhy7ueP1",
+    "HH2tUyxqoyW69CR9iiNXFFSrwAEWBmEVsGkCo7jmqDWZ"
+   ]
+  ],
+  [
+   "2026-11-17 13:00:00",
+   1450,
+   20000,
+   0,
+   1,
+   74.5178,
+   75.972,
+   6,
+   6,
+   [
+    "BaoaFgejCBURa3GBRR6cWsDBJ4ovFniafpyunU6iwsHQ",
+    "4gVWc4fzHAHgT2z2361pKm5xEXqH3JZJAxNcvWaeSpiL",
+    "4HrgSH9GaqMGpUxh8nU8PyQM8vxoSQPfwFUNq1BPahHq"
+   ]
+  ],
+  [
+   "2026-11-17 15:00:00",
+   1450,
+   20000,
+   0,
+   1,
+   79.0057,
+   80.0851,
+   6,
+   6,
+   [
+    "13dBGHByZUQJS5WfMFrtWFrxoaEFBe3pZZzj6MGcQEj2",
+    "8MPYHNhGjyyEkyjS4oVSdxn1o57RARTyZaZhp3WWHryc",
+    "FWbnLcj2ENqcFD3czghZq6BrLha9tUPNXoK3wiAhQ992"
+   ]
+  ],
+  [
+   "2026-11-17 19:00:00",
+   200000,
+   0,
+   -1,
+   -1,
+   0.0069,
+   0.0069,
+   5,
+   5,
+   [
+    "3kHxeD5ypNv85Df3Kp8EMBoPzH5ixJymf9oGQh8e45vh",
+    "6D4b9nxR3qdZXv2DKuypcwzwQfzmrRp2N29mDkb6fBwA",
+    "95d2m5K4VwBCwW9roPuTjyoN6PXafeDoJRRyvNtb9urn"
+   ]
+  ],
+  [
+   "2026-11-17 21:00:00",
+   562,
+   133333334,
+   1,
+   0,
+   2.5594,
+   2.6725,
+   5,
+   5,
+   [
+    "Hp5fNhnw8uaecuHWWPkismYPVHpRmCpFEEXPFHKjZitw",
+    "99DYGJ2DqEyAieaEqoG8y71Kb7HfwiFCBFAzSpS6Ha1f",
+    "Azhh3KhpasyZnNpyxN5ADwXnNRDEA8u9E9ctGchSXQcH"
+   ]
+  ]
+ ]
+}

@@ -46,13 +46,6 @@ poly = module("poly_example", ORDERBOOKS / "polymarket.py")
 hyper = module("hyper_example", ORDERBOOKS / "hyperliquid.py")
 archive = module("archive_example", ORDERBOOKS / "archive.py")
 fees = module("fees_example", ROOT / "examples" / "fees" / "global_fees.py")
-bitcoin = module(
-    "bitcoin_5m_updown", ROOT / "examples" / "cross_venue" / "bitcoin_5m_updown.py"
-)
-microprice = module(
-    "microprice_research",
-    ROOT / "examples" / "cross_venue" / "microprice_research.py",
-)
 research = module(
     "pumpfun_creator_and_migration_research",
     ROOT / "examples" / "research" / "generate_pumpfun_research.py",
@@ -227,9 +220,18 @@ def verify_sql() -> None:
         if not rows:
             raise AssertionError(f"{relative}: query returned no rows")
         if relative.endswith("pumpswap_reserve_checks.sql"):
-            checks = ("base_reserves_match", "quote_reserves_match", "lp_fee_math_matches")
-            if any(not bool(row[key]) for row in rows for key in checks):
-                raise AssertionError(f"{relative}: reserve or fee invariant failed")
+            checks = (
+                "base_reserves_match", "quote_reserves_match",
+                "lp_fee_math_matches", "user_fee_math_matches",
+            )
+            failures = [
+                f"{row['signature']}: {', '.join(key for key in checks if not bool(row[key]))}"
+                for row in rows if any(not bool(row[key]) for key in checks)
+            ]
+            if failures:
+                raise AssertionError(
+                    f"{relative}: reserve or fee invariant failed: {'; '.join(failures)}"
+                )
         print(f"verified SQL: {relative} ({len(rows)} rows)")
 
 
@@ -245,32 +247,6 @@ def verify_orderbooks(strict_live: bool) -> None:
     if book["best_bid"] != "0.50" or book["best_ask"] != "0.52":
         raise AssertionError("Polymarket replay produced the wrong top of book")
     print("verified order book: Polymarket scan, download and replay")
-
-    # Dedicated capture size and position within an hour are not validity
-    # signals. A quiet but replayable :55 market must remain selectable; the
-    # live path performs the substantive two-outcome replay checks afterward.
-    class CaptureMetadataFixture:
-        def query(self, _sql: str, **_kwargs) -> list[dict]:
-            return [{
-                "event_id": "fixture-event",
-                "slug": "btc-updown-5m-1786751700",
-                "title": "Bitcoin Up or Down",
-                "interval_start": 1786751700,
-            }]
-
-    with tempfile.TemporaryDirectory() as temporary:
-        capture_root = Path(temporary)
-        capture_name = "btc-updown-5m-1786751700.log.zst"
-        (capture_root / capture_name).write_bytes(b"small fixture")
-        selected = bitcoin.choose_market(
-            CaptureMetadataFixture(),
-            datetime.fromtimestamp(1786751700, tz=timezone.utc),
-            {capture_name},
-            str(capture_root),
-        )
-    if selected["capture_name"] != capture_name or selected["capture_bytes"] != 13:
-        raise AssertionError("quiet or hour-boundary Polymarket capture was rejected")
-    print("verified capture selection: activity-independent BTC 5m candidate")
 
     hyper_root = ORDERBOOKS / "fixtures" / "hyperliquid"
     names = archive.scan(str(hyper_root), (".jsonl", ".log"))
@@ -342,47 +318,6 @@ def verify_orderbooks(strict_live: bool) -> None:
         print(f"verified live archive: HyperLiquid ({len(hyper_live_names)} captures discoverable)")
     elif strict_live:
         raise ValueError("HYPERLIQUID_ORDER_BOOKS is required for strict verification")
-
-    if strict_live:
-        assert poly_source is not None and hyper_source is not None
-        output = ROOT / "docs" / "public" / "examples" / "bitcoin-5m-updown.png"
-        microprice_output = (
-            ROOT / "docs" / "public" / "examples" / "microprice-research.png"
-        )
-        with bitcoin.downloaded_market(
-            ROOT / ".env",
-            poly_names=poly_live_names,
-            hyper_names=hyper_live_names,
-        ) as downloaded:
-            result = bitcoin.run_downloaded(downloaded, output)
-            microprice_result = microprice.run_downloaded(
-                downloaded, microprice_output
-            )
-        if (
-            not output.is_file()
-            or output.stat().st_size < 250_000
-            or output.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n"
-        ):
-            raise AssertionError("cross-venue example did not produce a substantial PNG")
-        if result["hyperliquid"]["samples"] < 290 or set(result["outcomes"]) != {"Up", "Down"}:
-            raise AssertionError("cross-venue example did not cover both books and five minutes")
-        print("verified feature example: Bitcoin 5m cross-venue plot")
-        if (
-            not microprice_output.is_file()
-            or microprice_output.stat().st_size < 200_000
-            or microprice_output.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n"
-        ):
-            raise AssertionError("microprice example did not produce a substantial PNG")
-        if (
-            microprice_result["horizon_ms"] != 300
-            or len(microprice_result["studies"]) != 4
-            or min(
-                study["observations"]
-                for study in microprice_result["studies"].values()
-            ) < 100
-        ):
-            raise AssertionError("microprice example did not produce four aligned studies")
-        print("verified feature example: 300 ms microprice heatmaps")
 
 
 def verify_fees(strict_live: bool) -> None:

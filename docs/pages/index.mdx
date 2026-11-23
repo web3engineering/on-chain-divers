@@ -123,9 +123,11 @@ query gets heavy, we help you make it faster — we don't throttle you.
 
 `Pump.fun · PumpSwap · Raydium · Meteora · since January 2024`
 
-Pump.fun and Pump.fun v2, PumpSwap, Raydium (AMM, CPMM, Launchpad), Meteora DLMM
-and Dynamic Bonding Curve. Plus token creation events, AMM migrations, Jito tips,
-SOL and SPL transfers, and block data.
+Pump.fun and Pump.fun v2, PumpSwap, Raydium (AMM, CPMM, CLMM, Launchpad), and
+Meteora DLMM, DAMM v2 and Dynamic Bonding Curve. Pool creations, liquidity events
+and limit-order instructions complement swaps and launch migrations. USD-enriched
+swap views, quote prices, token supply and aggregate token statistics support
+valuation alongside Jito tips, transfers, first funding and block data.
 
 [Solana data →](/solana)
 
@@ -135,8 +137,10 @@ SOL and SPL transfers, and block data.
 
 Fills at the block level with millisecond fill times: price, size, side, position
 before the fill, realized PnL, fees, builder fees, liquidation detail and TWAP
-identifiers. Wallet and position views are computed at query time. Raw order-book
-archives support historical book reconstruction.
+identifiers. Wallet and position views are computed at query time. Outcome
+market, question and deployer metadata label outcome fills; perpetual DEX
+metadata identifies venues and collateral. Raw order-book archives support
+historical book reconstruction.
 
 [HyperLiquid data →](/hyperliquid)
 
@@ -157,6 +161,8 @@ book replay at a specific moment.
 
 Decoded pools and swaps: signed balance deltas, square-root price and tick after
 each swap, in-range liquidity, pool fees and hooks, plus token metadata.
+Launchpad creation and trading datasets, unified swaps, trace-decoded Pons
+launch inputs, quote prices and wallet funding relationships extend this coverage.
 
 [Robinhood Chain data →](/robinhood)
 

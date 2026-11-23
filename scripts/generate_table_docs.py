@@ -51,6 +51,32 @@ ENV_PATH = PROJECT_ROOT / ".env"
 # Tables to include in documentation (whitelist per database)
 # Empty set means include all tables
 SOLANA_TABLES_WHITELIST: Set[str] = {
+    "landing_services",
+    "meteora_damm_v2_liquidity_events",
+    "meteora_damm_v2_pools",
+    "meteora_damm_v2_swaps",
+    "meteora_dlmm_limit_orders",
+    "meteora_dlmm_liquidity_events",
+    "meteora_dlmm_pools",
+    "meteora_dynamic_bonding_config_creations",
+    "meteora_dynamic_bonding_creations",
+    "meteora_dynamic_bonding_damm_v2_migrations",
+    "meteora_dynamic_bonding_migrations",
+    "meteora_dynamic_bonding_swaps_enriched",
+    "pumpfun_v2_swaps_enriched",
+    "pumpswap_all_swaps_enriched",
+    "quote_closing_prices",
+    "raydium_clmm_limit_orders",
+    "raydium_clmm_liquidity_events",
+    "raydium_clmm_pools",
+    "raydium_clmm_swaps",
+    "raydium_launchpad_swaps_enriched",
+    "sol_first_top_ups",
+    "solana_quote_prices",
+    "solana_token_stats",
+    "solana_token_stats_hours",
+    "solana_token_stats_v",
+    "solana_token_supply",
     "jito_tips",
     "max_caps",
     "meteora_dynamic_bonding_swaps",
@@ -72,6 +98,9 @@ SOLANA_TABLES_WHITELIST: Set[str] = {
     "solana_blocks",
     "token_transfers",
     "tx_timestamps",
+    "indexer3_sol_fundings",
+    "indexer3_sol_top_ups",
+    "indexer3_token_transfers",
 }
 
 POLYMARKET_TABLES_WHITELIST: Set[str] = {
@@ -81,6 +110,11 @@ POLYMARKET_TABLES_WHITELIST: Set[str] = {
 }
 
 HYPERLIQUID_TABLES_WHITELIST: Set[str] = {
+    "outcome_coin_meta",
+    "outcome_deployer_meta",
+    "outcome_meta",
+    "outcome_question_meta",
+    "perp_dex_meta",
     "raw_node_fills_by_block",
     "view_perpetual_wallet",
     "view_wallet_position",
@@ -88,6 +122,14 @@ HYPERLIQUID_TABLES_WHITELIST: Set[str] = {
 }
 
 ROBINHOOD_TABLES_WHITELIST: Set[str] = {
+    "cluster_sinks",
+    "cluster_wallets",
+    "pons_launch_params",
+    "pons_v1_creations",
+    "pons_v1_trading",
+    "quote_closing_prices",
+    "swaps",
+    "token_transfers",
     "tokens",
     "uniswap_v3_pools",
     "uniswap_v3_trades",
@@ -119,7 +161,17 @@ ROBINHOOD_TABLES_WHITELIST: Set[str] = {
 # published. Keeping these explicit ensures any newly discovered table fails
 # validation instead of being silently filtered out.
 TABLE_EXCLUSIONS: Dict[str, Set[str]] = {
-    "solana": set(),
+    # indexer3_* tables not yet published; *_dist are internal shard tables.
+    "solana": {
+        "indexer3_fomo_alerts",
+        "indexer3_fomo_alerts_dist",
+        "indexer3_token_metadata",
+        "indexer3_token_metadata_dist",
+        "indexer3_token_twitter",
+        "indexer3_token_twitter_dist",
+        "indexer3_twitter_accounts",
+        "indexer3_twitter_accounts_dist",
+    },
     "polymarket": {
         "polymarket_order_filled",
         "polymarket_order_filled_v2",
@@ -390,7 +442,8 @@ def get_table_metadata(accessor: ClickHouseAccessor, table_name: str, db_name: s
             total_bytes,
             engine,
             engine_full,
-            partition_key
+            partition_key,
+            sorting_key
         FROM system.tables
         WHERE database = '{db_name}' AND name = '{table_name}'
         """
@@ -419,11 +472,22 @@ def get_table_metadata(accessor: ClickHouseAccessor, table_name: str, db_name: s
                         ttl_part = ttl_part[:ttl_part.find(end_keyword)]
                 ttl = ttl_part.strip()
 
+        total_rows = row.get("total_rows", 0) or 0
+        total_bytes = row.get("total_bytes", 0) or 0
+        # Distributed tables store nothing locally, so system.tables reports
+        # NULL. count() is answered from the remote parts' metadata; the remote
+        # size is not visible from here and is rendered as unknown.
+        if engine == "Distributed":
+            counted = accessor.query(f"SELECT count() AS n FROM {db_name}.{table_name}")
+            total_rows = counted[0]["n"] if counted else 0
+            total_bytes = None
+
         return {
-            "total_rows": row.get("total_rows", 0) or 0,
-            "total_bytes": row.get("total_bytes", 0) or 0,
+            "total_rows": total_rows,
+            "total_bytes": total_bytes,
             "ttl": ttl,
             "partition_key": row.get("partition_key", "") or "",
+            "sorting_key": row.get("sorting_key", "") or "",
             "engine": engine,
             "is_view": is_view,
         }
@@ -432,6 +496,7 @@ def get_table_metadata(accessor: ClickHouseAccessor, table_name: str, db_name: s
         "total_bytes": 0,
         "ttl": None,
         "partition_key": "",
+        "sorting_key": "",
         "engine": "",
         "is_view": False,
     }
@@ -597,7 +662,8 @@ def get_date_range_by_slot_expr(
 
 
 def get_date_range_generic(
-    accessor: ClickHouseAccessor, table_name: str, timestamp_columns: List[str], db_name: str = "default"
+    accessor: ClickHouseAccessor, table_name: str, timestamp_columns: List[str],
+    db_name: str = "default", end_column: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """Get date range using MIN/MAX on timestamp columns (fallback method)."""
     full_table_name = f"{db_name}.{table_name}"
@@ -607,7 +673,7 @@ def get_date_range_generic(
                 f"""
                 SELECT
                     MIN({col}) as first_record,
-                    MAX({col}) as last_record
+                    MAX({end_column or col}) as last_record
                 FROM {full_table_name}
                 """,
                 settings={"max_execution_time": 120},
@@ -623,8 +689,16 @@ def get_date_range_generic(
 
 
 def _is_temporal_type(col_type: str) -> bool:
-    """True for Date/DateTime/DateTime64 columns (including Nullable variants)."""
-    return "Date" in col_type
+    """Recognize scalar dates, including nullable and simple aggregate values."""
+    while True:
+        if col_type.startswith(("Nullable(", "LowCardinality(")):
+            col_type = col_type.split("(", 1)[1][:-1].strip()
+        elif col_type.startswith("SimpleAggregateFunction("):
+            col_type = col_type.split(",", 1)[1][:-1].strip()
+        else:
+            break
+    # A Tuple or Array containing a date is not itself a record timestamp.
+    return col_type.split("(", 1)[0] in {"Date", "Date32", "DateTime", "DateTime64"}
 
 
 def _is_numeric_type(col_type: str) -> bool:
@@ -698,6 +772,11 @@ def get_date_range(
     if use_slot_optimization and has_block_time and has_slot:
         return get_date_range_by_slot(accessor, table_name, db_name)
 
+    if has_column(columns, "first_hour") and has_column(columns, "last_hour"):
+        return get_date_range_generic(
+            accessor, table_name, ["first_hour"], db_name, end_column="last_hour"
+        )
+
     # Schema-driven detection of a usable timestamp column.
     time_col = find_time_column(columns)
     if not time_col:
@@ -730,6 +809,9 @@ def generate_table_mdx(
 
     lines.append(f"### {table_name}")
     lines.append("")
+    if column_descriptions.get("_description"):
+        lines.append(column_descriptions["_description"])
+        lines.append("")
 
     # Stats
     lines.append("| Statistic | Value |")
@@ -739,8 +821,10 @@ def generate_table_mdx(
         engine = metadata.get("engine") or "View"
         lines.append(f"| **Type** | {engine} (computed at query time) |")
     else:
+        lines.append(f"| **Engine** | {metadata.get('engine') or 'Unknown'} |")
         lines.append(f"| **Rows** | {format_number(metadata['total_rows'])} |")
-        lines.append(f"| **Size** | {format_bytes(metadata['total_bytes'])} |")
+        if metadata["total_bytes"] is not None:
+            lines.append(f"| **Size** | {format_bytes(metadata['total_bytes'])} |")
 
     if date_range:
         first = date_range["first_record"]
@@ -759,6 +843,8 @@ def generate_table_mdx(
     # Add partitioning info if available
     if metadata.get("partition_key"):
         lines.append(f"| **Partition Key** | `{metadata['partition_key']}` |")
+    if metadata.get("sorting_key"):
+        lines.append(f"| **Sorting Key** | `{metadata['sorting_key']}` |")
 
     # Add TTL info if available
     if metadata.get("ttl"):
@@ -786,7 +872,7 @@ def generate_table_mdx(
 
             # Try to find when column first got populated (non-default value)
             first_populated = None
-            if accessor:
+            if accessor and os.environ.get("DOCS_INCLUDE_COLUMN_HISTORY") == "1":
                 first_populated = get_first_non_default_date(
                     accessor, table_name, col_name, default_expr, has_slot, db_name
                 )
@@ -907,7 +993,7 @@ def generate_database_mdx(
     if undocumented_columns:
         return "", undocumented_columns
 
-    lines.append(f"## Tables ({len(tables)})")
+    lines.append(f"## Tables and views ({len(tables)})")
     lines.append("")
 
     # Table of contents
@@ -924,7 +1010,10 @@ def generate_database_mdx(
             size_cell = metadata.get("engine") or "View"
         else:
             rows_cell = format_number(metadata["total_rows"])
-            size_cell = format_bytes(metadata["total_bytes"])
+            size_cell = (
+                "—" if metadata["total_bytes"] is None
+                else format_bytes(metadata["total_bytes"])
+            )
         lines.append(
             # Vocs preserves underscores in heading IDs. Keep the fragment
             # byte-for-byte aligned with the generated ``### table_name``.
@@ -951,7 +1040,7 @@ def generate_database_mdx(
 
         # Get sample data (only for Solana tables with RPC access)
         sample_data = None
-        if database_name == "solana":
+        if database_name == "solana" and not metadata.get("is_view"):
             print(f"      Getting sample row...")
             sample_data = get_latest_row_sample(accessor, table_name, columns, db_name, rpc_url)
 
@@ -973,7 +1062,12 @@ def generate_database_mdx(
         lines.append("**Example Query:**")
         lines.append("")
         lines.append(f"<ClickHouseSqlExample database=\"{database_name}\">")
-        lines.append(f"SELECT * FROM {db_name}.{table_name} LIMIT 10")
+        if metadata.get("is_view") and has_column(columns, "block_date_utc"):
+            lines.append(f"SELECT * FROM {db_name}.{table_name}")
+            lines.append("WHERE block_date_utc >= today() - 1")
+            lines.append("LIMIT 10")
+        else:
+            lines.append(f"SELECT * FROM {db_name}.{table_name} LIMIT 10")
         lines.append("</ClickHouseSqlExample>")
         lines.append("")
         lines.append("---")
@@ -1015,28 +1109,28 @@ def main():
         {
             "name": "solana",
             "display_name": "Solana Tables",
-            "description": "Tables containing Solana blockchain data including DEX swaps, token trades, and transaction information.",
+            "description": "Solana tables and views covering DEX swaps, pools, liquidity and limit-order events, launches, migrations, funding, quote prices, supply and token statistics.",
             "accessor_class": ClickHouseAccessor,
             "use_slot_optimization": True,  # Solana tables have slot index
         },
         {
             "name": "polymarket",
             "display_name": "Polymarket Tables",
-            "description": "Tables containing Polymarket prediction market data including order books, trades, and market information.",
+            "description": "Polymarket tables covering on-chain order fills, events and market metadata.",
             "accessor_class": PolymarketAccessor,
             "use_slot_optimization": False,
         },
         {
             "name": "hyperliquid",
             "display_name": "HyperLiquid Tables",
-            "description": "Tables containing HyperLiquid perpetual exchange data including trades, orders, and funding rates.",
+            "description": "HyperLiquid tables and views covering raw fills, aggregated orders, wallet state, perpetual DEX metadata and outcome market metadata.",
             "accessor_class": HyperLiquidAccessor,
             "use_slot_optimization": False,
         },
         {
             "name": "robinhood",
             "display_name": "Robinhood Chain Tables",
-            "description": "Tables containing Robinhood Chain token metadata and decoded Uniswap v3/v4, Pons, and Varo pool, swap, and launchpad events.",
+            "description": "Robinhood Chain tables and views covering token metadata, Uniswap and launchpad activity, unified swaps, quote prices, wallet funding and token-transfer schemas.",
             "accessor_class": RobinhoodAccessor,
             "use_slot_optimization": False,
         },

@@ -397,7 +397,7 @@ def run(env_path: Path, pages_dir: Path, public_dir: Path) -> dict:
         try:
             rows = client.query(
                 (SCRIPT_DIR / "wallet_fingerprint_transactions.sql").read_text(),
-                settings={"max_execution_time": 240, "readonly": 1},
+                settings={"max_execution_time": 600, "readonly": 1},
             )
             window_end = client.query(
                 "SELECT max(block_time) AS window_end FROM pumpfun_v2_swaps WHERE failed = 0",

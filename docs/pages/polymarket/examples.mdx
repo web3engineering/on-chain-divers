@@ -72,18 +72,9 @@ scan, download, decompression and replay against a deterministic capture. This
 tests the complete reconstruction path without making the build depend on the
 size of an arbitrary production file.
 
-### Strict 24-hour cross-venue build check
+### Timestamp-bounded replay
 
-The Docker `checker` stage also computes `UTC now - 24 hours`, finds the nearest
-captured Bitcoin five-minute Up/Down event, and resolves its Up and Down CLOB
-token IDs by joining the event and market metadata. It then downloads the
-special capture named exactly after that market slug, reads its high-resolution
-best-bid/ask series, and independently replays both books to market close. The
-same five minutes are reconstructed from HyperLiquid raw files and rendered in
-the [cross-venue example](/bitcoin-5m-cross-venue).
-
-The same timestamp-bounded operation is available directly for an already
-downloaded capture:
+To replay an already downloaded capture up to a target time:
 
 ```sh
 python3 examples/orderbooks/polymarket.py reconstruct-at \

@@ -1,0 +1,111 @@
+{
+ "example": "examples/education/sol_flows/funding_pipe.py",
+ "sha256": "f34877a620ea4a6e7c209e3c36c2af153ba5b036f6dda991c3b586b79bc2844d",
+ "ran_at": "2026-11-18 01:10 UTC",
+ "columns": [
+  "hop",
+  "slot",
+  "block_time_utc",
+  "src_wallet",
+  "dst_wallet",
+  "sol"
+ ],
+ "rows": [
+  [
+   1,
+   470734043,
+   "2026-11-18 00:27:08",
+   "CgWBdQCxyVfB7rdtW2ejEzwtvqRoCPUc8qp3T2en6eow",
+   "2x7XsuzUzWPsTHeoUgEtSbFXNVcKiPTu3mfqX4Kqx3sZ",
+   13.873341565
+  ],
+  [
+   2,
+   470734037,
+   "2026-11-18 00:27:06",
+   "B94aCRTMBMWx7kzn74Vpu9xA8mK7DW1KCYCoLMF4wVQK",
+   "CgWBdQCxyVfB7rdtW2ejEzwtvqRoCPUc8qp3T2en6eow",
+   13.873351565
+  ],
+  [
+   3,
+   470733953,
+   "2026-11-18 00:26:48",
+   "H2DutKg14nTe8T91ZFgkwK8qpYS5e83jauVV3ajVXEKv",
+   "B94aCRTMBMWx7kzn74Vpu9xA8mK7DW1KCYCoLMF4wVQK",
+   13.873361565
+  ],
+  [
+   4,
+   470733946,
+   "2026-11-18 00:26:46",
+   "ChZTedjbJshuHze9Qpap9NQYJEd6f5rX6iCVBjE6PvfY",
+   "H2DutKg14nTe8T91ZFgkwK8qpYS5e83jauVV3ajVXEKv",
+   13.873371565
+  ],
+  [
+   5,
+   470727696,
+   "2026-11-18 00:04:20",
+   "AYS8AKEYRVwUgNwBmeQT39k5tiuoM9gUhoA7w5AKKRYU",
+   "ChZTedjbJshuHze9Qpap9NQYJEd6f5rX6iCVBjE6PvfY",
+   21.225377733
+  ],
+  [
+   6,
+   470727687,
+   "2026-11-18 00:04:18",
+   "2qGHoffAzvV2Ju3PPpnaut4AuCdCvoE6WmdZP79xtcYv",
+   "AYS8AKEYRVwUgNwBmeQT39k5tiuoM9gUhoA7w5AKKRYU",
+   21.225387733
+  ],
+  [
+   7,
+   470727227,
+   "2026-11-18 00:02:38",
+   "7RCzVyCikEAZAHR2nNCPyzipk2fGqntHKcucxk3YA6AU",
+   "2qGHoffAzvV2Ju3PPpnaut4AuCdCvoE6WmdZP79xtcYv",
+   17.320787864
+  ],
+  [
+   8,
+   470727220,
+   "2026-11-18 00:02:37",
+   "6Me3oEkUtEwZ2qpyXjJFxvcDzkLhiSa3q8YgMNY6zMvP",
+   "7RCzVyCikEAZAHR2nNCPyzipk2fGqntHKcucxk3YA6AU",
+   17.320797864
+  ],
+  [
+   9,
+   470726298,
+   "2026-11-17 23:59:20",
+   "CuWuC7gp2yc82Zpyqs7tBDB2JTpFKxWcVukCjsuCSvmJ",
+   "6Me3oEkUtEwZ2qpyXjJFxvcDzkLhiSa3q8YgMNY6zMvP",
+   13.124494051
+  ],
+  [
+   10,
+   470726290,
+   "2026-11-17 23:59:18",
+   "BQYXjBPwB85wrpgSPkJnwaTnshngkZcRi54RCzvEL6Yk",
+   "CuWuC7gp2yc82Zpyqs7tBDB2JTpFKxWcVukCjsuCSvmJ",
+   13.124504051
+  ],
+  [
+   11,
+   470725760,
+   "2026-11-17 23:57:24",
+   "3aA2QrgMS3gBc3PLb4r73L9k6teQptT74k1BCBKZDm8C",
+   "BQYXjBPwB85wrpgSPkJnwaTnshngkZcRi54RCzvEL6Yk",
+   13.124514051
+  ],
+  [
+   12,
+   470725752,
+   "2026-11-17 23:57:23",
+   "5i7vnRQhu61rbDxXQy9he5i39tQ5yrFsfJSNFi8hPtbR",
+   "3aA2QrgMS3gBc3PLb4r73L9k6teQptT74k1BCBKZDm8C",
+   13.124524051
+  ]
+ ]
+}

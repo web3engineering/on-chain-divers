@@ -16,10 +16,37 @@ for network concepts and connection details.
 | `uniswap_v3_trades` | v3 swap amounts, price, liquidity, tick and transaction context |
 | `uniswap_v4_pools` | v4 currencies, fee, hooks and initial pool state |
 | `uniswap_v4_trades` | v4 swap amounts, fee, price, liquidity, tick and transaction context |
+| `swaps` | Unified venue, pool, trader and raw token input/output records |
+| `pons_v1_creations`, `pons_v1_trading` | Pons v1 launches and their Uniswap v3 trading view |
+| `pons_creations`, `pons_curve_trades`, `pons_migrations`, `pons_trading` | Pons curve launches, trades, migrations and pool trading |
+| `pons_launch_params` | Trace-decoded launch inputs, social metadata, fees and configuration |
+| `doppler_*`, `flap_*`, `letscash_*`, `long_*`, `nox_*`, `noxa_*`, `varo_*` | Protocol-specific creation and trading datasets; Flap also exposes curve trades and migrations |
+| `quote_closing_prices` | Daily quote conversion rates with chain, date and source provenance |
+| `cluster_wallets`, `cluster_sinks` | Wallet funding resolution and observed outgoing funding edges |
+| `token_transfers` | Transfer schema with sender, recipient, amount and optional token ID; empty at this refresh |
 
-All decoded records retain block, log, transaction, gas and EIP-1559 fee
-fields. This makes it possible to reproduce event ordering and relate protocol
+Decoded swap and launch event records retain block, log, transaction, gas and
+EIP-1559 fee fields. This makes it possible to reproduce event ordering and relate protocol
 activity to its execution cost without querying a second provider.
+
+## Launchpad views and funding relationships
+
+Protocol trading views attach launch metadata to underlying Uniswap activity.
+For example, `pons_v1_trading` joins `uniswap_v3_trades` to destination pools
+from `pons_v1_creations` and adds `launchpad_token`. Filter `block_timestamp`
+when querying these views. Token amounts are raw integers; apply the token's
+decimals before displaying whole-token amounts.
+
+`cluster_wallets` records first-funding resolution, parent and intermediate
+addresses, EOA/contract/EIP-7702 classification, funding mechanism and transaction
+cost context. `cluster_sinks` records observed outgoing edges, including direct,
+ERC-20 and bridge transfers. These relationships describe observed funding and
+do not establish common wallet ownership.
+
+Use `FINAL` or the latest version per sorting key for current records from
+replacement tables such as `cluster_wallets` and `pons_launch_params`.
+`token_transfers` had zero stored rows at this refresh; its published schema
+does not imply that historical transfer data has been backfilled.
 
 Credentials are supplied through `.env`; no deployment address or credential
 is included in this site.

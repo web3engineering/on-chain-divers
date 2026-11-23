@@ -1,0 +1,466 @@
+---
+title: Funds transfers in indexer
+description: Why fast, programmatic access to transfers matters for tracking coordinated launches, and what sol_top_ups, indexer3_sol_fundings and token_transfers record, what they leave out, and how to use them to trace who paid a Solana wallet. Every query on the page is run on each build.
+---
+
+import {
+  Article,
+  Kicker,
+  Dek,
+  Meta,
+  Term,
+  Definitions,
+  Figure,
+  Compare,
+  Note,
+  Notice,
+  Example,
+  ExampleResult,
+  Takeaways,
+  NextReads,
+  ArticleCTA,
+} from '../../components/article/Article'
+import { FlowLanes, BalanceTimeline, Heatmap, CrossDiagram, PipeDiagram } from '../../components/article/figures'
+
+<Article>
+
+<Kicker>Education · Solana wallets</Kicker>
+
+# Funds transfers in indexer
+
+<Dek>
+  Every on-chain operation starts with someone moving money. The indexer stores these movements in three families of
+  tables, so you can ask "who paid this wallet?" with one SQL query. This page shows what each table records, what it
+  leaves out, and how to use it, with queries you can copy.
+</Dek>
+
+<Meta published="17 Nov 2026" readTime="12 min read" level="Beginner" />
+
+## Why transfers matter
+
+A wallet cannot do anything until somebody sends it SOL. So before every token launch, every sniper buy and every
+bundle of "independent" buyers, there is a trail of transfers. That trail is often the only thing that links wallets
+which otherwise look unrelated.
+
+Following the trail answers practical questions:
+
+- **Is this launch coordinated?** If the creator and the first buyers were all paid by the same source, or in the same
+  way a few minutes before launch, they are probably one team.
+- **Who is behind a fresh wallet?** A new creator wallet tells you nothing by itself. The wallet that paid it, and the
+  wallet that paid that one, often lead to somebody with a history.
+- **Where do the profits go?** Wallets that trade separately but send their SOL to the same place afterwards belong
+  together.
+- **Has this operator done it before?** The same funding pattern tends to repeat from one launch to the next.
+
+You can look at one wallet by hand in a block explorer. You cannot do that for a thousand launches, and you cannot do
+it in the seconds after a token appears. For that you need transfers in a database: quick to query, easy to join with
+launches and trades, and reachable from code. That is what these tables give you.
+
+The tables are not the same, though. Each one records a different thing. Pick the wrong one and your query runs fine
+but tells you the wrong story. In short:
+
+<Definitions
+  items={[
+    {
+      subject: 'topup',
+      text: (
+        <>
+          <code>sol_top_ups</code> gets a row when a SOL balance goes from zero to above zero. Use it to find fresh
+          wallets.
+        </>
+      ),
+    },
+    {
+      subject: 'funding',
+      text: (
+        <>
+          <code>indexer3_sol_fundings</code> gets a row when one wallet loses SOL and another gains it, whatever the
+          balances were before. Small amounts are left out.
+        </>
+      ),
+    },
+    {
+      subject: 'transfer',
+      text: (
+        <>
+          <code>token_transfers</code> gets a row when a token (USDC, wSOL, any mint) moves from one owner to another.
+        </>
+      ),
+    },
+  ]}
+/>
+
+## The same wallet, seen three ways
+
+All three tables are built from successful transactions only. A failed transaction changes nothing, so it leaves no
+row.
+
+<Figure
+  n={1}
+  title="What makes a row in each table"
+  sub="Illustration."
+  caption="Top-ups look for a balance that starts at zero. Fundings look for any large SOL change between wallets. Token transfers follow tokens, not SOL."
+>
+  <FlowLanes />
+</Figure>
+
+The difference is easiest to see on one wallet over time. In the chart below the wallet is paid three times, trades
+once, and is emptied once. Only some of these events become rows.
+
+<Figure
+  n={2}
+  title="One wallet, six balance changes"
+  sub="SOL balance. Illustration."
+  caption="The first payment and the payment after the wallet was emptied are top-ups, because the balance started at zero. The 0.50 SOL payment is only a funding. The 0.05 SOL payment and the token purchase are in neither table. Hover or tap for details."
+>
+  <BalanceTimeline />
+</Figure>
+
+## Two servers, two history depths
+
+The tables live on two servers. Tables without a prefix are on the main server and keep about one month. Tables that
+start with `indexer3_` are on a second server and keep much more history. This query prints the current first day of
+each one:
+
+{sql example: examples/education/sol_flows/history_depth.sql}
+
+You query all of them through the same connection. Two things are different for the `indexer3_` tables:
+
+- **Joins are slower.** The data has to travel between servers. Filter the `indexer3_` table by wallet, slot or date
+  first, then join.
+- **Use `GLOBAL IN` for subqueries.** If you filter an `indexer3_` table with a list that comes from a main-server
+  table, write `GLOBAL IN (SELECT ...)`. A plain `IN` is sent to the second server as it is, and that server does not
+  have the main tables. Keep that list simple: build it with a join, not with another subquery inside it. A nested
+  subquery there can silently return nothing.
+
+<Note label="About times">
+  `block_time` is shown in the time zone of the main server, which is US Pacific time, not UTC. The examples on this
+  page wrap it in `toTimeZone(block_time, 'UTC')` so every time you see here is UTC.
+</Note>
+
+<Compare
+  rows={[
+    {
+      label: 'A row means',
+      topup: 'A SOL balance went from 0 to above 0',
+      funding: 'One wallet lost SOL and another gained SOL in the same transaction',
+      transfer: 'A token moved from one owner to another',
+    },
+    {
+      label: 'Smallest amount',
+      topup: 'Any',
+      funding: 'More than 0.09 SOL, on both sides',
+      transfer: 'Any',
+    },
+    {
+      label: 'Sender column',
+      topup: 'Each signer of the transaction',
+      funding: 'Each wallet that lost SOL',
+      transfer: 'Owner of the source token account',
+    },
+    {
+      label: 'Signature',
+      topup: 'Yes',
+      funding: 'No. Use slot and tx_idx',
+      transfer: 'Yes in token_transfers, no in indexer3_token_transfers',
+    },
+    {
+      label: 'Kept for',
+      topup: '31 days. 180 days in indexer3_sol_top_ups',
+      funding: 'No expiry so far',
+      transfer: '31 days. No expiry so far in indexer3_token_transfers',
+    },
+    {
+      label: 'Program accounts',
+      topup: 'Included as receivers',
+      funding: 'Left out',
+      transfer: 'In token_transfers only',
+    },
+  ]}
+/>
+
+## Top-ups: from zero to above zero
+
+`sol_top_ups` has one simple rule. After every successful transaction we compare each account's SOL balance before and
+after. If it was exactly zero before and is above zero after, we write a row. Token accounts are skipped.
+
+Here is a good transaction to learn from. One wallet pays five others with five plain transfers:
+[open it on Solscan](https://solscan.io/tx/KfjE2rhYq66UuMjZhbgwB7rxXkwnbfH8dvPmNY1dxjv3Ngw2bgC4mHrLXdeX6BBoz82mcQtK9NyeXWKLwPRmACb#balance_change)
+and look at the balance changes.
+
+{sql example: examples/education/sol_flows/top_ups_one_tx.sql | pinned}
+
+Five transfers, but only three rows. The three wallets in the result had a zero balance before the transaction. The
+other two receivers, `Asgard3A…6Bh6` and `71DDZTmG…1vKu`, already held SOL, so for this table nothing happened to them.
+
+Three details matter when you read these rows:
+
+- **`amount` is the balance after the transaction.** Because the balance before was zero, this is also what the wallet
+  received.
+- **`src_wallet` is a signer of the transaction.** It is the wallet that signed, which is usually the wallet that paid,
+  but not always. A transaction with two signers gives two rows for the same receiver.
+- **`dst_wallet` is any account that came to life.** Most are wallets. Some are accounts created by programs, such as a
+  Pump.fun bonding curve or a stake account. Join with your own list of wallets when you need wallets only.
+
+### A wallet can be topped up many times
+
+The name suggests a top-up happens once. It does not. Every time a wallet is drained to zero and paid again, it gets a
+new row. The wallet below collects profits for an arbitrage bot. Its owner empties it after each payout, so each payout
+starts from zero again:
+
+{sql example: examples/education/sol_flows/top_ups_many_times.sql | pinned}
+
+Two of the rows share a time and an amount but show different senders. That is one transaction with two signers.
+
+If you want the first top-up of a wallet, take the earliest row. Keep the 31-day window in mind: a wallet that was
+first paid two months ago has its first top-up in `indexer3_sol_top_ups`, not here.
+
+### What top-ups are good for: fresh wallets
+
+A wallet that was empty a few minutes before it does something important is a fresh wallet. Fresh wallets are how
+people hide who they are. So "when was this wallet last filled from zero?" is a strong signal, and `sol_top_ups` answers
+it with one lookup.
+
+The query below takes the last 1,000 Pump.fun launches that trade against SOL. For each launch it finds two numbers:
+how long before the launch the creator's wallet was topped up, and how many different wallets bought in the first
+minute. Then it counts launches in each combination.
+
+{sql example: examples/education/sol_flows/creator_top_up_heatmap.sql | view=heatmap | x=topped_up_before_launch | xOrder=age_bucket | y=buyers_in_first_minute | yOrder=buyers_bucket | value=launches | xLabel="Creator wallet topped up before launch" | yLabel="Wallets buying in the first minute" | unit=launches}
+
+Read it from left to right. The left columns are creators whose wallet was filled from zero minutes before the launch.
+The right column, "older", holds creators with no top-up in the table at all: their wallet has not been empty for at
+least a month. Each column then shows how much attention those launches got in their first minute.
+
+## Fundings: every balance change above the dust line
+
+`indexer3_sol_fundings` looks at the same balances but asks a wider question. It does not care if the receiver was
+empty. For each successful transaction it collects the wallets that lost SOL and the wallets that gained SOL, and
+writes a row for each sender and receiver pair. `src_decrease` is what the sender lost, `dst_increase` is what the
+receiver gained, and `src_pre_balance` and `dst_pre_balance` are the balances before.
+
+Let us look at the slot that holds the five-transfer transaction from above. It was transaction 292 in slot
+470716085.
+
+{sql example: examples/education/sol_flows/fundings_one_slot.sql | pinned}
+
+Transaction 292 is not there. It paid 0.0035 SOL to each wallet, and that is too small.
+
+<Notice label="Fundings do not record dust">
+
+**A wallet counts only if its SOL balance changed by more than 0.09 SOL (90,000,000 lamports) inside one
+transaction.** A change of exactly 0.09 SOL or less is ignored, whether it goes up or down.
+
+The full rule, applied to every successful transaction:
+
+1. Take each account whose SOL balance changed by more than 0.09 SOL.
+2. Drop token accounts and addresses that are not ordinary wallets (addresses derived by programs).
+3. If at least one wallet is left that lost SOL **and** at least one that gained SOL, write a row for every pair.
+   Otherwise write nothing.
+
+What this means in practice:
+
+- a 0.05 SOL payment never appears;
+- a wallet that pays 0.05 SOL to each of ten wallets loses 0.5 SOL, but no receiver passes the line, so there is no
+  row at all;
+- transaction fees, tips and rent for new accounts are almost always below the line and leave no rows.
+
+If you need small payments into empty wallets, use `sol_top_ups`. It has no minimum.
+
+</Notice>
+
+You can see the line in the data itself:
+
+{sql example: examples/education/sol_flows/dust_line.sql}
+
+The table also has no `signature` column. A transaction is identified by `slot` and `tx_idx`. When you need the
+signature, join a table that has it on those two columns. A trading table works well, as the next example shows.
+
+### We record what happened, not how it was done
+
+This is the most important thing to understand about top-ups and fundings. We do not look for "transfer"
+instructions. We compare balances before and after. If a wallet ends a transaction with more SOL, we see it, no matter
+which program moved the SOL or how many steps it took.
+
+Here is a transaction where 9.65 SOL goes from one wallet to another and no instruction transfers SOL between them:
+
+{sql example: examples/education/sol_flows/hidden_transfer.sql | pinned}
+
+The only top-level SOL transfer in that transaction goes to a third address. That address is the sender's own wrapped
+SOL account. So how did the SOL reach the receiver? The PumpSwap table shows it:
+
+{sql example: examples/education/sol_flows/hidden_transfer_swaps.sql | pinned}
+
+The first wallet buys a token from a PumpSwap pool. In the same transaction the second wallet sells the same token to
+the same pool. SOL goes in from one side and comes out on the other. Both wallets sign. An explorer shows two swaps. The
+funding table shows what it really was: about 9.65 SOL moved from wallet A to wallet B, and the pool kept the fees.
+[See the transaction on Solscan](https://solscan.io/tx/4oGMUQJVLr5eEXeeiL5htgerz1W6E2S3GEjLHqonPYdouR1JjpFRn2SM33x9KNYEnjVP35NG7DzAvf4TKMw8c3Ec#balance_change).
+
+The same idea covers wrapped SOL. Closing a wSOL account pays its SOL to a wallet. That is how the receiver above got
+paid, and it is recorded like any other payment.
+
+<Note label="The other side of this">
+  Because we only see results, we cannot tell you which instruction moved the SOL. When that matters, take the slot and
+  transaction index and open the transaction.
+</Note>
+
+### Many senders, many receivers
+
+Balances tell us who lost SOL and who gained SOL. They do not tell us who paid whom. With one sender and one receiver
+that is not a problem. With several of each, we cannot split the amounts, so we do not try. We write one row for every
+sender and receiver pair. Each row carries the full loss of its sender and the full gain of its receiver. `n_src` and
+`n_dst` say how many senders and receivers the transaction had.
+
+{sql example: examples/education/sol_flows/many_to_many.sql | pinned | view=cross}
+
+Three senders and two receivers give six rows. Look at the amounts: the first receiver gained about 1.00 SOL, and that
+same number is repeated on all three of its rows.
+
+This example is on purpose a hard one. The transaction merges eight pairs of stake accounts, and each merge moves SOL
+only inside its own pair. Five of those sixteen accounts have ordinary wallet-style addresses, so we see them: three
+that lost SOL and two that gained it. Their real partners are program addresses, which this table leaves out. So in
+this transaction none of the six rows is a real payment.
+[Check it on Solscan](https://solscan.io/tx/4Dwo1TCFybHgySYuYxXFn1RyMNNZPR28fcCw8AZABMz1uuKoBPVERfA7dRxGucKcQsfoLvnKKVov69c1oo9wRT4N#balance_change).
+
+Two rules keep you safe:
+
+- **For exact pairs, add `n_src = 1 AND n_dst = 1`.** Then each row is one sender, one receiver, and the amounts are
+  real.
+- **Never sum `dst_increase` over rows with `n_src` above 1.** The same gain is repeated once per sender.
+
+## Three things you can do with these tables
+
+### 1. Find wallets filled by the same tool
+
+Someone who launches many tokens often funds each creator wallet from a different source, so the wallets look
+unrelated. But the funding transactions are usually built by the same script. The script leaves marks: the same
+compute-unit limit, the same priority fee, the compute-budget instructions at the same positions.
+
+This query takes wallets that created a Pump.fun token in the last 24 hours. It groups their top-ups by those
+settings, by hour, and by amount (each group holds amounts within 5% of each other). It keeps groups where every wallet
+was paid by a different sender.
+
+{sql example: examples/education/sol_flows/same_builder_top_ups.sql | rows=10}
+
+Each row is a cluster: several creator wallets, each paid by a different sender, in the same hour, with nearly the same
+amount and identical transaction settings. Common settings from popular wallet apps will also show up, so treat a
+cluster as a lead and check a few of its wallets by hand.
+
+### 2. Follow a pipe of pass-through wallets
+
+To hide where money comes from, people send it through a chain of new wallets. Each wallet receives SOL and passes all
+of it to the next. In the funding table such a hop has a clear shape:
+
+- `dst_pre_balance = 0`: the receiver was empty;
+- the sender kept almost nothing: `src_pre_balance - src_decrease` is close to zero;
+- `n_src = 1 AND n_dst = 1`: one sender, one receiver.
+
+This script starts at the creator of a Pump.fun token and walks backwards, one hop at a time, until the shape breaks
+or it has made 12 hops. The connection code is in a small helper file, so the script shows only the logic.
+
+{python example: examples/education/sol_flows/funding_pipe.py | pinned | view=pipe | rows=20}
+
+Each hop loses a few thousand lamports, which is the transaction fee. Where the amount jumps between two hops, that
+wallet did something else before passing the SOL on. In this chain those wallets launched Pump.fun tokens of their
+own, so this is one operator moving the same money from launch to launch. If the walk ends before 12 hops, it has reached
+a wallet that does not fit the shape: one that already held SOL, kept some, or was paid with less than 0.09 SOL. That
+wallet is where you start looking by hand.
+
+### 3. Find the sink that early buyers pay into
+
+When one person controls the first buyers of a token, the profits have to come together somewhere. This query takes
+tokens launched in the last day and the wallets behind their first 10 trades. Then it looks for a wallet that receives
+SOL from early traders of more than one launch.
+
+{sql example: examples/education/sol_flows/common_sink.sql | rows=10}
+
+A wallet at the top of this list collects SOL from the first buyers of several launches. Some of them are exchange
+deposit addresses or trading-bot fee wallets, so open a few before you draw conclusions. Note the `GLOBAL IN`: the list
+of early wallets comes from the main server, and the funding table lives on the second one.
+
+## Token transfers
+
+Token transfers are the simplest of the three. A row means a token moved from one owner to another. The columns are
+`mint`, `src_wallet`, `dst_wallet` and `amount`. The wallets are the owners of the token accounts, not the token
+accounts themselves. `amount` is in the token's smallest unit.
+
+{sql example: examples/education/sol_flows/token_transfers_recent.sql}
+
+There are two tables, and they differ in more than history:
+
+- **`token_transfers`** keeps 31 days and has the signature. It records transfers written directly in the transaction.
+  Transfers that a program makes on your behalf are not in it. A swap, for example, is not a row here.
+- **`indexer3_token_transfers`** has the long history and also records transfers made inside programs. It adds
+  `src_pre_amount` and `dst_pre_amount`, the token balances before the transfer. It keeps a transfer only when both
+  owners are ordinary wallets. It has no signature, so use `slot` and `tx_idx`.
+
+Both tables cover the classic Token program and Token-2022, including mints that use extensions such as transfer fees.
+The `flavour` column tells you how the transfer was made: 0 is a plain transfer, 1 a checked transfer, 2 a transfer with
+a fee, 3 a change of the token account's owner. Add 16 for Token-2022. We index more of the token programs than most
+people expect, and we will keep the finer details to ourselves for now.
+
+A few things are not token transfers and are not here: minting, burning, and closing a token account.
+
+### What about wrapped SOL?
+
+wSOL is a token, so moving wSOL between owners is a row in the token tables with the mint
+`So11111111111111111111111111111111111111112`. Wrapping and unwrapping are different. They are not token transfers.
+Unwrapping closes the wSOL account and pays plain SOL to a wallet. That shows up on the SOL side: as a top-up if the
+wallet was empty, and as a funding if more than 0.09 SOL arrived and another wallet lost SOL in the same transaction.
+The PumpSwap example above is exactly that case.
+
+## What these tables do not see
+
+**Wallets controlled by programs.** A multisig vault, such as a Squads vault, is not an ordinary wallet. Its address is
+derived by a program and has no private key. `indexer3_sol_fundings` and `indexer3_token_transfers` only keep ordinary
+wallets, so money that goes into or out of such a vault is not there. `token_transfers` misses them for a different
+reason: a vault always moves tokens through its program, and that table only records transfers written directly in the
+transaction. `sol_top_ups` is the one exception. It shows a vault as a receiver the first time it is paid, but the
+sender is the signer of the transaction, not the vault's owner.
+
+**Small SOL amounts between wallets that already hold SOL.** Too small for fundings, and not a top-up.
+
+**The instruction.** Top-ups and fundings tell you that SOL moved, not which program moved it.
+
+<Takeaways
+  items={[
+    <>
+      <strong>Top-ups are for fresh wallets.</strong> A row means a balance went from zero to above zero. Any amount
+      counts, and it can happen to the same wallet many times.
+    </>,
+    <>
+      <strong>Fundings are for following money.</strong> They cover every wallet-to-wallet change above 0.09 SOL, with
+      balances before, and go back much further. They have no signature and no dust.
+    </>,
+    <>
+      <strong>Both record results, not instructions.</strong> SOL that moves through a pool or a wSOL account is
+      still seen.
+    </>,
+    <>
+      <strong>Check n_src and n_dst.</strong> With several senders or receivers, every pair gets a row and the
+      amounts repeat.
+    </>,
+    <>
+      <strong>Token transfers follow tokens.</strong> Use token_transfers for recent rows with signatures, and
+      indexer3_token_transfers for history and transfers made inside programs.
+    </>,
+  ]}
+/>
+
+<NextReads
+  items={[
+    {
+      title: 'Wallet Fingerprint Changes',
+      desc: 'How to notice when a wallet starts building its transactions in a new way.',
+      href: '/research/wallet-fingerprint-changes',
+    },
+    {
+      title: 'Solana Table Reference',
+      desc: 'Every table and column you can query.',
+      href: '/solana/tables',
+    },
+  ]}
+/>
+
+<ArticleCTA />
+
+</Article>

@@ -1,0 +1,25 @@
+{
+ "example": "examples/education/sol_flows/fundings_one_slot.sql",
+ "sha256": "c51ec088e8badf197739d879524a088147ddeebe4810ea8d5bc63a7a6e0986f4",
+ "ran_at": "2026-11-18 01:10 UTC",
+ "columns": [
+  "tx_idx",
+  "src_wallet",
+  "dst_wallet",
+  "src_decrease",
+  "dst_increase",
+  "src_pre_balance",
+  "dst_pre_balance"
+ ],
+ "rows": [
+  [
+   0,
+   "FEvcczr8AQ28wZ5aY4gE6wTEgqvLd1mtyqXp1GaTMBfd",
+   "HWznbZDvQHYJpM2XV8MYwkaKaU5Gc1W9eEosxC8yDYmk",
+   817900000,
+   817889961,
+   827900000,
+   23009089925144
+  ]
+ ]
+}
