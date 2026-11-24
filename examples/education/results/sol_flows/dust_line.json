@@ -1,0 +1,17 @@
+{
+ "example": "examples/education/sol_flows/dust_line.sql",
+ "sha256": "6e74b0aba70a1fcf39ba2649ef05b167fb3499d4ad51ee9beb9bb8e342b57d89",
+ "ran_at": "2026-11-18 01:10 UTC",
+ "columns": [
+  "smallest_loss",
+  "smallest_gain",
+  "funding_rows"
+ ],
+ "rows": [
+  [
+   90002858,
+   90000001,
+   2609250
+  ]
+ ]
+}

@@ -87,23 +87,15 @@ a deterministic JSONL recovery sequence and a generated MessagePack checkpoint
 plus raw hourly diff stream. It also recursively scans the configured live
 HyperLiquid archive, so storage-layout drift fails the docs build.
 
-### Strict 24-hour cross-venue build check
+### Timestamp-bounded raw replay
 
-Inside the Docker `checker` stage, the verifier selects a captured Polymarket
-Bitcoin five-minute interval near `UTC now - 24 hours` and reads checkpoint
-timestamps from the live archive. It downloads the newest ABCI MessagePack
-checkpoint at or before that interval plus every required hourly diff file. For
-the BTC perpetual book it then:
+To reconstruct the BTC perpetual book at a target time from an ABCI MessagePack
+checkpoint plus the hourly diff files that follow it:
 
-1. loads the order-level checkpoint state for action asset `0`;
-2. ignores diff blocks already represented by the checkpoint;
-3. applies raw diffs across the exact market window;
-4. samples bid, ask, midpoint, spread and ten-basis-point depth each second; and
-5. requires live orders and a non-crossed `best_bid < best_ask` result.
-
-The raw inputs are held in a temporary directory and removed before the checker
-layer is committed. The generated chart continues to the static-site builder.
-This is intentionally a large, slow integrity check.
+1. load the order-level checkpoint state for action asset `0`;
+2. ignore diff blocks already represented by the checkpoint;
+3. apply raw diffs up to the target time; and
+4. require live orders and a non-crossed `best_bid < best_ask` result.
 
 ```sh
 python3 examples/orderbooks/hyperliquid.py reconstruct-raw-at \

@@ -1,17 +1,22 @@
 # HyperLiquid Tables
 
-Tables containing HyperLiquid perpetual exchange data including trades, orders, and funding rates.
+HyperLiquid tables and views covering raw fills, aggregated orders, wallet state, perpetual DEX metadata and outcome market metadata.
 
-*Last updated: 2026-08-19 21:07 UTC*
+*Last updated: 2026-11-23 11:11 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
-## Tables (4)
+## Tables and views (9)
 
 | Table | Rows | Size |
 |-------|------|------|
 | [agg_fulfilled_order](#agg_fulfilled_order) | 0 | 0 B |
-| [raw_node_fills_by_block](#raw_node_fills_by_block) | 2,973,715,601 | 213.70 GB |
+| [outcome_coin_meta](#outcome_coin_meta) | — | View |
+| [outcome_deployer_meta](#outcome_deployer_meta) | 4 | 1.3 KB |
+| [outcome_meta](#outcome_meta) | 27,748 | 875.7 KB |
+| [outcome_question_meta](#outcome_question_meta) | 263 | 24.0 KB |
+| [perp_dex_meta](#perp_dex_meta) | 10 | 4.0 KB |
+| [raw_node_fills_by_block](#raw_node_fills_by_block) | 4,116,321,764 | 301.93 GB |
 | [view_perpetual_wallet](#view_perpetual_wallet) | — | View |
 | [view_wallet_position](#view_wallet_position) | — | View |
 
@@ -21,9 +26,11 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
+| **Engine** | AggregatingMergeTree |
 | **Rows** | 0 |
 | **Size** | 0 B |
 | **Partition Key** | `toYYYYMM(utc_first_fill_dt)` |
+| **Sorting Key** | `wallet_address, order_id` |
 | **TTL** | `utc_first_fill_dt + toIntervalDay(90)` |
 
 **Columns:**
@@ -49,15 +56,191 @@ SELECT * FROM hyperliquid.agg_fulfilled_order LIMIT 10
 
 ---
 
+### outcome_coin_meta
+
+One row per outcome side from outcome_meta FINAL. Maps fill coin identifiers to readable metadata; coin is '#' followed by outcome * 10 + side. Side indices start at zero and template side names are resolved with attrs.
+
+| Statistic | Value |
+|-----------|-------|
+| **Type** | View (computed at query time) |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `coin` | `String` | Fill coin identifier: '#' followed by the decimal value of outcome * 10 + side |
+| `outcome` | `UInt32` | Numeric outcome-market identifier |
+| `side` | `Int64` | Zero-based side index within the outcome market |
+| `side_name` | `String` | Readable side name after template substitution |
+| `name` | `String` | Outcome market name |
+| `description` | `String` | Outcome market description |
+| `attrs` | `Map(String, String)` | Outcome metadata attributes |
+| `question` | `Nullable(UInt32)` | Parent question identifier, when present |
+| `is_fallback` | `Bool` | Whether this is a fallback outcome |
+| `quote_token` | `LowCardinality(String)` | Quote token for the outcome market |
+| `venue` | `LowCardinality(Nullable(String))` | Associated outcome venue, when known |
+| `first_seen_at` | `DateTime('UTC')` | UTC timestamp when the outcome was first observed |
+| `updated_at` | `DateTime('UTC')` | UTC timestamp of the source metadata update |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="hyperliquid">
+SELECT * FROM hyperliquid.outcome_coin_meta LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### outcome_deployer_meta
+
+Outcome deployer and venue metadata. Use FINAL for the current version per deployer and venue.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 4 |
+| **Size** | 1.3 KB |
+| **First Record** | 2026-11-23 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `deployer, venue` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `deployer` | `String` | Outcome deployer address |
+| `venue` | `LowCardinality(String)` | Venue associated with the deployer |
+| `sub_deployers` | `String` | Serialized sub-deployer metadata |
+| `updated_at` | `DateTime('UTC')` | UTC metadata update timestamp and replacement version |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="hyperliquid">
+SELECT * FROM hyperliquid.outcome_deployer_meta LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### outcome_meta
+
+Outcome market metadata, including side templates, attributes, quote asset and optional question linkage. Use FINAL for the current version per outcome.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 27,748 |
+| **Size** | 875.7 KB |
+| **First Record** | 2026-10-09 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `outcome` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `outcome` | `UInt32` | Numeric outcome-market identifier |
+| `name` | `String` | Outcome market name |
+| `description` | `String` | Outcome market description |
+| `attrs` | `Map(String, String)` | Outcome attributes used by metadata and side-name templates |
+| `side_names` | `Array(String)` | Ordered outcome side names or templates; side indices start at zero |
+| `quote_token` | `LowCardinality(String)` | Quote token for the outcome market |
+| `venue` | `LowCardinality(Nullable(String))` | Associated outcome venue, when known |
+| `deployer_fee_scale` | `Nullable(Float64)` | Deployer fee scale reported in metadata, when available |
+| `question` | `Nullable(UInt32)` | Parent question identifier, when present |
+| `is_fallback` | `Bool` | Whether this is a fallback outcome |
+| `first_seen_at` | `DateTime('UTC')` | UTC timestamp when the outcome was first observed |
+| `updated_at` | `DateTime('UTC')` | UTC metadata update timestamp and replacement version |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="hyperliquid">
+SELECT * FROM hyperliquid.outcome_meta LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### outcome_question_meta
+
+Outcome questions and their named, settled and fallback outcome identifiers. Use FINAL for the current version per question.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 263 |
+| **Size** | 24.0 KB |
+| **First Record** | 2026-10-09 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `question` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `question` | `UInt32` | Numeric question identifier |
+| `name` | `String` | Question name |
+| `description` | `String` | Question description |
+| `attrs` | `Map(String, String)` | Question metadata attributes |
+| `fallback_outcome` | `Nullable(UInt32)` | Fallback outcome identifier, when present |
+| `named_outcomes` | `Array(UInt32)` | Outcome identifiers attached to this question |
+| `settled_named_outcomes` | `Array(UInt32)` | Named outcome identifiers recorded as settled |
+| `first_seen_at` | `DateTime('UTC')` | UTC timestamp when the question was first observed |
+| `updated_at` | `DateTime('UTC')` | UTC metadata update timestamp and replacement version |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="hyperliquid">
+SELECT * FROM hyperliquid.outcome_question_meta LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### perp_dex_meta
+
+Perpetual DEX metadata with deployer, oracle/fee accounts, collateral token and asset counts. Use FINAL for the current version per dex_name.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 10 |
+| **Size** | 4.0 KB |
+| **First Record** | 2026-11-23 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `dex_name` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `dex_name` | `String` | Perpetual DEX namespace |
+| `dex_index` | `UInt16` | Numeric DEX index |
+| `full_name` | `String` | Human-readable DEX name |
+| `deployer` | `String` | DEX deployer address |
+| `oracle_updater` | `Nullable(String)` | Oracle updater address, when configured |
+| `fee_recipient` | `Nullable(String)` | Fee recipient address, when configured |
+| `collateral_token` | `Int32` | Collateral token index |
+| `n_assets` | `UInt32` | Number of assets reported for the DEX |
+| `n_live_assets` | `UInt32` | Number of live assets reported for the DEX |
+| `sub_deployers` | `String` | Serialized sub-deployer metadata |
+| `updated_at` | `DateTime` | Metadata update timestamp and replacement version |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="hyperliquid">
+SELECT * FROM hyperliquid.perp_dex_meta LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
 ### raw_node_fills_by_block
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 2,973,715,601 |
-| **Size** | 213.70 GB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 4,116,321,764 |
+| **Size** | 301.93 GB |
 | **First Record** | 2025-07-27 |
-| **Last Record** | 2026-08-19 |
+| **Last Record** | 2026-11-23 |
 | **Partition Key** | `utc_fill_dt` |
+| **Sorting Key** | `block_id, block_tx_idx` |
 
 **Columns:**
 
@@ -91,6 +274,7 @@ SELECT * FROM hyperliquid.agg_fulfilled_order LIMIT 10
 | `twap_id` | `Nullable(Int64)` | TWAP order identifier |
 | `deployer_fee` | `Nullable(Float64)` | Deployer fee for spot tokens |
 | `priority_gas` | `Nullable(Float64)` | Priority gas fee paid for inclusion (in USDC) |
+| `sub_builders` | `String` | Default: `''` |
 
 **Example Query:**
 

@@ -1,40 +1,168 @@
 # Robinhood Chain Tables
 
-Tables containing Robinhood Chain token metadata and decoded Uniswap v3/v4, Pons, and Varo pool, swap, and launchpad events.
+Robinhood Chain tables and views covering token metadata, Uniswap and launchpad activity, unified swaps, quote prices, wallet funding and token-transfer schemas.
 
-*Last updated: 2026-09-01 11:44 UTC*
+*Last updated: 2026-11-23 11:11 UTC*
 
 import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
-## Tables (25)
+## Tables and views (33)
 
 | Table | Rows | Size |
 |-------|------|------|
-| [doppler_creations](#doppler_creations) | 288,479 | 127.0 MB |
+| [cluster_sinks](#cluster_sinks) | 152,800 | 35.9 MB |
+| [cluster_wallets](#cluster_wallets) | 218,696 | 82.9 MB |
+| [doppler_creations](#doppler_creations) | 246,556 | 111.8 MB |
 | [doppler_trading](#doppler_trading) | — | View |
-| [flap_creations](#flap_creations) | 295,310 | 118.4 MB |
-| [flap_curve_trades](#flap_curve_trades) | 1,295,668 | 352.7 MB |
+| [flap_creations](#flap_creations) | 398,695 | 160.9 MB |
+| [flap_curve_trades](#flap_curve_trades) | 1,489,113 | 410.3 MB |
 | [flap_migrations](#flap_migrations) | — | View |
 | [flap_trading](#flap_trading) | — | View |
-| [letscash_creations](#letscash_creations) | 9,858 | 4.6 MB |
+| [letscash_creations](#letscash_creations) | 11,539 | 5.4 MB |
 | [letscash_trading](#letscash_trading) | — | View |
 | [long_creations](#long_creations) | — | View |
 | [long_trading](#long_trading) | — | View |
-| [nox_creations](#nox_creations) | 1,086 | 411.4 KB |
+| [nox_creations](#nox_creations) | 1,143 | 437.8 KB |
 | [nox_trading](#nox_trading) | — | View |
 | [noxa_creations](#noxa_creations) | 60,143 | 24.9 MB |
 | [noxa_trading](#noxa_trading) | — | View |
-| [pons_creations](#pons_creations) | 142,921 | 56.5 MB |
-| [pons_curve_trades](#pons_curve_trades) | 5,107,944 | 1.40 GB |
-| [pons_migrations](#pons_migrations) | 1,743 | 741.1 KB |
+| [pons_creations](#pons_creations) | 737,583 | 307.8 MB |
+| [pons_curve_trades](#pons_curve_trades) | 34,618,899 | 9.67 GB |
+| [pons_launch_params](#pons_launch_params) | 272,656 | 145.6 MB |
+| [pons_migrations](#pons_migrations) | 10,667 | 4.4 MB |
 | [pons_trading](#pons_trading) | — | View |
-| [tokens](#tokens) | 64,428 | 31.4 MB |
-| [uniswap_v3_pools](#uniswap_v3_pools) | 657,562 | 238.1 MB |
-| [uniswap_v3_trades](#uniswap_v3_trades) | 131,038,031 | 34.11 GB |
-| [uniswap_v4_pools](#uniswap_v4_pools) | 553,626 | 215.6 MB |
-| [uniswap_v4_trades](#uniswap_v4_trades) | 68,937,943 | 16.31 GB |
-| [varo_creations](#varo_creations) | 8,912 | 4.7 MB |
+| [pons_v1_creations](#pons_v1_creations) | 307,023 | 122.4 MB |
+| [pons_v1_trading](#pons_v1_trading) | — | View |
+| [quote_closing_prices](#quote_closing_prices) | 3,245 | 25.7 MB |
+| [swaps](#swaps) | 279,314,675 | 93.87 GB |
+| [token_transfers](#token_transfers) | 0 | 0 B |
+| [tokens](#tokens) | 75,098 | 37.1 MB |
+| [uniswap_v3_pools](#uniswap_v3_pools) | 473,510 | 177.8 MB |
+| [uniswap_v3_trades](#uniswap_v3_trades) | 249,327,301 | 62.67 GB |
+| [uniswap_v4_pools](#uniswap_v4_pools) | 1,171,006 | 466.6 MB |
+| [uniswap_v4_trades](#uniswap_v4_trades) | 226,582,107 | 52.56 GB |
+| [varo_creations](#varo_creations) | 10,372 | 5.6 MB |
 | [varo_trading](#varo_trading) | — | View |
+
+---
+
+### cluster_sinks
+
+Observed outgoing funding edges from parent addresses, including direct, ERC-20 and bridge transfers, balances and transaction cost context. Use FINAL when replacement rows exist.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 152,800 |
+| **Size** | 35.9 MB |
+| **First Record** | 2026-09-25 |
+| **Last Record** | 2026-10-17 |
+| **Partition Key** | `toYYYYMM(ts)` |
+| **Sorting Key** | `parent, tx_hash` |
+| **TTL** | `ts + toIntervalDay(180)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `parent` | `String` | Source address whose outgoing edge was followed |
+| `wallet` | `String` | Destination wallet of the observed edge |
+| `ts` | `DateTime('UTC')` | UTC timestamp of the transfer |
+| `token` | `String` | Seed token associated with the funding traversal |
+| `hop` | `UInt8` | Traversal hop number |
+| `kind` | `Enum8('direct' = 1, 'erc20' = 2, 'bridge' = 3)` | Transfer mechanism: direct, erc20 or bridge |
+| `asset` | `String` | Asset identifier for the transferred value |
+| `value` | `UInt256` | Transferred amount in raw asset units |
+| `parent_balance_before` | `Nullable(UInt256)` | Parent asset balance before the transfer, in raw units, when available |
+| `parent_balance_after` | `Nullable(UInt256)` | Parent asset balance after the transfer, in raw units, when available |
+| `wallet_balance_before` | `Nullable(UInt256)` | Destination asset balance before the transfer, in raw units, when available |
+| `wallet_balance_after` | `Nullable(UInt256)` | Destination asset balance after the transfer, in raw units, when available |
+| `tx_hash` | `String` | Transfer transaction hash |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `tx_index` | `UInt32` | Transaction index within the block |
+| `tx_nonce` | `UInt64` | Transaction sender nonce |
+| `tx_type` | `Nullable(UInt8)` | EVM transaction type, when available |
+| `gas_limit` | `UInt64` | Transaction gas limit |
+| `gas_used` | `UInt64` | Gas consumed by the transaction |
+| `gas_used_for_l1` | `Nullable(UInt64)` | L1 gas usage reported by the receipt, when available |
+| `gas_price` | `Nullable(UInt256)` | Transaction gas price in wei, when available |
+| `max_fee_per_gas` | `Nullable(UInt256)` | Maximum EIP-1559 fee per gas in wei |
+| `max_priority_fee` | `Nullable(UInt256)` | Maximum priority fee per gas in wei, when available |
+| `effective_gas_price` | `Nullable(UInt256)` | Effective gas price paid in wei, when available |
+| `base_fee_per_gas` | `Nullable(UInt256)` | Block base fee per gas in wei |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.cluster_sinks LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### cluster_wallets
+
+Wallet funding-resolution records, including parent/via relationships, EOA/contract/delegation classification and transaction cost context. Use FINAL or the latest inserted_at per wallet when replacement rows exist. Relationships describe observed funding, not proof of shared ownership.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 218,696 |
+| **Size** | 82.9 MB |
+| **First Record** | 2026-09-25 |
+| **Last Record** | 2026-10-17 |
+| **Sorting Key** | `wallet` |
+| **TTL** | `resolved_at + toIntervalDay(365)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `wallet` | `String` | Wallet whose funding history is being resolved |
+| `status` | `Enum8('resolved' = 1, 'unresolved' = 2, 'contract' = 3, 'hub' = 4, 'bridge' = 5, 'unfunded' = 6)` | Resolution result: resolved, unresolved, contract, hub, bridge or unfunded |
+| `code_type` | `Enum8('eoa' = 1, 'contract' = 2, 'eip7702' = 3)` | Wallet code classification: eoa, contract or eip7702 |
+| `delegate_7702` | `String` | EIP-7702 delegate address, when present |
+| `depth` | `UInt8` | Funding traversal depth |
+| `seed_token` | `String` | Token that seeded wallet discovery |
+| `funded_at` | `Nullable(DateTime('UTC'))` | UTC timestamp of the resolved funding transaction, when known |
+| `funding_block` | `UInt64` | Block containing the resolved funding transaction |
+| `funding_tx` | `String` | Resolved funding transaction hash |
+| `funding_tx_index` | `UInt32` | Funding transaction index within the block |
+| `parent` | `String` | Parent funding address assigned by the resolver |
+| `via` | `String` | Intermediate address used by the funding path |
+| `via_type` | `Enum8('none' = 0, 'eoa' = 1, 'contract' = 2, 'eip7702' = 3, 'system' = 4, 'l1' = 5, 'unknown' = 6)` | Classification of the intermediate funding address |
+| `funding_kind` | `Enum8('none' = 0, 'direct' = 1, 'internal' = 2, 'bridge' = 3)` | Funding mechanism: none, direct, internal or bridge |
+| `funding_value` | `UInt256` | Resolved native funding amount in wei |
+| `funding_legs` | `UInt32` | Number of funding legs recorded by the resolver |
+| `parent_balance_before` | `Nullable(UInt256)` | Parent native balance before funding, in wei, when available |
+| `parent_balance_after` | `Nullable(UInt256)` | Parent native balance after funding, in wei, when available |
+| `tx_to` | `String` | Funding transaction destination address |
+| `tx_nonce` | `UInt64` | Funding transaction sender nonce |
+| `tx_type` | `Nullable(UInt8)` | EVM transaction type, when available |
+| `input_selector` | `String` | Function selector of the funding transaction input |
+| `gas_limit` | `UInt64` | Transaction gas limit |
+| `gas_used` | `UInt64` | Gas consumed by the transaction |
+| `gas_used_for_l1` | `Nullable(UInt64)` | L1 gas usage reported by the receipt, when available |
+| `gas_price` | `Nullable(UInt256)` | Transaction gas price in wei, when available |
+| `max_fee_per_gas` | `Nullable(UInt256)` | Maximum EIP-1559 fee per gas in wei |
+| `max_priority_fee` | `Nullable(UInt256)` | Maximum priority fee per gas in wei, when available |
+| `effective_gas_price` | `Nullable(UInt256)` | Effective gas price paid in wei, when available |
+| `base_fee_per_gas` | `Nullable(UInt256)` | Block base fee per gas in wei |
+| `first_out_block` | `UInt64` | Block of the wallet's first recorded outgoing transaction |
+| `first_out_tx` | `String` | Hash of the first recorded outgoing transaction |
+| `first_out_to` | `String` | Destination of the first recorded outgoing transaction |
+| `first_out_selector` | `String` | Function selector of the first recorded outgoing transaction |
+| `checked_block` | `UInt64` | Block through which the wallet was checked |
+| `nonce` | `UInt64` | Wallet nonce at the resolver's check |
+| `balance_wei` | `UInt256` | Wallet native balance at the resolver's check, in wei |
+| `resolved_at` | `DateTime('UTC')` | UTC timestamp of funding resolution |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.cluster_wallets LIMIT 10
+</ClickHouseSqlExample>
 
 ---
 
@@ -42,10 +170,12 @@ import { ClickHouseSqlExample } from '../../components/ClickHouseSqlExample'
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 288,479 |
-| **Size** | 127.0 MB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 246,556 |
+| **Size** | 111.8 MB |
 | **First Record** | 2026-07-01 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `asset` |
 
 **Columns:**
 
@@ -143,10 +273,12 @@ SELECT * FROM robinhood.doppler_trading LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 295,310 |
-| **Size** | 118.4 MB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 398,695 |
+| **Size** | 160.9 MB |
 | **First Record** | 2026-07-08 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `token` |
 
 **Columns:**
 
@@ -191,11 +323,13 @@ SELECT * FROM robinhood.flap_creations LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 1,295,668 |
-| **Size** | 352.7 MB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 1,489,113 |
+| **Size** | 410.3 MB |
 | **First Record** | 2026-07-08 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
 | **Partition Key** | `toYYYYMMDD(block_timestamp)` |
+| **Sorting Key** | `block_number, transaction_index, log_index` |
 
 **Columns:**
 
@@ -315,10 +449,12 @@ SELECT * FROM robinhood.flap_trading LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 9,858 |
-| **Size** | 4.6 MB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 11,539 |
+| **Size** | 5.4 MB |
 | **First Record** | 2026-07-10 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-22 |
+| **Sorting Key** | `token` |
 
 **Columns:**
 
@@ -512,10 +648,12 @@ SELECT * FROM robinhood.long_trading LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 1,086 |
-| **Size** | 411.4 KB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 1,143 |
+| **Size** | 437.8 KB |
 | **First Record** | 2026-07-22 |
-| **Last Record** | 2026-08-30 |
+| **Last Record** | 2026-11-17 |
+| **Sorting Key** | `token` |
 
 **Columns:**
 
@@ -608,10 +746,12 @@ SELECT * FROM robinhood.nox_trading LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
+| **Engine** | ReplacingMergeTree |
 | **Rows** | 60,143 |
 | **Size** | 24.9 MB |
 | **First Record** | 2026-06-16 |
 | **Last Record** | 2026-07-11 |
+| **Sorting Key** | `token` |
 
 **Columns:**
 
@@ -709,10 +849,12 @@ SELECT * FROM robinhood.noxa_trading LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 142,921 |
-| **Size** | 56.5 MB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 737,583 |
+| **Size** | 307.8 MB |
 | **First Record** | 2026-08-03 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `token` |
 
 **Columns:**
 
@@ -759,11 +901,13 @@ SELECT * FROM robinhood.pons_creations LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 5,107,944 |
-| **Size** | 1.40 GB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 34,618,899 |
+| **Size** | 9.67 GB |
 | **First Record** | 2026-07-21 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
 | **Partition Key** | `toYYYYMMDD(block_timestamp)` |
+| **Sorting Key** | `block_number, transaction_index, log_index` |
 
 **Columns:**
 
@@ -806,14 +950,69 @@ SELECT * FROM robinhood.pons_curve_trades LIMIT 10
 
 ---
 
+### pons_launch_params
+
+Trace-decoded Pons launch inputs, social metadata, fee settings and launch configuration. Use FINAL for the current version per token.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 272,656 |
+| **Size** | 145.6 MB |
+| **First Record** | 2026-09-14 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `token` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `token` | `String` | Launched token contract address |
+| `curve` | `String` | Bonding-curve contract address |
+| `transaction_hash` | `String` | Hash of the transaction containing the event |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block containing the event |
+| `launch_function` | `LowCardinality(String)` | Decoded launch function name |
+| `trace_call_from` | `String` | Caller address for the launch trace |
+| `trace_call_value` | `UInt256` | Native ETH value attached to the traced call, in wei |
+| `name` | `String` | Token name supplied at launch |
+| `symbol` | `String` | Token symbol supplied at launch |
+| `logo` | `String` | Logo URL or reference supplied at launch |
+| `description` | `String` | Token description supplied at launch |
+| `twitter` | `String` | Twitter/X reference supplied at launch |
+| `telegram` | `String` | Telegram reference supplied at launch |
+| `discord` | `String` | Discord reference supplied at launch |
+| `website` | `String` | Website supplied at launch |
+| `farcaster` | `String` | Farcaster reference supplied at launch |
+| `creator_fee_recipient` | `String` | Creator fee recipient address |
+| `creator_tax_bps` | `UInt16` | Creator tax rate in basis points |
+| `buyback_enabled` | `UInt8` | Whether buybacks were enabled at launch |
+| `expected_economics` | `String` | Serialized expected-economics input from the launch call |
+| `salt` | `String` | Deployment salt supplied to the launch call |
+| `launch_config_id` | `UInt256` | Launch configuration identifier |
+| `pair_token` | `String` | Paired quote-token address |
+| `original_deployer` | `String` | Original deployer address recorded in the launch inputs |
+| `snipe_tax_exemptions` | `Array(String)` | Addresses exempted from the launch snipe tax |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.pons_launch_params LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
 ### pons_migrations
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 1,743 |
-| **Size** | 741.1 KB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 10,667 |
+| **Size** | 4.4 MB |
 | **First Record** | 2026-08-04 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `token` |
 
 **Columns:**
 
@@ -901,14 +1100,251 @@ SELECT * FROM robinhood.pons_trading LIMIT 10
 
 ---
 
+### pons_v1_creations
+
+Pons v1 token launches and destination pool configuration. Use the pool field to join to Uniswap v3 trades, or query pons_v1_trading.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 307,023 |
+| **Size** | 122.4 MB |
+| **First Record** | 2026-07-13 |
+| **Last Record** | 2026-08-12 |
+| **Sorting Key** | `token` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `token` | `String` | Created token contract address |
+| `deployer` | `String` | Token deployer address |
+| `dex_factory` | `String` | Factory contract used to create the destination pool |
+| `pair_token` | `String` | Paired quote-token address |
+| `pool` | `String` | Destination pool contract address |
+| `dex_id` | `UInt256` | DEX identifier recorded by the launch event |
+| `launch_config_id` | `UInt256` | Launch configuration identifier |
+| `position_id` | `UInt256` | Liquidity position identifier |
+| `restrictions_end_block` | `UInt256` | Block at which launch restrictions end |
+| `initial_buy_amount` | `UInt256` | Initial buy amount recorded by the launch event, in raw units |
+| `name` | `String` | Token name |
+| `symbol` | `String` | Token ticker symbol |
+| `decimals` | `UInt8` | Number of decimal places used by the token |
+| `event_id` | `String` | Unique identifier for the decoded contract event |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `log_index` | `UInt32` | Event log index within the transaction receipt |
+| `transaction_index` | `UInt32` | Transaction index within the block |
+| `contract_address` | `String` | Address of the contract that emitted the event |
+| `block_hash` | `String` | Hash of the block containing the event |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block containing the event |
+| `gas_used` | `UInt64` | Gas consumed by the transaction |
+| `gas_limit` | `UInt64` | Transaction gas limit |
+| `base_fee_per_gas` | `UInt256` | Block base fee per gas in wei |
+| `transaction_hash` | `String` | Hash of the transaction containing the event |
+| `transaction_from` | `String` | Address that submitted the transaction |
+| `transaction_to` | `String` | Transaction destination address |
+| `transaction_value` | `UInt256` | Native ETH value sent with the transaction, in wei |
+| `transaction_gas` | `UInt64` | Gas limit declared by the transaction |
+| `transaction_nonce` | `UInt64` | Sender nonce used by the transaction |
+| `max_fee_per_gas` | `UInt256` | Maximum EIP-1559 fee per gas in wei |
+| `max_priority_fee_per_gas` | `UInt256` | Maximum EIP-1559 priority fee per gas in wei |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.pons_v1_creations LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### pons_v1_trading
+
+Uniswap v3 trades joined to pools from pons_v1_creations, with the launchpad token attached. This view is evaluated at query time.
+
+| Statistic | Value |
+|-----------|-------|
+| **Type** | View (computed at query time) |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `pool_address` | `String` | Address of the Uniswap v3 pool contract |
+| `sender` | `String` | Address that initiated the swap callback |
+| `recipient` | `String` | Address that received the swap output |
+| `amount0` | `Int256` | Signed change in the pool's token0 balance, in raw token units |
+| `amount1` | `Int256` | Signed change in the pool's token1 balance, in raw token units |
+| `sqrt_price_x96` | `UInt256` | Pool square-root price after the swap as a Q64.96 integer |
+| `liquidity` | `UInt128` | In-range pool liquidity after the swap |
+| `tick` | `Int32` | Pool tick after the swap |
+| `event_id` | `String` | Unique identifier for the decoded contract event |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `log_index` | `UInt32` | Event log index within the transaction receipt |
+| `transaction_index` | `UInt32` | Transaction index within the block |
+| `contract_address` | `String` | Address of the contract that emitted the event |
+| `block_hash` | `String` | Hash of the block containing the event |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block containing the event |
+| `gas_used` | `UInt64` | Gas consumed by the transaction |
+| `gas_limit` | `UInt64` | Transaction gas limit |
+| `base_fee_per_gas` | `UInt256` | Block base fee per gas in wei |
+| `transaction_hash` | `String` | Hash of the transaction containing the event |
+| `transaction_from` | `String` | Address that submitted the transaction |
+| `transaction_to` | `String` | Transaction destination address |
+| `transaction_value` | `UInt256` | Native ETH value sent with the transaction, in wei |
+| `transaction_gas` | `UInt64` | Gas limit declared by the transaction |
+| `transaction_nonce` | `UInt64` | Sender nonce used by the transaction |
+| `max_fee_per_gas` | `UInt256` | Maximum EIP-1559 fee per gas in wei |
+| `max_priority_fee_per_gas` | `UInt256` | Maximum EIP-1559 priority fee per gas in wei |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+| `launchpad_token` | `String` | Pons v1 token associated with the traded pool |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.pons_v1_trading LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### quote_closing_prices
+
+Daily quote-asset closing conversion rates by chain, date and quote token, with calculation provenance.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | MergeTree |
+| **Rows** | 3,245 |
+| **Size** | 25.7 MB |
+| **First Record** | 2026-09-18 |
+| **Last Record** | 2026-11-22 |
+| **Partition Key** | `toYYYYMM(date)` |
+| **Sorting Key** | `chain, date, quote_token` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `chain` | `LowCardinality(String)` | Chain identifier for the quote asset |
+| `date` | `Date` | UTC closing date represented by the price |
+| `quote_token` | `String` | Quote-token contract address |
+| `price_usd` | `Float64` | Raw quote conversion rate stored by the pricing job; apply the job's raw-unit scale when converting amounts |
+| `source` | `String` | Price source or calculation method |
+| `number_of_observations` | `UInt32` | Number of observations used to calculate the closing price |
+| `calculated_at` | `DateTime64(6, 'UTC')` | UTC timestamp when the price was calculated |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.quote_closing_prices LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### swaps
+
+Unified decoded swap records with venue, pool, trader and raw input/output amounts. Preserve transaction_hash and log_index when identifying events.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 279,314,675 |
+| **Size** | 93.87 GB |
+| **First Record** | 2026-08-26 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `transaction_hash, log_index` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `venue` | `String` | Decoded trading venue label |
+| `pool` | `String` | Pool address or identifier |
+| `trader` | `String` | Trader address assigned by the decoder |
+| `side` | `UInt8` | Numeric trade-side code recorded by the decoder |
+| `token_in` | `String` | Input token contract address |
+| `amount_in` | `UInt256` | Input amount in raw token units |
+| `token_out` | `String` | Output token contract address |
+| `amount_out` | `UInt256` | Output amount in raw token units |
+| `event_id` | `String` | Unique identifier for the decoded contract event |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `log_index` | `UInt32` | Event log index within the transaction receipt |
+| `transaction_index` | `UInt32` | Transaction index within the block |
+| `contract_address` | `String` | Address of the contract that emitted the event |
+| `block_hash` | `String` | Hash of the block containing the event |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block containing the event |
+| `gas_used` | `UInt64` | Gas consumed by the transaction |
+| `gas_limit` | `UInt64` | Transaction gas limit |
+| `base_fee_per_gas` | `UInt256` | Block base fee per gas in wei |
+| `transaction_hash` | `String` | Hash of the transaction containing the event |
+| `transaction_from` | `String` | Address that submitted the transaction |
+| `transaction_to` | `String` | Transaction destination address |
+| `transaction_value` | `UInt256` | Native ETH value sent with the transaction, in wei |
+| `transaction_gas` | `UInt64` | Gas limit declared by the transaction |
+| `transaction_nonce` | `UInt64` | Sender nonce used by the transaction |
+| `max_fee_per_gas` | `UInt256` | Maximum EIP-1559 fee per gas in wei |
+| `max_priority_fee_per_gas` | `UInt256` | Maximum EIP-1559 priority fee per gas in wei |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.swaps LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
+### token_transfers
+
+Token-transfer schema with sender, receiver, raw amount and optional token ID. The table was empty at the schema refresh; schema availability does not imply historical backfill.
+
+| Statistic | Value |
+|-----------|-------|
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 0 |
+| **Size** | 0 B |
+| **Partition Key** | `toYYYYMMDD(block_timestamp)` |
+| **Sorting Key** | `block_number, transaction_index, log_index` |
+| **TTL** | `block_timestamp + toIntervalWeek(2)` |
+
+**Columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `event_id` | `String` | Unique identifier for the decoded contract event |
+| `block_number` | `UInt64` | EVM block number containing the event |
+| `transaction_index` | `UInt32` | Transaction index within the block |
+| `log_index` | `UInt32` | Event log index within the transaction receipt |
+| `block_hash` | `String` | Hash of the block containing the event |
+| `block_timestamp` | `DateTime` | UTC timestamp of the block containing the event |
+| `transaction_hash` | `String` | Hash of the transaction containing the event |
+| `token_address` | `String` | Token contract address |
+| `from_address` | `String` | Transfer sender address |
+| `to_address` | `String` | Transfer recipient address |
+| `value` | `UInt256` | Raw transfer amount recorded by the decoder |
+| `token_id` | `UInt256` | Token identifier for transfer types that carry one |
+| `transfer_type` | `LowCardinality(String)` | Decoded token-transfer type |
+| `raw_data` | `String` | Raw event payload retained by the decoder |
+| `inserted_at` | `DateTime` | UTC timestamp when the record was inserted into ClickHouse |
+
+**Example Query:**
+
+<ClickHouseSqlExample database="robinhood">
+SELECT * FROM robinhood.token_transfers LIMIT 10
+</ClickHouseSqlExample>
+
+---
+
 ### tokens
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 64,428 |
-| **Size** | 31.4 MB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 75,098 |
+| **Size** | 37.1 MB |
 | **First Record** | 2026-07-08 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `token_address` |
 
 **Columns:**
 
@@ -955,10 +1391,12 @@ SELECT * FROM robinhood.tokens LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 657,562 |
-| **Size** | 238.1 MB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 473,510 |
+| **Size** | 177.8 MB |
 | **First Record** | 2026-06-18 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `pool_address` |
 
 **Columns:**
 
@@ -1001,11 +1439,13 @@ SELECT * FROM robinhood.uniswap_v3_pools LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 131,038,031 |
-| **Size** | 34.11 GB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 249,327,301 |
+| **Size** | 62.67 GB |
 | **First Record** | 2026-05-22 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
 | **Partition Key** | `toYYYYMMDD(block_timestamp)` |
+| **Sorting Key** | `block_number, transaction_index, log_index` |
 
 **Columns:**
 
@@ -1051,10 +1491,12 @@ SELECT * FROM robinhood.uniswap_v3_trades LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 553,626 |
-| **Size** | 215.6 MB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 1,171,006 |
+| **Size** | 466.6 MB |
 | **First Record** | 2026-05-22 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
+| **Sorting Key** | `pool_id` |
 
 **Columns:**
 
@@ -1100,11 +1542,13 @@ SELECT * FROM robinhood.uniswap_v4_pools LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 68,937,943 |
-| **Size** | 16.31 GB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 226,582,107 |
+| **Size** | 52.56 GB |
 | **First Record** | 2026-05-22 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-23 |
 | **Partition Key** | `toYYYYMMDD(block_timestamp)` |
+| **Sorting Key** | `block_number, transaction_index, log_index` |
 
 **Columns:**
 
@@ -1150,10 +1594,12 @@ SELECT * FROM robinhood.uniswap_v4_trades LIMIT 10
 
 | Statistic | Value |
 |-----------|-------|
-| **Rows** | 8,912 |
-| **Size** | 4.7 MB |
+| **Engine** | ReplacingMergeTree |
+| **Rows** | 10,372 |
+| **Size** | 5.6 MB |
 | **First Record** | 2026-07-26 |
-| **Last Record** | 2026-09-01 |
+| **Last Record** | 2026-11-22 |
+| **Sorting Key** | `token` |
 
 **Columns:**
 

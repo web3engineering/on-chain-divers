@@ -1,0 +1,35 @@
+{
+ "example": "examples/education/sol_flows/top_ups_one_tx.sql",
+ "sha256": "75f11453dc15caebc94268845d206cc7cb658207e9c769513acf634648568152",
+ "ran_at": "2026-11-18 01:10 UTC",
+ "columns": [
+  "dst_wallet",
+  "amount",
+  "src_wallet",
+  "transfers_in_tx",
+  "signature"
+ ],
+ "rows": [
+  [
+   "CfmGBMdnuTVHNDWSQ8iCRQF4e1wRTT2aeKKyZYB3699S",
+   3500000,
+   "2BJbdM2onBjRFDPQ7gw33K4FTe3actfr4uemi73nmzWj",
+   5,
+   "KfjE2rhYq66UuMjZhbgwB7rxXkwnbfH8dvPmNY1dxjv3Ngw2bgC4mHrLXdeX6BBoz82mcQtK9NyeXWKLwPRmACb"
+  ],
+  [
+   "6oK1n8sPhqjwtGKhFTVXHW2NHXCJEEgR6zMmjSNLXs4d",
+   3500000,
+   "2BJbdM2onBjRFDPQ7gw33K4FTe3actfr4uemi73nmzWj",
+   5,
+   "KfjE2rhYq66UuMjZhbgwB7rxXkwnbfH8dvPmNY1dxjv3Ngw2bgC4mHrLXdeX6BBoz82mcQtK9NyeXWKLwPRmACb"
+  ],
+  [
+   "GX2LjaPw5co9onSapZxRowh5QRR7PnK5vRLjkdfbNUAE",
+   3500000,
+   "2BJbdM2onBjRFDPQ7gw33K4FTe3actfr4uemi73nmzWj",
+   5,
+   "KfjE2rhYq66UuMjZhbgwB7rxXkwnbfH8dvPmNY1dxjv3Ngw2bgC4mHrLXdeX6BBoz82mcQtK9NyeXWKLwPRmACb"
+  ]
+ ]
+}

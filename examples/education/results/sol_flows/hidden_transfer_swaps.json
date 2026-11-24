@@ -1,0 +1,25 @@
+{
+ "example": "examples/education/sol_flows/hidden_transfer_swaps.sql",
+ "sha256": "500b2c096328909aa439d86f4e1bed912b65cca53ff5fdafad1845c1b16231af",
+ "ran_at": "2026-11-18 01:10 UTC",
+ "columns": [
+  "signing_wallet",
+  "what_it_does",
+  "sol",
+  "signature"
+ ],
+ "rows": [
+  [
+   "BiEHvFqAHu1Z7RqE6tXgpLgsZcAEABq7FqKJZuUKpy1r",
+   "pays SOL into the pool",
+   9.678244984,
+   "4oGMUQJVLr5eEXeeiL5htgerz1W6E2S3GEjLHqonPYdouR1JjpFRn2SM33x9KNYEnjVP35NG7DzAvf4TKMw8c3Ec"
+  ],
+  [
+   "CV4gafozgDfZohWLb6b4rZEEVfiRMo4Z3CfzkXngZPR9",
+   "takes SOL out of the pool",
+   9.65,
+   "4oGMUQJVLr5eEXeeiL5htgerz1W6E2S3GEjLHqonPYdouR1JjpFRn2SM33x9KNYEnjVP35NG7DzAvf4TKMw8c3Ec"
+  ]
+ ]
+}

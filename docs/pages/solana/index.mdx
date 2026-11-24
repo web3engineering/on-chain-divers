@@ -7,18 +7,62 @@ tables. The table reference is generated from the live schema during the build.
 
 | Protocol | Published datasets |
 | --- | --- |
-| Pump.fun | token creation, bonding-curve swaps, v2 swaps, AMM migrations, creator fee distributions and admin creator changes |
-| PumpSwap | swaps with reserves, fee components, creator/cashback/buyback fields and virtual quote reserves |
-| Raydium | unified swaps, CPMM swaps, Launchpad swaps, token creation and migrations |
-| Meteora | DLMM swaps and dynamic bonding swaps |
+| Pump.fun | token creation, bonding-curve and v2 swaps, enriched v2 swaps, AMM migrations, creator fee distributions and admin creator changes |
+| PumpSwap | raw and enriched swaps with reserves, fee components, creator/cashback/buyback fields and virtual quote reserves |
+| Raydium | AMM and CPMM swaps; CLMM pools, swaps, liquidity events and limit orders; Launchpad swaps, enriched swaps, token creation and migrations |
+| Meteora | DLMM swaps, pools, liquidity events and limit orders; DAMM v2 pools, swaps and liquidity events; DBC configurations, launches, raw/enriched swaps and migrations to DAMM or DAMM v2 |
 | Jito | transaction tips |
 
 ## Helper tables
 
 `token_transfers`, `sol_top_ups`, `solana_blocks`, and `tx_timestamps` make it
 possible to analyze transfers, funding paths, block coverage and ingestion
-timing without decoding raw transactions again. `max_caps` adds precomputed
-token-cap observations.
+timing without decoding raw transactions again. `sol_first_top_ups` adds
+per-wallet first-funding resolution, status and signer balances.
+`landing_services` maps known tip recipient addresses to service labels.
+`max_caps` adds precomputed token-cap observations.
+
+## USD prices, supply and token statistics
+
+Four query-time views retain the source swap fields and add `trader`,
+`quote_price_date`, `quote_price_usd`, `volume_usd`, `supply_raw`,
+`token_price_usd` and `usd_mcap`:
+
+- [`pumpfun_v2_swaps_enriched`](/solana/tables#pumpfun_v2_swaps_enriched)
+- [`pumpswap_all_swaps_enriched`](/solana/tables#pumpswap_all_swaps_enriched)
+- [`raydium_launchpad_swaps_enriched`](/solana/tables#raydium_launchpad_swaps_enriched)
+- [`meteora_dynamic_bonding_swaps_enriched`](/solana/tables#meteora_dynamic_bonding_swaps_enriched)
+
+The derived `trader` uses the first signer, the second signer for recognized
+fee sponsors, or `fee_payer` when no signer array was recorded. Quote prices
+come from an ASOF lookup of the latest closing date on or before the trade date.
+`solana_quote_prices` filters `quote_closing_prices` to Solana and adds fixed
+USDC/USDT fallback rates of 1 dated `1970-01-01`.
+
+These rates operate on **raw token amounts**: `quote_raw * quote_price_usd / 1e6`
+gives USD volume. For example, a SOL rate of `0.15` values `1e9` lamports at
+$150. `token_price_usd` is USD per whole base token. Market cap uses the executed
+amount ratio and recorded supply; missing quote prices, supply or decimals
+leave the affected values `NULL`.
+
+`solana_token_supply` combines Raydium Launchpad creation supply, migrated
+Pump.fun mints and DBC configuration supply/decimals. Pump.fun v2 enrichment
+uses a fixed `1e15` raw supply; PumpSwap first uses a nonzero `base_supply`
+reported by the swap. These are valuation inputs rather than a live
+circulating-supply feed.
+
+In the PumpSwap and Raydium Launchpad enriched views the quote mint column is
+literally named `t.quote_token`. Select it with backticks: `` `t.quote_token` ``.
+Keep date filters on enriched queries so ClickHouse can prune the source tables.
+Where the source exposes `failed`, filter `failed = 0` for executed activity.
+
+Use [`solana_token_stats_v`](/solana/tables#solana_token_stats_v) for one
+aggregated row per token. Its underlying `solana_token_stats` table stores
+contributions that may occupy multiple rows per mint. The view sums volume and
+trade counts and selects the maximum `(price_usd, mcap_usd, hour)` tuple, with
+price as the first comparison key. Consequently, `ath_mcap_usd` is the market
+cap at the maximum-price observation. `solana_token_stats_hours` records hourly
+processing summaries.
 
 All monetary values are stored as integer base units unless a column description
 says otherwise. Filter on the documented partition/date column before scanning

@@ -1,0 +1,55 @@
+{
+ "example": "examples/education/sol_flows/token_transfers_recent.sql",
+ "sha256": "ff090d8941b9061059cb8f9ddc92bdc921879d84b3f22366772d1de6429943b8",
+ "ran_at": "2026-11-18 01:11 UTC",
+ "columns": [
+  "block_time_utc",
+  "src_wallet",
+  "dst_wallet",
+  "usdc",
+  "flavour",
+  "signature"
+ ],
+ "rows": [
+  [
+   "2026-11-18 00:34:52",
+   "Bc5bth4Mn2n8DX1etZwvnq3uDEGg479s2D24TCEsnXHf",
+   "81w96XvKAZZFmmuzaohSQUyxtGnAPJmkjwoBFBmtytUj",
+   31548281.314479,
+   1,
+   "6785SKQb9HPmhDrHpp493pQHwcdmpiidTHrDq9TxqcVhuz4FXZEuFbcN4ijLtqrwE5im6fUGjepijZYVbKEKK8iz"
+  ],
+  [
+   "2026-11-18 00:15:23",
+   "5g7yNHyGLJ7fiQ9SN9mf47opDnMjc585kqXWt6d7aBWs",
+   "EWWfXKBgvnu8cyioXodqht79e9goknYJkkSHU8RE39Us",
+   6666680.006002,
+   1,
+   "rKFUPhXJ1RzyBFMW1ssbq8gq7eMK3cxvBERHcXjj9wYy9H4gjgqW5J926Ruj6zTNuJu5zzdwP7bthGTmxs6g2iu"
+  ],
+  [
+   "2026-11-18 00:15:22",
+   "5g7yNHyGLJ7fiQ9SN9mf47opDnMjc585kqXWt6d7aBWs",
+   "EWWfXKBgvnu8cyioXodqht79e9goknYJkkSHU8RE39Us",
+   6666660.005999,
+   1,
+   "4BwqLsBJV9yP4Wm4FMvRmyUymRnLDrcE22DK5hGXt5qXFkiRHd1SJMQGX4bcebq2tBPgTvNvzm3mAk931fmh9n56"
+  ],
+  [
+   "2026-11-18 00:15:22",
+   "5g7yNHyGLJ7fiQ9SN9mf47opDnMjc585kqXWt6d7aBWs",
+   "3NZuxdx5si74TdDygNFE3bvrYuYXwsdKYreXAiJc5hhJ",
+   6666660.005999,
+   1,
+   "3qe6GEzd1bQcNwfm8q9m5EkTVaVRNns6MGbStFM4dYp5j12MWuzuxWVPot6uQCJc3yAnU6afBDULHhLPHLBErKgt"
+  ],
+  [
+   "2026-11-18 00:15:23",
+   "5g7yNHyGLJ7fiQ9SN9mf47opDnMjc585kqXWt6d7aBWs",
+   "EWWfXKBgvnu8cyioXodqht79e9goknYJkkSHU8RE39Us",
+   6666660.005999,
+   1,
+   "uVpwN5rZnFtEYVVYUSKunR3Nixum82Dx8wvXLdNktrSXuizaefxsQVv5uzgnD8dRBbZxNf9KLr8ZiQW9z97ghfK"
+  ]
+ ]
+}

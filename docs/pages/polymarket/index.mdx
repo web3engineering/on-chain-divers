@@ -20,15 +20,6 @@ individual CLOB outcome tokens. Dedicated files for five-minute Bitcoin Up/Down
 markets preserve the rapid probability changes around resolution and can be
 joined directly to event and market metadata in ClickHouse.
 
-The chart below is regenerated from those raw Polymarket records and the
-matching HyperLiquid BTC futures book during every strict documentation build.
-It shows how the Up and Down probabilities evolved alongside the underlying
-market, with no hard-coded event or CLOB token IDs.
-
-![High-precision Polymarket and HyperLiquid Bitcoin order books](/examples/bitcoin-5m-updown.png)
-
-[See the complete reproducible cross-venue workflow](/bitcoin-5m-cross-venue).
-
 Credentials and archive locations are supplied through `.env`; no deployment
 address is included in this site.
 

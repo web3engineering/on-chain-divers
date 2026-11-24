@@ -9,6 +9,25 @@ wallet views.
 | `agg_fulfilled_order` | Fill-level activity aggregated by fulfilled order |
 | `view_perpetual_wallet` | Current perpetual wallet state |
 | `view_wallet_position` | Current wallet positions |
+| `perp_dex_meta` | Perpetual DEX namespaces, deployers, collateral token and asset counts |
+| `outcome_meta` | Outcome markets, side templates, attributes, quote assets and question links |
+| `outcome_coin_meta` | Query-time mapping from outcome fill coin identifiers to resolved side names and metadata |
+| `outcome_question_meta` | Questions with named, settled and fallback outcome identifiers |
+| `outcome_deployer_meta` | Outcome deployer and venue metadata |
+
+## Outcome and DEX metadata
+
+Join `raw_node_fills_by_block.coin` to `outcome_coin_meta.coin` to label outcome
+fills. The view expands each outcome into its sides, starting at side index
+zero, and formats the coin as `'#' + toString(outcome * 10 + side)`. It resolves
+side-name templates using the outcome's attributes and reads the latest
+`outcome_meta` records with `FINAL`.
+
+The outcome, question, deployer and perpetual DEX metadata tables use
+`ReplacingMergeTree`. Query them with `FINAL`, or select the latest `updated_at`
+for each documented sorting key, when you need their current state.
+
+## Historical order books
 
 The raw recovery format begins with an order-level `book_snapshot` and continues
 with `book_diff` records. Replaying by order ID is important: a remove or partial
@@ -19,15 +38,6 @@ raw MessagePack checkpoints and compressed order-level diff streams. This makes
 it possible to reconstruct the historical BTC perpetual book—including best
 bid, best ask, spread, live order count, and depth near the midpoint—at precise
 times rather than relying on coarse candles or aggregated trades.
-
-The chart below replays that BTC futures book once per second over the exact
-window of a Polymarket Bitcoin five-minute market. It is generated and checked
-inside Docker from the configured archives, so the visualization also serves as
-an executable test of checkpoint selection, diff continuity, and book integrity.
-
-![High-precision HyperLiquid and Polymarket Bitcoin order books](/examples/bitcoin-5m-updown.png)
-
-[See the complete reproducible cross-venue workflow](/bitcoin-5m-cross-venue).
 
 Credentials and optional archive locations are supplied through `.env`; no
 deployment address is included in this site.

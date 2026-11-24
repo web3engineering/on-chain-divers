@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface SalesCTAProps {
   price?: string;
   product?: string;

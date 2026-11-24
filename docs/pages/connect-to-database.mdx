@@ -1,0 +1,225 @@
+---
+title: Connect to the database
+description: How to connect to the OnchainDivers ClickHouse database with DBeaver, Python, or any other ClickHouse client.
+---
+
+# Connect to the database
+
+Your credentials are a host, a port, a username and a password for a read-only
+ClickHouse database. Anything that speaks ClickHouse can use them — a desktop
+SQL client, a Python script, or plain HTTP.
+
+Keep them in environment variables or a local `.env` file rather than in source
+code:
+
+```bash
+CLICKHOUSE_HOST=157.90.130.44
+CLICKHOUSE_PORT=8123
+CLICKHOUSE_USERNAME=your-username
+CLICKHOUSE_PASSWORD=your-password
+```
+
+The examples on this page use the Solana database. Connection details for
+HyperLiquid, Polymarket and Robinhood Chain are sent together with your
+credentials.
+
+If you're not sure the connection works yet, start with DBeaver — it's the
+fastest way to confirm access before writing any code.
+
+---
+
+## DBeaver
+
+[DBeaver](https://dbeaver.io/) is a free, cross-platform SQL client with a
+built-in ClickHouse driver. Good for browsing tables and prototyping queries
+before moving them into code.
+
+**1. Install DBeaver.** Download
+[DBeaver Community Edition](https://dbeaver.io/download/) and install it.
+
+**2. Create a new connection.** Use the button in the top-left corner of the
+toolbar, or **Database → New Database Connection**.
+
+<img
+  src="/getting-started/dbeaver-1-new-connection.png"
+  alt="The new connection button in the DBeaver toolbar"
+  style={{ maxWidth: '340px', width: '100%', borderRadius: '6px' }}
+/>
+
+**3. Choose ClickHouse.** Pick **ClickHouse** from the driver list. DBeaver
+downloads the driver automatically the first time you use it.
+
+<img
+  src="/getting-started/dbeaver-2-select-clickhouse.png"
+  alt="Selecting the ClickHouse driver in DBeaver"
+  style={{ maxWidth: '620px', width: '100%', borderRadius: '6px' }}
+/>
+
+**4. Fill in your credentials.**
+
+| Setting  | Value                                  |
+| -------- | -------------------------------------- |
+| Host     | `157.90.130.44`                        |
+| Port     | `8123`                                 |
+| Username | from your credentials                  |
+| Password | from your credentials                  |
+
+Leave **Database/Schema** empty unless your credentials say otherwise.
+
+**5. Test and finish.** Click **Test Connection** to verify, then **Finish** to
+save.
+
+<img
+  src="/getting-started/dbeaver-3-connection-settings.png"
+  alt="ClickHouse connection settings in DBeaver, with Test Connection and Finish"
+  style={{ maxWidth: '620px', width: '100%', borderRadius: '6px' }}
+/>
+
+The database and its tables now appear in the **Database Navigator** on the left.
+
+### Increase the query timeout
+
+DBeaver's default socket timeout is short, and analytical queries over billions
+of rows will hit it. Raise it before you start working.
+
+Right-click the connection → **Edit Connection** → **Driver properties** → find
+`socket_timeout`. The value is in milliseconds; the default is `30000`
+(30 seconds). Set it to `120000` (2 minutes) or higher for heavy queries.
+
+If a query still times out, it's usually cheaper to aggregate server-side than
+to raise the timeout further. If you're not sure how, ask us in your support
+channel — we'll help you rewrite it.
+
+### Inspect a table's structure
+
+Knowing the schema is most of the work. Right-click any table in the
+**Database Navigator** → **Generate SQL → DDL** to see the full `CREATE TABLE`
+statement with every column and type.
+
+The same information is available in the
+[table reference](/solana/tables), which is generated from the live database.
+
+---
+
+## Python
+
+Install the official client:
+
+```bash
+pip install clickhouse-connect
+```
+
+Then:
+
+```python
+import os
+import clickhouse_connect
+
+client = clickhouse_connect.get_client(
+    host=os.environ["CLICKHOUSE_HOST"],
+    port=int(os.environ.get("CLICKHOUSE_PORT", "8123")),
+    username=os.environ["CLICKHOUSE_USERNAME"],
+    password=os.environ["CLICKHOUSE_PASSWORD"],
+)
+
+rows = client.query("SELECT now() AS server_time").named_results()
+print(list(rows))
+client.close()
+```
+
+To pull results straight into pandas:
+
+```python
+df = client.query_df("""
+    SELECT creator, count() AS launches
+    FROM pumpfun_token_creation
+    WHERE block_time > now() - INTERVAL 7 DAY
+    GROUP BY creator
+    ORDER BY launches DESC
+    LIMIT 100
+""")
+```
+
+Aggregate on the server whenever you can. Sending a `GROUP BY` to ClickHouse and
+getting a hundred rows back is far faster than pulling millions of rows into
+pandas and grouping there.
+
+---
+
+## Duplicate rows
+
+Some tables contain duplicate rows. This is a side effect of how transactions
+are parsed, and it's expected — deduplicate on read.
+
+In pandas:
+
+```python
+df = df.drop_duplicates()
+```
+
+See the
+[pandas documentation](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop_duplicates.html)
+for subset and keep options.
+
+In SQL, `DISTINCT` or a `GROUP BY` over the identifying columns does the same
+thing before the data leaves the server:
+
+```sql
+SELECT DISTINCT *
+FROM pumpfun_token_creation
+WHERE block_time > now() - INTERVAL 1 DAY
+```
+
+---
+
+## Other clients
+
+**DataGrip, TablePlus and other GUI clients.** Same settings as DBeaver: host,
+port `8123`, username, password, ClickHouse driver.
+
+**clickhouse-client.** The official command-line client:
+
+```bash
+clickhouse-client \
+  --host 157.90.130.44 \
+  --port 8123 \
+  --user "$CLICKHOUSE_USERNAME" \
+  --password "$CLICKHOUSE_PASSWORD"
+```
+
+**curl.** ClickHouse speaks plain HTTP, so no client library is needed:
+
+```bash
+curl "http://157.90.130.44:8123/?default_format=JSON" \
+  --user "$CLICKHOUSE_USERNAME:$CLICKHOUSE_PASSWORD" \
+  --data-binary "SELECT count() FROM pumpfun_token_creation"
+```
+
+---
+
+## Reproducing our research
+
+The published research scripts use `scripts/clickhouse_accessors.py`, which
+reads the same keys from `.env`, returns rows as dictionaries, and closes the
+connection explicitly:
+
+```python
+from scripts.clickhouse_accessors import ClickHouseAccessor
+
+client = ClickHouseAccessor(".env")
+try:
+    rows = client.query("SELECT count() AS rows FROM token_transfers")
+    print(rows[0])
+finally:
+    client.disconnect()
+```
+
+---
+
+## Next steps
+
+- [Query examples](/solana/examples) — verified queries you can run as-is
+- [Table reference](/solana/tables) — every table, column and description
+- [Solana overview](/solana) — what the data covers
+
+Stuck on anything? Message us in your support channel.

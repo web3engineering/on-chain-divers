@@ -1,0 +1,6 @@
+/* Global stylesheet picked up by Vocs. Everything here is scoped to the
+   article template (#oa), so existing pages are unaffected. */
+@import '@fontsource-variable/bricolage-grotesque/opsz.css';
+@import '@fontsource-variable/geist/wght.css';
+@import '@fontsource-variable/geist-mono/wght.css';
+@import './components/article/article.css';

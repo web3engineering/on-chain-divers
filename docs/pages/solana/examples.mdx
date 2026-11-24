@@ -44,13 +44,27 @@ Source: `examples/solana/transfer_activity.sql`.
 
 PumpSwap rows expose before/after pool reserves, exact-quote mode, virtual quote
 reserves, and protocol, LP, creator, cashback and buyback fee fields. The full
-query in `examples/solana/pumpswap_reserve_checks.sql` verifies three identities
+query in `examples/solana/pumpswap_reserve_checks.sql` verifies four identities
 for the latest 25 swaps:
 
 - base reserve movement equals `base_token_amount`;
-- quote reserve movement equals `quote_token_amount`; and
-- `quote_token_amount_without_lp_fee` reconciles with the appropriate fee path
-  for buys, sells and exact-quote buys.
+- quote reserve movement equals `pool_quote_amount`;
+- `pool_quote_amount` equals `swap_quote_amount` plus the LP fee for buys, or
+  minus the LP fee for sells; and
+- `user_quote_amount` equals `swap_quote_amount` plus all fees for buys, or
+  minus all fees for sells.
+
+The fee total is `lp_fee + protocol_fee + coin_creator_fees + cash_back_fees`.
+`buy_back_fees` is already included in `protocol_fee`, so adding it again would
+double-count it. These explicit flow columns handle regular buys, exact-quote
+buys, v2 instructions and routed swaps consistently. The raw
+`quote_token_amount` event field has different meanings across instruction
+variants and is retained in the output for comparison.
+
+For v2 and multi-hop swaps, `fees_retained_in_pool` records fees left in the
+quote vault until a sweep. The vault's post-swap balance is
+`pool_quote_token_reserves_after + fees_retained_in_pool`; the reserve column
+itself is the value used to price the next trade.
 
 It also selects `virtual_quote_reserves`, `coin_creator`,
 `coin_creator_fees`, `cash_back_fees`, and `buy_back_fees`, making the accounting
@@ -63,7 +77,19 @@ Run it directly with the repository verifier:
 python3 scripts/verify_examples.py --strict-live
 ```
 
-The verifier fails if any returned row has a false reconciliation flag.
+The verifier fails if any returned row has a false reconciliation flag and
+reports its signature and failed identities. This check uses the explicit quote
+flow columns introduced by the indexer's quote-flow migration; the older
+`quote_token_amount_without_lp_fee` changed meaning for newly written buys.
+
+The Docker checker also runs offline regressions against 11 saved transaction
+cases, covering v1/v2 buys and sells, exact-quote buys, cashback, multi-hop swaps,
+virtual reserves and boost buys. The tests execute the query's arithmetic and
+confirm that deliberately corrupted reserves or fees still fail the checks:
+
+```sh
+python3 scripts/test_pumpswap_reserve_checks.py
+```
 
 ## Creator migration rates
 
